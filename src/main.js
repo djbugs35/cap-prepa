@@ -12,6 +12,7 @@ const CFG=Object.assign({
   villeParDefaut:"Rennes",rayonParDefaut:150,
   filieresParDefaut:["MPSI","MP2I","PCSI","PTSI","ING"],
   fichierDonnees:"data/formations.json",geoApi:"https://geo.api.gouv.fr/communes",
+  sceiStatistiques:"https://www.scei-concours.fr/stat{annee}/{filiere}.html",sceiAnnee:2025,
   carteOsm:{tuiles:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",attribution:"&copy; contributeurs OpenStreetMap"},
   carteLeaflet:{
     js:"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",css:"https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
@@ -212,7 +213,7 @@ function initControls(){
   $("map").addEventListener("click",e=>{const c=e.target.closest("circle[data-id]");if(c)selectionner(+c.dataset.id);});
   $("list").addEventListener("click",e=>{
     const f=e.target.closest("[data-fiche]");
-    if(f){ouvrirDialogue(htmlFiche(formationsParId([+f.dataset.fiche])[0],META.sessionsHist||[],META.session));return;}
+    if(f){ouvrirDialogue(htmlFiche(formationsParId([+f.dataset.fiche])[0],META.sessionsHist||[],META.session,{modele:CFG.sceiStatistiques,annee:CFG.sceiAnnee}));return;}
     const c=e.target.closest("[data-cmp]");
     if(c){st.compare=basculerComparaison(st.compare,+c.dataset.cmp);garderFocus(()=>upd(true));return;}
     const b=e.target.closest("[data-add]");if(!b)return;const id=+b.dataset.add;
