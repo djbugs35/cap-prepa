@@ -23,6 +23,11 @@ window.CAP_PREPA_CONFIG = {
   fichierDonnees: "data/formations.json",
   // Service de géocodage des communes (API publique de l'État, sans clé).
   geoApi: "https://geo.api.gouv.fr/communes",
+  // Statistiques des concours après la prépa (SCEI) : {annee} et {filiere} sont remplacés. Pas de licence de réutilisation
+  // publiée : l'outil renvoie vers ces pages sans en recopier les chiffres.
+  sceiStatistiques: "https://www.scei-concours.fr/stat{annee}/{filiere}.html",
+  // Dernière session dont le SCEI a publié les statistiques.
+  sceiAnnee: 2025,
   // Nombre minimal d'admis pour situer le dossier dans le profil des admis (sinon « Non estimable »).
   admisMinProfil: 15,
   // Chance minimale (0 à 1) des catégories Sécurité, Probable, Possible et Ambitieux ; en dessous : Très ambitieux.
