@@ -1,6 +1,6 @@
 /* Onglet « Données » : sources open data téléchargées en local, leur version et leur mise à jour.
    La gestion passe par le serveur local (scripts/serveur.py) ; servi autrement, l'onglet n'affiche que le fichier en cours. */
-import {lireCsvClassements,csvModele} from "./classements.js";
+import {lireCsvClassements,csvModele,champCsv} from "./classements.js";
 import {lireCsvDebouches,csvModeleDebouches,fusionnerDebouches} from "./debouches.js";
 
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -71,6 +71,35 @@ export function htmlDebouches(debouches){
     <p class="hint" id="deb-msg" role="status">${prepas?`${nb(prepas)} prépa${prepas>1?"s":""} renseignée${prepas>1?"s":""}, ${nb(ecoles)} lignes école.`:"Aucun débouché saisi."}</p>`;
 }
 
+const STATUTS_LIEN={"trouve":["Trouvé","k1"],"introuvable":["Introuvable","k4"],"sans-site":["Pas de site connu","k0"],"site-injoignable":["Site injoignable","k5"]};
+const COLONNES_LIENS=["uai","lycee","ville","filieres","site","lien","document","annee","statut","verifie"];
+// Rend le CSV de la base de liens, limitée aux lycées uais (tous si absent).
+export function csvBaseLiens(base,uais){
+  const lignes=Object.entries(base.lycees||{}).filter(([u])=>!uais||uais.includes(u)).sort((a,b)=>(a[1].lycee||"").localeCompare(b[1].lycee||"","fr"));
+  return "\uFEFF"+[COLONNES_LIENS.join(";"),...lignes.map(([u,x])=>COLONNES_LIENS.map(c=>champCsv(c==="uai"?u:Array.isArray(x[c])?x[c].join(" "):x[c])).join(";"))].join("\n")+"\n";
+}
+/* Rend le HTML de la rubrique des liens. base : data/liens-resultats.json ; perimetre : {uais, libelle} des lycées
+   du rayon ; recherche : état de la recherche en cours (null sans serveur local). */
+export function htmlLiens(base,perimetre,recherche){
+  const tous=Object.entries(base.lycees||{}),dans=tous.filter(([u])=>perimetre.uais.includes(u));
+  const compte=l=>Object.keys(STATUTS_LIEN).map(s=>`${l.filter(([,x])=>x.statut===s).length} ${STATUTS_LIEN[s][0].toLowerCase()}`).join(" · ");
+  const manquants=perimetre.uais.filter(u=>!(base.lycees||{})[u]).length,occupe=recherche&&recherche.enCours;
+  const lignes=dans.sort((a,b)=>(a[1].lycee||"").localeCompare(b[1].lycee||"","fr")).map(([,x])=>{const [l,k]=STATUTS_LIEN[x.statut]||["?","k0"];
+    return `<tr><th scope="row">${esc(x.lycee)}<small>${esc(x.ville)} · ${esc((x.filieres||[]).join(", "))}</small></th><td><span class="pill ${k}">${l}</span></td>
+      <td>${x.lien?`<a href="${esc(x.lien)}" target="_blank" rel="noopener">page de résultats</a>${x.annee?" ("+x.annee+")":""}`:"—"}</td><td>${jour(x.verifie)}</td></tr>`;}).join("");
+  const commandes=recherche?`<div class="compare-bar"><label class="check"><input type="checkbox" id="liens-tout"> Tout (toute la France, ~230 lycées, environ 1 h 30)</label>
+      <label class="check"><input type="checkbox" id="liens-refaire"> Refaire les lycées déjà explorés</label>
+      <button type="button" class="btn" id="liens-chercher"${occupe?" disabled":""}>Chercher les liens</button></div>`
+    :`<p class="hint">La recherche demande le serveur local (<code>./lancer.command</code>) ; la base livrée reste consultable.</p>`;
+  const suivi=recherche&&(recherche.journal||[]).length?`<pre class="journal" aria-live="polite">${esc(recherche.journal.slice(-12).join("\n"))}</pre>`:"";
+  return `<p class="hint">Pour chaque lycée à prépa, l'adresse de sa page de résultats aux concours, trouvée en explorant son site (annuaire de l'éducation). Elle pré-remplit la fiche de la prépa pour extraire les débouchés.</p>
+    <p><b>Base :</b> ${tous.length} lycées (${compte(tous)})${base.meta&&base.meta.maj?`, mise à jour le ${date(base.meta.maj)}`:""}.<br>
+    <b>${esc(perimetre.libelle)} :</b> ${perimetre.uais.length} lycées, dont ${manquants} pas encore explorés.</p>
+    ${commandes}<p class="hint" role="status">${occupe?"Recherche en cours…":recherche&&recherche.erreur?"Échec : "+esc(recherche.erreur):""}</p>${suivi}
+    ${lignes?`<div class="compare-wrap"><table class="compare"><thead><tr><th scope="col">Lycée</th><th scope="col">État</th><th scope="col">Lien</th><th scope="col">Exploré le</th></tr></thead><tbody>${lignes}</tbody></table></div>`:""}
+    <p><button type="button" class="btn ghost" id="liens-csv">Télécharger la base en CSV</button></p>`;
+}
+
 const SANS_SERVEUR=`<p class="hint">La gestion des données demande le serveur local. Lancez <code>./lancer.command</code> (ou <code>python3 scripts/serveur.py</code>) depuis le dossier de Cap Prépa, puis rouvrez cet onglet.</p>`;
 
 /* Remplit conteneur et le tient à jour. meta, nbFormations : fichier chargé par l'outil.
@@ -81,11 +110,25 @@ export function creerOngletDonnees(conteneur,meta,nbFormations,perso){
   conteneur.innerHTML=`<section class="panel" aria-labelledby="h-fichier"><h2 id="h-fichier">Fichier utilisé par l'outil</h2>${htmlFichierCourant(meta,nbFormations)}</section>
     <section class="panel" aria-labelledby="h-perso"><h2 id="h-perso">Classements personnels</h2><div id="perso"></div></section>
     <section class="panel" aria-labelledby="h-deb"><h2 id="h-deb">Débouchés des prépas (saisie)</h2><div id="deb"></div></section>
+    <section class="panel" aria-labelledby="h-liens"><h2 id="h-liens">Liens vers les résultats des lycées</h2><div id="liens"></div></section>
     <section class="panel" aria-labelledby="h-sources"><h2 id="h-sources">Sources open data téléchargées</h2><div id="donnees-sources"><p class="hint">Chargement…</p></div></section>`;
   const dessinerPerso=msg=>{conteneur.querySelector("#perso").innerHTML=htmlClassementsPerso(perso.lister(),perso.poids);if(msg)conteneur.querySelector("#perso-msg").textContent=msg;};
   dessinerPerso();
   const dessinerDeb=msg=>{conteneur.querySelector("#deb").innerHTML=htmlDebouches(perso.debouches.lire());if(msg)conteneur.querySelector("#deb-msg").textContent=msg;};
   dessinerDeb();
+  let suiviLiens=null;
+  async function dessinerLiens(){
+    let base,recherche=null;
+    try{const r=await fetch("api/liens",{cache:"no-store"});if(!r.ok)throw new Error();({base,recherche}=await r.json());}
+    catch(e){base=await fetch("data/liens-resultats.json").then(r=>r.ok?r.json():{lycees:{}}).catch(()=>({lycees:{}}));}
+    perso.liens.base=base;
+    const zone=conteneur.querySelector("#liens"),tout=zone.querySelector("#liens-tout")?.checked,refaire=zone.querySelector("#liens-refaire")?.checked;
+    zone.innerHTML=htmlLiens(base,perso.liens.perimetre(),recherche);
+    if(zone.querySelector("#liens-tout")){zone.querySelector("#liens-tout").checked=!!tout;zone.querySelector("#liens-refaire").checked=!!refaire;}
+    clearTimeout(suiviLiens);
+    if(recherche&&recherche.enCours) suiviLiens=setTimeout(dessinerLiens,2000); else perso.liens.surMaj(base);
+  }
+  dessinerLiens();
   conteneur.addEventListener("change",async e=>{
     if(e.target.id==="deb-fichier"&&e.target.files[0]){
       try{
@@ -127,6 +170,12 @@ export function creerOngletDonnees(conteneur,meta,nbFormations,perso){
     if(e.target.id==="donnees-verifier"){zone().querySelector("[role=status]").textContent="Vérification auprès du catalogue…";charger(true);}
     if(e.target.id==="donnees-recharger") location.reload();
     if(e.target.id==="perso-modele") telecharger("cap-prepa-classements.csv",csvModele(perso.formations()));
+    if(e.target.id==="liens-chercher"){
+      const z=conteneur.querySelector("#liens"),tout=z.querySelector("#liens-tout").checked;
+      fetch("api/liens/chercher",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({prepas:tout?null:perso.liens.perimetre().prepas,refaire:z.querySelector("#liens-refaire").checked})}).then(dessinerLiens);
+    }
+    if(e.target.id==="liens-csv") telecharger("cap-prepa-liens-resultats.csv",csvBaseLiens(perso.liens.base||{lycees:{}}));
     if(e.target.id==="deb-modele") telecharger("cap-prepa-debouches.csv",csvModeleDebouches(perso.formations()));
     if(e.target.id==="deb-effacer"){perso.debouches.enregistrer({});dessinerDeb("Débouchés saisis effacés.");}
     const s=e.target.closest("[data-suppr]");

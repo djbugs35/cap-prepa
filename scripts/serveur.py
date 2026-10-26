@@ -7,6 +7,8 @@ API :
     GET  /api/donnees?verifier=1    idem, avec la version publiee de chaque source (reseau)
     POST /api/donnees/mettre-a-jour {"cles": [...] ou null} : telecharge puis reconstruit data/formations.json
     POST /api/debouches/extraire    {"url": ..., "filiere": "MPSI"} : ecoles integrees lues dans une page de resultats
+    GET  /api/liens                 base des liens vers les resultats des lycees, et recherche en cours
+    POST /api/liens/chercher        {"prepas": [...] ou null, "refaire": false} : explore les sites des lycees
 
 Exemple :
     python3 scripts/serveur.py                 # ouvre http://127.0.0.1:8765 dans le navigateur
@@ -25,6 +27,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import debouches as deb
+import liens
 import update_data as ud
 
 RACINE = Path(__file__).resolve().parent.parent
@@ -33,16 +36,15 @@ HOTE = "127.0.0.1"
 LIGNES_JOURNAL_MAX = 200
 
 
-class MiseAJour:
-    """Une mise a jour des sources a la fois, en arriere-plan, avec son journal."""
+class TacheDeFond:
+    """Un travail long a la fois, en arriere-plan, avec son journal et son etat lisibles par l'API."""
 
-    def __init__(self, dossier: Path, sortie: Path):
-        self.dossier, self.sortie = dossier, sortie
+    def __init__(self):
         self._verrou = threading.Lock()
         self._etat = {"enCours": False, "debut": None, "fin": None, "erreur": None, "journal": []}
 
     def etat(self) -> dict:
-        """Rendre une copie de l'etat de la derniere mise a jour."""
+        """Rendre une copie de l'etat du dernier travail."""
         with self._verrou:
             return {**self._etat, "journal": list(self._etat["journal"])}
 
@@ -50,34 +52,67 @@ class MiseAJour:
         with self._verrou:
             self._etat["journal"] = [*self._etat["journal"], message][-LIGNES_JOURNAL_MAX:]
 
-    def lancer(self, cles: list[str] | None) -> bool:
-        """Demarrer la mise a jour ; rendre False si une autre est deja en cours."""
+    def demarrer(self, travail) -> bool:
+        """Lancer travail(journal) dans un fil ; rendre False si un travail est deja en cours."""
         with self._verrou:
             if self._etat["enCours"]:
                 return False
             debut = dt.datetime.now(dt.UTC).isoformat(timespec="seconds")
             self._etat = {"enCours": True, "debut": debut, "fin": None, "erreur": None, "journal": []}
-        threading.Thread(target=self._executer, args=(cles,), daemon=True).start()
+        threading.Thread(target=self._executer, args=(travail,), daemon=True).start()
         return True
 
-    def _executer(self, cles: list[str] | None) -> None:
+    def _executer(self, travail) -> None:
         erreur = None
         try:
-            ud.mettre_a_jour_sources(self.dossier, cles, journal=self._noter)
-            self._noter("Reconstruction de data/formations.json…")
-            texte, meta = ud.construire_formations(self.dossier)
-            ud.ecrire_atomique(self.sortie, texte)
-            if ud.ecrire_lycees(self.dossier, self.sortie.with_name("lycees.json")):
-                self._noter("Lycées : data/lycees.json reconstruit.")
-            self._noter(
-                f"{meta['formations']} formations, session {meta['session']}, historique {meta['sessionsHist']}."
-            )
+            travail(self._noter)
         except (urllib.error.URLError, ud.SourceAbsente, ValueError, OSError) as exc:
             erreur = f"{type(exc).__name__} : {exc}"
             self._noter("Échec : " + erreur)
         with self._verrou:
             fin = dt.datetime.now(dt.UTC).isoformat(timespec="seconds")
             self._etat |= {"enCours": False, "fin": fin, "erreur": erreur}
+
+
+class MiseAJour(TacheDeFond):
+    """Mise a jour des sources puis reconstruction de formations.json et lycees.json."""
+
+    def __init__(self, dossier: Path, sortie: Path):
+        super().__init__()
+        self.dossier, self.sortie = dossier, sortie
+
+    def lancer(self, cles: list[str] | None) -> bool:
+        """Demarrer la mise a jour des sources cles (toutes si None) ; False si une autre est en cours."""
+        return self.demarrer(lambda journal: self._mettre_a_jour(cles, journal))
+
+    def _mettre_a_jour(self, cles: list[str] | None, journal) -> None:
+        ud.mettre_a_jour_sources(self.dossier, cles, journal=journal)
+        journal("Reconstruction de data/formations.json…")
+        texte, meta = ud.construire_formations(self.dossier)
+        ud.ecrire_atomique(self.sortie, texte)
+        if ud.ecrire_lycees(self.dossier, self.sortie.with_name("lycees.json")):
+            journal("Lycées : data/lycees.json reconstruit.")
+        journal(f"{meta['formations']} formations, session {meta['session']}, historique {meta['sessionsHist']}.")
+
+
+class RechercheLiens(TacheDeFond):
+    """Exploration des sites de lycees pour completer la base de liens (scripts/liens.py)."""
+
+    def __init__(self, dossier: Path, chemin: Path):
+        super().__init__()
+        self.dossier, self.chemin = dossier, chemin
+
+    def lancer(self, prepas: list[int] | None, refaire: bool) -> bool:
+        """Explorer les lycees des prepas donnees (toutes si None) ; False si une recherche est en cours."""
+        return self.demarrer(lambda journal: self._chercher(prepas, refaire, journal))
+
+    def _chercher(self, prepas: list[int] | None, refaire: bool, journal) -> None:
+        lycees = liens.lycees_a_prepa(self.dossier)
+        voulues = None if prepas is None else set(prepas)
+        uais = None if voulues is None else [u for u, x in lycees.items() if voulues & set(x["prepas"])]
+        base = liens.completer_base(self.dossier, uais, refaire, self.chemin, journal)
+        statuts = [x["statut"] for x in base["lycees"].values()]
+        journal(f"Base : {statuts.count('trouve')} liens trouvés sur {len(statuts)} lycées.")
 
 
 def extraire_debouches(corps: bytes) -> tuple[int, dict]:
@@ -95,7 +130,23 @@ def extraire_debouches(corps: bytes) -> tuple[int, dict]:
         return HTTPStatus.BAD_GATEWAY, {"erreur": f"page injoignable ({getattr(exc, 'reason', exc)})"}
 
 
-def traiter_api(methode: str, chemin: str, corps: bytes, mise_a_jour: MiseAJour) -> tuple[int, dict]:
+def chercher_liens(corps: bytes, recherche: RechercheLiens) -> tuple[int, dict]:
+    """Rendre (code HTTP, reponse) du lancement d'une recherche de liens."""
+    try:
+        demande = json.loads(corps or b"{}")
+        prepas, refaire = demande.get("prepas"), bool(demande.get("refaire"))
+    except (json.JSONDecodeError, AttributeError):
+        return HTTPStatus.BAD_REQUEST, {"erreur": 'corps JSON attendu : {"prepas": [...] ou null, "refaire": false}'}
+    if prepas is not None and not (isinstance(prepas, list) and all(isinstance(p, int) for p in prepas)):
+        return HTTPStatus.BAD_REQUEST, {"erreur": "prepas : liste d'identifiants Parcoursup, ou null pour toutes"}
+    if not recherche.lancer(prepas, refaire):
+        return HTTPStatus.CONFLICT, {"erreur": "une recherche de liens est deja en cours"}
+    return HTTPStatus.ACCEPTED, {"recherche": recherche.etat()}
+
+
+def traiter_api(  # noqa: PLR0911 (une sortie par route)
+    methode: str, chemin: str, corps: bytes, mise_a_jour: MiseAJour, recherche: RechercheLiens | None = None
+) -> tuple[int, dict]:
     """Rendre (code HTTP, reponse JSON) d'une requete /api/…, sans toucher au reseau sauf verification demandee."""
     url = urllib.parse.urlsplit(chemin)
     if methode == "GET" and url.path == "/api/donnees":
@@ -119,6 +170,10 @@ def traiter_api(methode: str, chemin: str, corps: bytes, mise_a_jour: MiseAJour)
         return HTTPStatus.ACCEPTED, {"miseAJour": mise_a_jour.etat()}
     if methode == "POST" and url.path == "/api/debouches/extraire":
         return extraire_debouches(corps)
+    if recherche and methode == "GET" and url.path == "/api/liens":
+        return HTTPStatus.OK, {"base": liens.charger_base(recherche.chemin), "recherche": recherche.etat()}
+    if recherche and methode == "POST" and url.path == "/api/liens/chercher":
+        return chercher_liens(corps, recherche)
     return HTTPStatus.NOT_FOUND, {"erreur": "route inconnue"}
 
 
@@ -133,7 +188,7 @@ def est_requete_locale(entetes, port: int) -> bool:
     return entetes.get("Host") in hotes and (origine is None or origine in {"http://" + h for h in hotes})
 
 
-def creer_gestionnaire(mise_a_jour: MiseAJour, port: int):
+def creer_gestionnaire(mise_a_jour: MiseAJour, port: int, recherche: RechercheLiens | None = None):
     """Rendre la classe de gestionnaire HTTP liee a cette mise a jour et a ce port."""
 
     class Gestionnaire(SimpleHTTPRequestHandler):
@@ -159,7 +214,7 @@ def creer_gestionnaire(mise_a_jour: MiseAJour, port: int):
                 )
                 return
             corps = self.rfile.read(int(self.headers.get("Content-Length") or 0))
-            self._repondre_json(*traiter_api(methode, self.path, corps, mise_a_jour))
+            self._repondre_json(*traiter_api(methode, self.path, corps, mise_a_jour, recherche))
 
         def do_GET(self):
             if self.path.startswith("/api/"):
@@ -185,8 +240,9 @@ def main():
     ap.add_argument("--sans-navigateur", action="store_true", help="ne pas ouvrir le navigateur")
     a = ap.parse_args()
     mise_a_jour = MiseAJour(ud.DOSSIER_SOURCES, ud.SORTIE_PAR_DEFAUT)
+    recherche = RechercheLiens(ud.DOSSIER_SOURCES, liens.SORTIE)
     try:
-        serveur = ThreadingHTTPServer((HOTE, a.port), creer_gestionnaire(mise_a_jour, a.port))
+        serveur = ThreadingHTTPServer((HOTE, a.port), creer_gestionnaire(mise_a_jour, a.port, recherche))
     except OSError as exc:
         sys.exit(f"Port {a.port} indisponible ({exc.strerror}) : Cap Prepa tourne peut-etre deja, ou essayez --port.")
     adresse = f"http://{HOTE}:{a.port}/"

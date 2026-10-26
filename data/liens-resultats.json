@@ -1,0 +1,3969 @@
+{
+ "lycees": {
+  "0010013J": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Lalande",
+   "pages": 10,
+   "prepas": [
+    2001,
+    2000
+   ],
+   "site": "https://lalande.ent.auvergnerhonealpes.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Bourg-en-Bresse"
+  },
+  "0020049T": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Pierre de La Ramee",
+   "pages": 10,
+   "prepas": [
+    2058
+   ],
+   "site": "https://lgt-pierre-de-la-ramee-saint-quentin.02.ac-amiens.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Quentin"
+  },
+  "0030026M": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Paul Constans",
+   "pages": 1,
+   "prepas": [
+    2113
+   ],
+   "site": "https://paul-constans.fr/",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Montluçon"
+  },
+  "0060030A": {
+   "filieres": [
+    "MPSI",
+    "PCSI",
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Masséna",
+   "pages": 3,
+   "prepas": [
+    2206,
+    2207,
+    2208
+   ],
+   "site": "http://www.lycee-massena.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Nice"
+  },
+  "0060075Z": {
+   "filieres": [
+    "PCSI",
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Les Eucalyptus",
+   "pages": 10,
+   "prepas": [
+    2228,
+    2229
+   ],
+   "site": "https://www.lycee-eucalyptus.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Nice"
+  },
+  "0060673Z": {
+   "annee": null,
+   "document": "https://www.stanislas-cannes.com/prepas/prepa-ece/resultats-integrations-ece",
+   "ecoles": 23,
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": "https://www.stanislas-cannes.com/prepas/prepa-ece/resultats-integrations-ece",
+   "lycee": "Lycée Stanislas",
+   "pages": 2,
+   "prepas": [
+    2237,
+    2238
+   ],
+   "site": "http://www.stanislas-cannes.com",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Cannes"
+  },
+  "0061642C": {
+   "filieres": [
+    "MPSI",
+    "PCSI",
+    "MP2I"
+   ],
+   "lien": null,
+   "lycee": "Lycée International de Valbonne",
+   "pages": 10,
+   "prepas": [
+    2314,
+    2315,
+    32117
+   ],
+   "site": "https://civfrance.com/lycee/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Valbonne"
+  },
+  "0071126L": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Institut Supérieur Saint-Denis",
+   "pages": 10,
+   "prepas": [
+    2340
+   ],
+   "site": "https://campussaintdenis.com/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Annonay"
+  },
+  "0100022V": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Chrestien de Troyes",
+   "pages": 10,
+   "prepas": [
+    2406,
+    2405
+   ],
+   "site": "http://www.lyceechrestiendetroyes.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Troyes"
+  },
+  "0120022J": {
+   "annee": null,
+   "document": "https://ferdinand-foch.mon-ent-occitanie.fr/presentation/les-formations/classe-preparatoire-mp-resultats-des-concours--68167.htm",
+   "ecoles": 16,
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": "https://ferdinand-foch.mon-ent-occitanie.fr/presentation/les-formations/classe-preparatoire-mp-resultats-des-concours--68167.htm",
+   "lycee": "Lycée Ferdinand Foch",
+   "pages": 4,
+   "prepas": [
+    17642
+   ],
+   "site": "https://ferdinand-foch.mon-ent-occitanie.fr",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Rodez"
+  },
+  "0130002G": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Paul Cezanne",
+   "pages": 1,
+   "prepas": [
+    2527,
+    2528
+   ],
+   "site": "http://www.lyc-cezanne.ac-aix-marseille.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Aix-en-Provence"
+  },
+  "0130003H": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Vauvenargues",
+   "pages": 1,
+   "prepas": [
+    2532
+   ],
+   "site": "http://www.lyc-vauvenargues.ac-aix-marseille.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Aix-en-Provence"
+  },
+  "0130040Y": {
+   "filieres": [
+    "MP2I",
+    "MPSI",
+    "BCPST",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Thiers",
+   "pages": 1,
+   "prepas": [
+    32080,
+    2546,
+    2548,
+    2547
+   ],
+   "site": "http://www.lyc-thiers.ac-aix-marseille.fr/spip/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Marseille 1er Arrondissement"
+  },
+  "0130053M": {
+   "filieres": [
+    "PCSI",
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean Perrin",
+   "pages": 1,
+   "prepas": [
+    2594,
+    2595
+   ],
+   "site": "http://www.lyc-perrin.ac-aix-marseille.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Marseille 10e Arrondissement"
+  },
+  "0130160D": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée de L'Emperi",
+   "pages": 1,
+   "prepas": [
+    2618
+   ],
+   "site": "http://www.lyc-emperi.ac-aix-marseille.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Salon-de-Provence"
+  },
+  "0131341M": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Notre Dame De Sion",
+   "pages": 10,
+   "prepas": [
+    2628
+   ],
+   "site": "http://www.notredamedesion.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Marseille 6e Arrondissement"
+  },
+  "0131596P": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Militaire d'Aix-en-Provence",
+   "pages": 4,
+   "prepas": [
+    2654,
+    2653
+   ],
+   "site": "https://www.terre.defense.gouv.fr/lycee-militaire-aix",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Aix-en-Provence"
+  },
+  "0140013N": {
+   "filieres": [
+    "MPSI",
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Malherbe",
+   "pages": 10,
+   "prepas": [
+    2817,
+    2818
+   ],
+   "site": "https://malherbe.lycee.ac-normandie.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Caen"
+  },
+  "0141164P": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Sainte-Marie",
+   "pages": 3,
+   "prepas": [
+    30164
+   ],
+   "site": "https://www.saintemarie-saintpierre-caen.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Caen"
+  },
+  "0142059M": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Victor Hugo",
+   "pages": 1,
+   "prepas": [
+    2918
+   ],
+   "site": "https://victor-hugo.lycee.ac-normandie.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Caen"
+  },
+  "0142133T": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Dumont d'Urville Laplace",
+   "pages": 10,
+   "prepas": [
+    2923
+   ],
+   "site": "https://dumont-laplace.lycee.ac-normandie.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Caen"
+  },
+  "0170028N": {
+   "annee": null,
+   "document": "http://lyceedautet.fr/2022/09/24/resultats-cpge/",
+   "ecoles": 18,
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": "http://lyceedautet.fr/2022/09/24/resultats-cpge/",
+   "lycee": "Lycée Jean Dautet",
+   "pages": 3,
+   "prepas": [
+    3025,
+    3026
+   ],
+   "site": "https://lyceedautet.fr",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "La Rochelle"
+  },
+  "0180005H": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Alain-Fournier",
+   "pages": 10,
+   "prepas": [
+    3089
+   ],
+   "site": "https://lycee-alain-fournier.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Bourges"
+  },
+  "0190032G": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Edmond Perrier",
+   "pages": 4,
+   "prepas": [
+    3146
+   ],
+   "site": "https://www.edmondperrier.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Tulle"
+  },
+  "0210015C": {
+   "annee": null,
+   "document": "https://citescolcarnotdijon.fr/classes-preparatoires-cpge/classes-preparatoires-scientifiques/bcpst/bcpst-resultats/",
+   "ecoles": 13,
+   "filieres": [
+    "PCSI",
+    "MPSI",
+    "BCPST",
+    "MP2I"
+   ],
+   "lien": "https://citescolcarnotdijon.fr/classes-preparatoires-cpge/classes-preparatoires-scientifiques/bcpst/bcpst-resultats/",
+   "lycee": "Lycée Carnot",
+   "pages": 1,
+   "prepas": [
+    3178,
+    3177,
+    3179,
+    32107
+   ],
+   "site": "https://citescolcarnotdijon.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Dijon"
+  },
+  "0211033J": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Gustave Eiffel",
+   "pages": 10,
+   "prepas": [
+    3205
+   ],
+   "site": "https://lyc-geiffel-dijon.eclat-bfc.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Dijon"
+  },
+  "0220056S": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Francois Rabelais",
+   "pages": 10,
+   "prepas": [
+    3315,
+    3316
+   ],
+   "site": "http://www.lycee-rabelais-saint-brieuc.ac-rennes.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Brieuc"
+  },
+  "0240024W": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Bertran De Born",
+   "pages": 10,
+   "prepas": [
+    3421
+   ],
+   "site": "https://etablissementbertrandeborn.net",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Périgueux"
+  },
+  "0250007X": {
+   "filieres": [
+    "MP2I",
+    "PCSI",
+    "MPSI",
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Victor Hugo",
+   "pages": 10,
+   "prepas": [
+    32099,
+    3451,
+    3450,
+    3452
+   ],
+   "site": "https://lyc-vhugo-besancon.eclat-bfc.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Besançon"
+  },
+  "0250011B": {
+   "annee": null,
+   "document": "https://lyc-jhaag-besancon.eclat-bfc.fr/enseignement-sup/cpge-ptsi-pt/les-resultats-ptsi-pt/",
+   "ecoles": 18,
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": "https://lyc-jhaag-besancon.eclat-bfc.fr/enseignement-sup/cpge-ptsi-pt/les-resultats-ptsi-pt/",
+   "lycee": "Lycée Jules Haag",
+   "pages": 2,
+   "prepas": [
+    3469
+   ],
+   "site": "https://lyc-jhaag-besancon.eclat-bfc.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Besançon"
+  },
+  "0260035X": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée CAMILLE VERNET",
+   "pages": 10,
+   "prepas": [
+    3621,
+    3622
+   ],
+   "site": "https://camille-vernet.ent.auvergnerhonealpes.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Valence"
+  },
+  "0270016W": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Aristide Briand",
+   "pages": 10,
+   "prepas": [
+    3682
+   ],
+   "site": "https://briand.lycee.ac-normandie.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Evreux"
+  },
+  "0280007F": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Marceau",
+   "pages": 1,
+   "prepas": [
+    3724,
+    3725
+   ],
+   "site": "http://lyc-marceau-chartres.tice.ac-orleans-tours.fr/eva/",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Chartres"
+  },
+  "0290007A": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée La Pérouse - Kerichen",
+   "pages": 10,
+   "prepas": [
+    3759,
+    11671
+   ],
+   "site": "http://www.lycee-kerichen.org",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Brest"
+  },
+  "0290012F": {
+   "annee": null,
+   "document": "https://www.lycee-vauban-brest.fr/concours-cpge-2014.html",
+   "ecoles": 8,
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": "https://www.lycee-vauban-brest.fr/concours-cpge-2014.html",
+   "lycee": "Lycée Vauban",
+   "pages": 9,
+   "prepas": [
+    3764
+   ],
+   "site": "https://www.lycee-vauban-brest.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Brest"
+  },
+  "0290063L": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Naval",
+   "pages": 10,
+   "prepas": [
+    3791,
+    3792
+   ],
+   "site": "https://lycee-naval.ac-rennes.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Brest"
+  },
+  "0290069T": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Auguste Brizeux",
+   "pages": 10,
+   "prepas": [
+    3794
+   ],
+   "site": "https://lyceebrizeuxquimper.bzh/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Quimper"
+  },
+  "0290335G": {
+   "annee": null,
+   "document": null,
+   "ecoles": null,
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée La Croix Rouge",
+   "pages": 1,
+   "prepas": [
+    3842
+   ],
+   "site": "https://www.lacroixrouge-brest.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Brest"
+  },
+  "0290338K": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Sainte Anne",
+   "pages": 10,
+   "prepas": [
+    3849,
+    3850
+   ],
+   "site": "http://www.sainte-anne-brest.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Brest"
+  },
+  "0300021K": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Alphonse DAUDET",
+   "pages": 10,
+   "prepas": [
+    3926,
+    3927
+   ],
+   "site": "https://alphonse-daudet-nimes.mon-ent-occitanie.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Nîmes"
+  },
+  "0300026R": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Dhuoda",
+   "pages": 10,
+   "prepas": [
+    3936
+   ],
+   "site": "https://dhuoda.mon-ent-occitanie.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Nîmes"
+  },
+  "0300080Z": {
+   "annee": null,
+   "document": null,
+   "ecoles": null,
+   "filieres": [
+    "MPSI",
+    "BCPST",
+    "MP2I"
+   ],
+   "lien": null,
+   "lycee": "Lycée Emmanuel d'Alzon",
+   "pages": 1,
+   "prepas": [
+    3960,
+    3961,
+    47923
+   ],
+   "site": "http://www.dalzon.com",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Nîmes"
+  },
+  "0310036W": {
+   "filieres": [
+    "MP2I",
+    "MPSI",
+    "PCSI",
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Pierre De Fermat",
+   "pages": 10,
+   "prepas": [
+    32130,
+    4036,
+    4037,
+    4038
+   ],
+   "site": "https://fermat.mon-ent-occitanie.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Toulouse"
+  },
+  "0310038Y": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée BELLEVUE",
+   "pages": 10,
+   "prepas": [
+    4042,
+    4043
+   ],
+   "site": "https://bellevue-toulouse.mon-ent-occitanie.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Toulouse"
+  },
+  "0310044E": {
+   "filieres": [
+    "PTSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Déodat de Séverac",
+   "pages": 10,
+   "prepas": [
+    4053,
+    4052
+   ],
+   "site": "https://deodat.mon-ent-occitanie.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Toulouse"
+  },
+  "0310047H": {
+   "filieres": [
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Ozenne",
+   "pages": 10,
+   "prepas": [
+    4066
+   ],
+   "site": "https://ozenne.mon-ent-occitanie.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Toulouse"
+  },
+  "0311262D": {
+   "filieres": [
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "L.E.G.T.A. Toulouse Auzeville",
+   "pages": 10,
+   "prepas": [
+    4124
+   ],
+   "site": "https://citesciencesvertes.educagri.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Auzeville-Tolosane"
+  },
+  "0312408Z": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Saliège",
+   "prepas": [
+    4227
+   ],
+   "site": null,
+   "statut": "sans-site",
+   "verifie": "2026-10-26",
+   "ville": "Balma"
+  },
+  "0330021U": {
+   "filieres": [
+    "MPSI",
+    "MP2I",
+    "BCPST",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Montaigne",
+   "pages": 10,
+   "prepas": [
+    4271,
+    32100,
+    4273,
+    4272
+   ],
+   "site": "https://montaigne-bordeaux.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Bordeaux"
+  },
+  "0330023W": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Camille Jullian",
+   "pages": 10,
+   "prepas": [
+    4279,
+    4278
+   ],
+   "site": "https://camillejullian.com/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Bordeaux"
+  },
+  "0330028B": {
+   "filieres": [
+    "PTSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Gustave Eiffel",
+   "pages": 10,
+   "prepas": [
+    4288,
+    4287
+   ],
+   "site": "https://www.eiffel-bordeaux.org/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Bordeaux"
+  },
+  "0331503E": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Sainte Marie Grand Lebrun",
+   "pages": 5,
+   "prepas": [
+    17639
+   ],
+   "site": "https://grandlebrun.com",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Bordeaux"
+  },
+  "0340038G": {
+   "filieres": [
+    "MP2I",
+    "PCSI",
+    "MPSI",
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Joffre",
+   "pages": 10,
+   "prepas": [
+    39560,
+    4482,
+    4481,
+    4483
+   ],
+   "site": "https://lycee-joffre-montpellier.mon-ent-occitanie.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Montpellier"
+  },
+  "0340042L": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean Mermoz",
+   "pages": 10,
+   "prepas": [
+    4494
+   ],
+   "site": "https://jean-mermoz-montpellier.mon-ent-occitanie.fr/l-etablissement/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Montpellier"
+  },
+  "0340881Y": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Notre Dame De La Merci",
+   "pages": 10,
+   "prepas": [
+    4533
+   ],
+   "site": "http://www.lamerci.com",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Montpellier"
+  },
+  "0341521U": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée St Joseph Pierre Rouge",
+   "pages": 10,
+   "prepas": [
+    48260
+   ],
+   "site": "http://www.pierrerouge.com",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Montferrier-sur-Lez"
+  },
+  "0350029S": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Joliot-Curie",
+   "pages": 7,
+   "prepas": [
+    4642
+   ],
+   "site": "http://www.lycee-joliot-curie-rennes.ac-rennes.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Rennes"
+  },
+  "0350710G": {
+   "annee": 2025,
+   "document": "https://www.lycee-chateaubriand.fr/wp-content/uploads/2025/09/BCPST_Resultats_20253-detaille.pdf",
+   "ecoles": 20,
+   "filieres": [
+    "MPSI",
+    "PCSI",
+    "BCPST"
+   ],
+   "lien": "https://www.lycee-chateaubriand.fr/les-cpge/resultats/",
+   "lycee": "Lycée Francois René De Chateaubriand",
+   "pages": 2,
+   "prepas": [
+    4671,
+    11672,
+    4672
+   ],
+   "site": "http://www.lycee-chateaubriand.fr",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Rennes"
+  },
+  "0350778F": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée ASSOMPTION",
+   "pages": 10,
+   "prepas": [
+    4683
+   ],
+   "site": "https://www.essfa.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Rennes"
+  },
+  "0370035M": {
+   "annee": 2025,
+   "document": "https://www.lyc-descartes.fr/wp-content/uploads/2025/09/Resultats2025.pdf",
+   "ecoles": 98,
+   "filieres": [
+    "MP2I",
+    "MPSI",
+    "PCSI",
+    "BCPST"
+   ],
+   "lien": "https://www.lyc-descartes.fr/resultats/",
+   "lycee": "Lycée Descartes",
+   "pages": 1,
+   "prepas": [
+    32118,
+    4823,
+    4824,
+    4825
+   ],
+   "site": "http://www.lyc-descartes.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Tours"
+  },
+  "0371418R": {
+   "annee": null,
+   "document": "https://www.vaucanson.org/classes-prepas/statistiques-dintegration/",
+   "ecoles": 11,
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": "https://www.vaucanson.org/classes-prepas/statistiques-dintegration/",
+   "lycee": "Lycée Jacques De Vaucanson",
+   "pages": 1,
+   "prepas": [
+    4908
+   ],
+   "site": "http://www.vaucanson.org",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Tours"
+  },
+  "0380027Y": {
+   "filieres": [
+    "MP2I",
+    "BCPST",
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Champollion",
+   "pages": 1,
+   "prepas": [
+    32110,
+    4922,
+    4920,
+    4921
+   ],
+   "site": "https://www.lycee-champollion.fr",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Grenoble"
+  },
+  "0380033E": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée VAUCANSON",
+   "pages": 1,
+   "prepas": [
+    4928
+   ],
+   "site": "https://lycee-vaucanson-grenoble.web.ac-grenoble.fr/",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Grenoble"
+  },
+  "0380092U": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Ferdinand Buisson",
+   "pages": 10,
+   "prepas": [
+    4957
+   ],
+   "site": "http://ferdinand-buisson.ent.auvergnerhonealpes.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Voiron"
+  },
+  "0381513N": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Ecole des Pupilles de l'Air - lycée de la défense",
+   "pages": 10,
+   "prepas": [
+    4962,
+    4961
+   ],
+   "site": "https://www.defense.gouv.fr/epae",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Montbonnot-Saint-Martin"
+  },
+  "0410002E": {
+   "annee": null,
+   "document": "https://lycee-dessaignes.fr/2024/08/27/les-resultats/",
+   "ecoles": 37,
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": "https://lycee-dessaignes.fr/2024/08/27/les-resultats/",
+   "lycee": "Lycée F Philibert Dessaignes",
+   "pages": 1,
+   "prepas": [
+    5233
+   ],
+   "site": "https://lycee-dessaignes.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Blois"
+  },
+  "0420041S": {
+   "filieres": [
+    "BCPST",
+    "MP2I",
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Claude Fauriel",
+   "pages": 10,
+   "prepas": [
+    5281,
+    32113,
+    5279,
+    5280
+   ],
+   "site": "https://claude-fauriel.ent.auvergnerhonealpes.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Etienne"
+  },
+  "0420046X": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Etienne Mimard",
+   "pages": 10,
+   "prepas": [
+    5298
+   ],
+   "site": "https://etienne-mimard.ent.auvergnerhonealpes.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Etienne"
+  },
+  "0440021J": {
+   "annee": 2025,
+   "document": "https://gclemenceau.paysdelaloire.e-lyco.fr/wp-content/uploads/sites/26/2026/01/integrations-2025.pdf",
+   "ecoles": 82,
+   "filieres": [
+    "MP2I",
+    "BCPST",
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": "https://gclemenceau.paysdelaloire.e-lyco.fr/les-resultats-de-sessions/",
+   "lycee": "Lycée général Clemenceau",
+   "pages": 1,
+   "prepas": [
+    32116,
+    5423,
+    5422,
+    5421
+   ],
+   "site": "http://gclemenceau.paysdelaloire.e-lyco.fr",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Nantes"
+  },
+  "0440029T": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "LGT Livet",
+   "pages": 10,
+   "prepas": [
+    5432
+   ],
+   "site": "http://livet.e-lyco.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Nantes"
+  },
+  "0440069L": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "LGT Aristide Briand",
+   "pages": 10,
+   "prepas": [
+    5457
+   ],
+   "site": "https://aristide-briand.paysdelaloire.e-lyco.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Nazaire"
+  },
+  "0440163N": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "LGT Saint-Stanislas",
+   "pages": 10,
+   "prepas": [
+    5493,
+    5492
+   ],
+   "site": "https://www.saintstanislas.eu/le-lycee-saint-stanislas-nantes",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Nantes"
+  },
+  "0442699V": {
+   "filieres": [
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée général privé Externat Chavagnes",
+   "pages": 10,
+   "prepas": [
+    5489
+   ],
+   "site": "http://www.externat-chavagnes.com",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Nantes"
+  },
+  "0450049J": {
+   "annee": 2025,
+   "document": "http://www.lycee-pothier.com/images/3-CPGE/Resultats%20CPGE%202025/Resultats_2024-2025%2009.12.pdf",
+   "ecoles": 12,
+   "filieres": [
+    "MPSI",
+    "BCPST",
+    "PCSI"
+   ],
+   "lien": "http://www.lycee-pothier.com/cpge/resultats.html",
+   "lycee": "Lycée Pothier",
+   "pages": 2,
+   "prepas": [
+    5649,
+    5651,
+    5650
+   ],
+   "site": "http://www.lycee-pothier.com",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Orléans"
+  },
+  "0450051L": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée BENJAMIN FRANKLIN",
+   "pages": 10,
+   "prepas": [
+    5657
+   ],
+   "site": "http://www.lycee-benjamin-franklin.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Orléans"
+  },
+  "0450094H": {
+   "filieres": [
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée agricole Le Chesnoy - Les Barres",
+   "pages": 4,
+   "prepas": [
+    5678
+   ],
+   "site": "https://www.lechesnoy.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Amilly"
+  },
+  "0451335G": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Sainte-Croix Saint-Euverte",
+   "prepas": [
+    25067
+   ],
+   "site": null,
+   "statut": "sans-site",
+   "verifie": "2026-10-26",
+   "ville": "Orléans"
+  },
+  "0490003M": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Polyvalent Chevrollier",
+   "pages": 10,
+   "prepas": [
+    5825
+   ],
+   "site": "http://chevrollier.e-lyco.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Angers"
+  },
+  "0490946M": {
+   "filieres": [
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée agricole Angers le Fresne",
+   "pages": 10,
+   "prepas": [
+    5919
+   ],
+   "site": "https://www.lefresne-angers-segre.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Sainte-Gemmes-sur-Loire"
+  },
+  "0491966W": {
+   "annee": 2025,
+   "document": "https://bergson.paysdelaloire.e-lyco.fr/wp-content/uploads/sites/7/2025/08/resultats_cpge_scient_2025.pdf",
+   "ecoles": 41,
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": "https://bergson.paysdelaloire.e-lyco.fr/vie-du-lycee/actualites-vie-du-lycee/des-resultats-excellents-en-cpge-scientifiques/",
+   "lycee": "Lycée général et technologique Henri Bergson",
+   "pages": 1,
+   "prepas": [
+    5953,
+    5954
+   ],
+   "site": "http://bergson.e-lyco.fr",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Angers"
+  },
+  "0492420P": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "LPO SAINT AUBIN LA SALLE",
+   "pages": 4,
+   "prepas": [
+    5911
+   ],
+   "site": "https://www.staubinlasalle.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Verrières-en-Anjou"
+  },
+  "0492532L": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Saint Benoît",
+   "pages": 10,
+   "prepas": [
+    5896
+   ],
+   "site": "https://www.saintbenoitangers.org",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Angers"
+  },
+  "0501828R": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Victor Grignard",
+   "pages": 4,
+   "prepas": [
+    6035
+   ],
+   "site": "http://www.lycee-grignard.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Cherbourg-en-Cotentin"
+  },
+  "0510031G": {
+   "filieres": [
+    "MPSI",
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée CLEMENCEAU",
+   "pages": 1,
+   "prepas": [
+    6057,
+    6058
+   ],
+   "site": "http://lyc-clemenceau.monbureaunumerique.fr",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Reims"
+  },
+  "0510034K": {
+   "filieres": [
+    "PCSI",
+    "MP2I",
+    "PTSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Franklin Roosevelt",
+   "pages": 10,
+   "prepas": [
+    6062,
+    31683,
+    6063,
+    6061
+   ],
+   "site": "https://lyc-roosevelt-reims.monbureaunumerique.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Reims"
+  },
+  "0540038Y": {
+   "filieres": [
+    "PCSI",
+    "BCPST",
+    "MP2I",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Henri Poincaré",
+   "pages": 10,
+   "prepas": [
+    6246,
+    6247,
+    35995,
+    6245
+   ],
+   "site": "https://lycee-poincare.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Nancy"
+  },
+  "0540042C": {
+   "filieres": [
+    "PTSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Henri Loritz",
+   "pages": 1,
+   "prepas": [
+    6263,
+    6262
+   ],
+   "site": "https://sites.ac-nancy-metz.fr/lyc-loritz/",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Nancy"
+  },
+  "0560025Y": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Dupuy De Lôme",
+   "pages": 10,
+   "prepas": [
+    6420,
+    6419
+   ],
+   "site": "http://www.dupuydelome-lorient.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Lorient"
+  },
+  "0560051B": {
+   "filieres": [
+    "MP2I",
+    "PTSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Alain René Lesage",
+   "pages": 9,
+   "prepas": [
+    36000,
+    6436,
+    6435
+   ],
+   "site": "https://lycee-lesage.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Vannes"
+  },
+  "0570029X": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean Moulin",
+   "pages": 10,
+   "prepas": [
+    6517
+   ],
+   "site": "https://cite-moulin-forbach.monbureaunumerique.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Forbach"
+  },
+  "0570054Z": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Fabert",
+   "pages": 1,
+   "prepas": [
+    6525,
+    6526
+   ],
+   "site": "http://lyc-fabert.monbureaunumerique.fr",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Metz"
+  },
+  "0572341K": {
+   "filieres": [
+    "MP2I"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean XXIII",
+   "pages": 4,
+   "prepas": [
+    43003
+   ],
+   "site": "https://jean23.com/lycee/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Montigny-lès-Metz"
+  },
+  "0572757M": {
+   "filieres": [
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Georges De La Tour",
+   "pages": 2,
+   "prepas": [
+    6643
+   ],
+   "site": "https://georgesdelatour57.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Metz"
+  },
+  "0573227Y": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Louis De Cormontaigne",
+   "pages": 2,
+   "prepas": [
+    6648
+   ],
+   "site": "http://www.lycee-cormontaigne-metz.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Metz"
+  },
+  "0580031U": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jules Renard",
+   "pages": 1,
+   "prepas": [
+    6675
+   ],
+   "site": "https://lyc-follereau-renard-nevers.eclat-bfc.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Nevers"
+  },
+  "0590011S": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Gustave Eiffel",
+   "pages": 3,
+   "prepas": [
+    6708
+   ],
+   "site": "https://lycee-gustave-eiffel.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Armentières"
+  },
+  "0590060V": {
+   "filieres": [
+    "MP2I"
+   ],
+   "lien": null,
+   "lycee": "Lycée Alfred Kastler",
+   "pages": 10,
+   "prepas": [
+    39817
+   ],
+   "site": "https://lgt-alfred-kastler-denain.59.ac-lille.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Denain"
+  },
+  "0590063Y": {
+   "annee": 2024,
+   "document": "https://chatelet-douai.fr/wp-content/uploads/2024/12/RESULTATS_PSI_2024.pdf",
+   "ecoles": 27,
+   "filieres": [
+    "BCPST",
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": "https://chatelet-douai.fr/cpge-douai/resultats/",
+   "lycee": "Lycée Albert Chatelet",
+   "pages": 1,
+   "prepas": [
+    6736,
+    6734,
+    6735
+   ],
+   "site": "https://chatelet-douai.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Douai"
+  },
+  "0590071G": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean Bart",
+   "pages": 3,
+   "prepas": [
+    6746,
+    6747
+   ],
+   "site": "http://www.lyceejeanbart.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Dunkerque"
+  },
+  "0590072H": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée De L'Europe",
+   "pages": 10,
+   "prepas": [
+    6750
+   ],
+   "site": "http://www.lycee-europe-dunkerque.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Dunkerque"
+  },
+  "0590119J": {
+   "annee": 2025,
+   "document": "https://www.faidherbe.org/wp-content/uploads/BCPST-Resultats-aux-concours-2025.pdf",
+   "ecoles": 10,
+   "filieres": [
+    "MP2I",
+    "MPSI",
+    "PCSI",
+    "BCPST"
+   ],
+   "lien": "https://www.faidherbe.org/resultats/",
+   "lycee": "Lycée Faidherbe",
+   "pages": 2,
+   "prepas": [
+    32111,
+    6780,
+    6781,
+    6782
+   ],
+   "site": "https://www.faidherbe.org/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Lille"
+  },
+  "0590121L": {
+   "filieres": [
+    "PCSI",
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Cesar Baggio",
+   "pages": 10,
+   "prepas": [
+    6786,
+    6787
+   ],
+   "site": "https://cesarbaggio.fr/WP/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Lille"
+  },
+  "0590214M": {
+   "filieres": [
+    "MP2I"
+   ],
+   "lien": null,
+   "lycee": "Lycée Colbert",
+   "pages": 5,
+   "prepas": [
+    31678
+   ],
+   "site": "https://www.lyceecolbert-tg.org/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Tourcoing"
+  },
+  "0590221V": {
+   "filieres": [
+    "MPSI",
+    "PCSI",
+    "MP2I"
+   ],
+   "lien": null,
+   "lycee": "Lycée Henri Wallon",
+   "pages": 10,
+   "prepas": [
+    6841,
+    6842,
+    32112
+   ],
+   "site": "https://lgt-henri-wallon-valenciennes.59.ac-lille.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Valenciennes"
+  },
+  "0592916Z": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Notre-Dame De Grace",
+   "pages": 10,
+   "prepas": [
+    6896
+   ],
+   "site": "https://notredamedelasambre.org/lycee-notre-dame-de-grace/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Maubeuge"
+  },
+  "0592921E": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Saint Rémi",
+   "pages": 7,
+   "prepas": [
+    6900,
+    43006
+   ],
+   "site": "https://saintremi.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Roubaix"
+  },
+  "0593007Y": {
+   "filieres": [
+    "MP2I"
+   ],
+   "lien": null,
+   "lycee": "Lycée Frédéric OZANAM",
+   "pages": 10,
+   "prepas": [
+    39819
+   ],
+   "site": "https://www.groupe-oec.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Lille"
+  },
+  "0593117T": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée polyvalent privé La Salle",
+   "pages": 1,
+   "prepas": [
+    6988
+   ],
+   "site": "http://www.lasallelille.com",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Lille"
+  },
+  "0600014P": {
+   "annee": null,
+   "document": "https://pierredailly.fr/add/prepa_scientifique/concours.php",
+   "ecoles": 7,
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": "https://pierredailly.fr/add/prepa_scientifique/concours.php",
+   "lycee": "Lycée Pierre d'Ailly",
+   "pages": 6,
+   "prepas": [
+    7221,
+    7220
+   ],
+   "site": "https://pierredailly.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Compiègne"
+  },
+  "0600020W": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Marie Curie",
+   "pages": 4,
+   "prepas": [
+    7228
+   ],
+   "site": "https://marie-curie-nogent-sur-oise-ac-amiens.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Nogent-sur-Oise"
+  },
+  "0620006V": {
+   "filieres": [
+    "PCSI",
+    "BCPST",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Robespierre",
+   "pages": 10,
+   "prepas": [
+    7327,
+    7328,
+    7326
+   ],
+   "site": "https://lgt-robespierre-arras.62.ac-lille.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Arras"
+  },
+  "0620256S": {
+   "filieres": [
+    "MP2I"
+   ],
+   "lien": null,
+   "lycee": "Lycée Guy Mollet",
+   "pages": 7,
+   "prepas": [
+    39818
+   ],
+   "site": "https://lyceeguymollet.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Arras"
+  },
+  "0622949U": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Mariette",
+   "pages": 10,
+   "prepas": [
+    7460
+   ],
+   "site": "https://lgt-mariette-boulogne-sur-mer.62.ac-lille.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Boulogne-sur-Mer"
+  },
+  "0630018C": {
+   "filieres": [
+    "MPSI",
+    "PCSI",
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Blaise Pascal",
+   "pages": 10,
+   "prepas": [
+    7545,
+    7546,
+    7547
+   ],
+   "site": "http://lyc-blaise-pascal-clermont.ent.auvergnerhonealpes.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Clermont-Ferrand"
+  },
+  "0630021F": {
+   "annee": 2024,
+   "document": "https://lycee-lafayette-clermont.fr/wp-content/uploads/2024/10/resultats-mp-2024-2023-2022.pdf",
+   "ecoles": 33,
+   "filieres": [
+    "MPSI",
+    "PCSI",
+    "MP2I"
+   ],
+   "lien": "https://lycee-lafayette-clermont.fr/resultats-integration-cpge/",
+   "lycee": "Lycée La Fayette",
+   "pages": 2,
+   "prepas": [
+    7562,
+    7563,
+    39552
+   ],
+   "site": "http://lycee-lafayette-clermont.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Clermont-Ferrand"
+  },
+  "0630069H": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean Zay",
+   "pages": 7,
+   "prepas": [
+    7580
+   ],
+   "site": "http://www.lyceejeanzay.net/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Thiers"
+  },
+  "0630984C": {
+   "filieres": [
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "LEGTPA Louis Pasteur (Clermont-Marmilhat)",
+   "pages": 10,
+   "prepas": [
+    7591
+   ],
+   "site": "http://marmilhat.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Lempdes"
+  },
+  "0631068U": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Godefroy De Bouillon",
+   "pages": 10,
+   "prepas": [
+    7603
+   ],
+   "site": "https://www.lasalle63.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Clermont-Ferrand"
+  },
+  "0640010N": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée René Cassin Bayonne-Biarritz",
+   "pages": 6,
+   "prepas": [
+    7690
+   ],
+   "site": "https://www.lyceecassinbayonne.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Bayonne"
+  },
+  "0640055M": {
+   "filieres": [
+    "MPSI",
+    "BCPST",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Louis Barthou",
+   "pages": 10,
+   "prepas": [
+    7704,
+    7706,
+    7705
+   ],
+   "site": "https://www.lyceelouisbarthou.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Pau"
+  },
+  "0650025Z": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Théophile Gautier",
+   "pages": 10,
+   "prepas": [
+    7804
+   ],
+   "site": "https://theophile-gautier.mon-ent-occitanie.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Tarbes"
+  },
+  "0650027B": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean Dupuy",
+   "pages": 10,
+   "prepas": [
+    7816
+   ],
+   "site": "https://jean-dupuy.mon-ent-occitanie.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Tarbes"
+  },
+  "0660010C": {
+   "annee": null,
+   "document": null,
+   "ecoles": null,
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée François Arago",
+   "pages": 8,
+   "prepas": [
+    7845,
+    7844
+   ],
+   "site": "http://francois-arago.mon-ent-occitanie.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Perpignan"
+  },
+  "0670080Y": {
+   "filieres": [
+    "MP2I",
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Kléber",
+   "pages": 7,
+   "prepas": [
+    31686,
+    7916,
+    7917
+   ],
+   "site": "https://www.lycee-kleber.com.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Strasbourg"
+  },
+  "0670084C": {
+   "filieres": [
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean Rostand",
+   "pages": 5,
+   "prepas": [
+    7922
+   ],
+   "site": "https://lyc-rostand.monbureaunumerique.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Strasbourg"
+  },
+  "0670085D": {
+   "filieres": [
+    "PTSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Louis Couffignal",
+   "pages": 10,
+   "prepas": [
+    7934,
+    7933
+   ],
+   "site": "https://lyc-couffignal-strasbourg.site.ac-strasbourg.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Strasbourg"
+  },
+  "0671636P": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée ORT STRASBOURG",
+   "prepas": [
+    7975
+   ],
+   "site": null,
+   "statut": "sans-site",
+   "verifie": "2026-10-26",
+   "ville": "Strasbourg"
+  },
+  "0680031P": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Albert Schweitzer",
+   "pages": 5,
+   "prepas": [
+    8096,
+    8097
+   ],
+   "site": "https://lyc-schweitzer-mulhouse.site.ac-strasbourg.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Mulhouse"
+  },
+  "0690026D": {
+   "filieres": [
+    "BCPST",
+    "MP2I",
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée du Parc",
+   "pages": 10,
+   "prepas": [
+    8184,
+    31680,
+    8182,
+    8183
+   ],
+   "site": "https://lyceeduparc.fr/ldp",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Lyon 6e Arrondissement"
+  },
+  "0690082P": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean Perrin",
+   "pages": 10,
+   "prepas": [
+    8236,
+    8235
+   ],
+   "site": "https://jean-perrin.ent.auvergnerhonealpes.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Lyon 9e Arrondissement"
+  },
+  "0690522T": {
+   "annee": null,
+   "document": "https://www.auxlazaristeslasalle.fr/nos-formations-superieures/lyon-5eme-saint-barthelemy-cpge-concours/resultats/",
+   "ecoles": 12,
+   "filieres": [
+    "MP2I",
+    "MPSI",
+    "PCSI",
+    "PTSI"
+   ],
+   "lien": "https://www.auxlazaristeslasalle.fr/nos-formations-superieures/lyon-5eme-saint-barthelemy-cpge-concours/resultats/",
+   "lycee": "Lycée Aux Lazaristes",
+   "pages": 1,
+   "prepas": [
+    32114,
+    8291,
+    8292,
+    42999
+   ],
+   "site": "https://www.auxlazaristeslasalle.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Lyon 5e Arrondissement"
+  },
+  "0690539L": {
+   "filieres": [
+    "PCSI",
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Assomption Bellevue",
+   "pages": 3,
+   "prepas": [
+    8295,
+    8296
+   ],
+   "site": "https://www.assomption-lyon.org/nos-etablissements/lycee-bellevue",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Lyon 7e Arrondissement"
+  },
+  "0692866R": {
+   "filieres": [
+    "MPSI",
+    "PTSI",
+    "MP2I",
+    "PCSI",
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée La Martiniere Monplaisir",
+   "pages": 10,
+   "prepas": [
+    8550,
+    8552,
+    39554,
+    8551,
+    8553
+   ],
+   "site": "https://martiniere-monplaisir.ent.auvergnerhonealpes.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Lyon 8e Arrondissement"
+  },
+  "0710012C": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée polyvalent Niépce-Balleure",
+   "pages": 10,
+   "prepas": [
+    8620
+   ],
+   "site": "http://www.cite-niepce-balleure.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Chalon-sur-Saône"
+  },
+  "0710023P": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée La Prat's",
+   "pages": 10,
+   "prepas": [
+    8627
+   ],
+   "site": "https://lyc-laprats-cluny.eclat-bfc.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Cluny"
+  },
+  "0711064W": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Militaire d'Autun",
+   "pages": 5,
+   "prepas": [
+    8648
+   ],
+   "site": "https://www.terre.defense.gouv.fr/lycee-militaire-autun",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Autun"
+  },
+  "0720029R": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Montesquieu",
+   "pages": 10,
+   "prepas": [
+    8691,
+    8690
+   ],
+   "site": "https://montesquieu.paysdelaloire.e-lyco.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Le Mans"
+  },
+  "0720033V": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Polyvalent Gabriel Touchard - Washington",
+   "pages": 7,
+   "prepas": [
+    8693
+   ],
+   "site": "https://www.touchard-washington.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Le Mans"
+  },
+  "0720896H": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Militaire Prytanee National",
+   "pages": 6,
+   "prepas": [
+    8732,
+    8733
+   ],
+   "site": "https://www.terre.defense.gouv.fr/prytanee-national-militaire",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "La Flèche"
+  },
+  "0730013T": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Vaugelas",
+   "pages": 5,
+   "prepas": [
+    8781,
+    8780
+   ],
+   "site": "https://vaugelas.ent.auvergnerhonealpes.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Chambéry"
+  },
+  "0740003B": {
+   "filieres": [
+    "MP2I",
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Berthollet",
+   "pages": 1,
+   "prepas": [
+    39553,
+    8845,
+    8844
+   ],
+   "site": "https://lycee-berthollet-annecy.web.ac-grenoble.fr/",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Annecy"
+  },
+  "0740006E": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Louis Lachenal",
+   "pages": 10,
+   "prepas": [
+    8855
+   ],
+   "site": "https://www.lycee-louis-lachenal.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Argonay"
+  },
+  "0750647W": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Turgot",
+   "pages": 10,
+   "prepas": [
+    8946
+   ],
+   "site": "http://lyc-turgot.ac-paris.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 3e Arrondissement"
+  },
+  "0750652B": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Charlemagne",
+   "pages": 10,
+   "prepas": [
+    8960,
+    8961
+   ],
+   "site": "https://lyc-charlemagne.ac-paris.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 4e Arrondissement"
+  },
+  "0750654D": {
+   "filieres": [
+    "MPSI",
+    "PCSI",
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Henri IV",
+   "pages": 10,
+   "prepas": [
+    8964,
+    8965,
+    8966
+   ],
+   "site": "https://lycee-henri4.com/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 5e Arrondissement"
+  },
+  "0750655E": {
+   "filieres": [
+    "MPSI",
+    "PCSI",
+    "MP2I"
+   ],
+   "lien": null,
+   "lycee": "Lycée Louis Le Grand",
+   "pages": 3,
+   "prepas": [
+    8974,
+    8975,
+    32122
+   ],
+   "site": "https://www.louislegrand.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 5e Arrondissement"
+  },
+  "0750656F": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Lavoisier",
+   "pages": 10,
+   "prepas": [
+    8978
+   ],
+   "site": "https://lyc-lavoisier.ac-paris.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 5e Arrondissement"
+  },
+  "0750658H": {
+   "filieres": [
+    "MPSI",
+    "MP2I",
+    "BCPST",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Saint-Louis (6ème)",
+   "prepas": [
+    8982,
+    32123,
+    8984,
+    8983
+   ],
+   "site": null,
+   "statut": "sans-site",
+   "verifie": "2026-10-26",
+   "ville": "Paris 6e Arrondissement"
+  },
+  "0750660K": {
+   "filieres": [
+    "MPSI",
+    "BCPST",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Fénelon",
+   "pages": 10,
+   "prepas": [
+    8986,
+    8988,
+    8987
+   ],
+   "site": "http://lyc-fenelon.ac-paris.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 6e Arrondissement"
+  },
+  "0750663N": {
+   "filieres": [
+    "MPSI",
+    "PTSI",
+    "BCPST",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Chaptal",
+   "pages": 10,
+   "prepas": [
+    8991,
+    8993,
+    8994,
+    8992
+   ],
+   "site": "https://lycee-chaptal.ac-paris.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 8e Arrondissement"
+  },
+  "0750667T": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Condorcet",
+   "pages": 10,
+   "prepas": [
+    8998,
+    8999
+   ],
+   "site": "http://lycee-condorcet.ac-paris.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 9e Arrondissement"
+  },
+  "0750668U": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jacques Decour",
+   "pages": 10,
+   "prepas": [
+    9002,
+    9001
+   ],
+   "site": "https://pia.ac-paris.fr/serail/jcms/s1_2862494/fr/accueil",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 9e Arrondissement"
+  },
+  "0750675B": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Voltaire",
+   "pages": 10,
+   "prepas": [
+    9024
+   ],
+   "site": "https://lyc-voltaire.ac-paris.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 11e Arrondissement"
+  },
+  "0750676C": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée des Métiers Dorian",
+   "pages": 10,
+   "prepas": [
+    9025
+   ],
+   "site": "https://www.lycee-dorian.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 11e Arrondissement"
+  },
+  "0750679F": {
+   "filieres": [
+    "PCSI",
+    "MPSI",
+    "MP2I"
+   ],
+   "lien": null,
+   "lycee": "Lycée Paul Valery",
+   "pages": 10,
+   "prepas": [
+    9044,
+    9043,
+    31682
+   ],
+   "site": "http://lyc-paulvalery.ac-paris.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 12e Arrondissement"
+  },
+  "0750685M": {
+   "filieres": [
+    "BCPST",
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Pierre-Gilles de Gennes - ENCPB",
+   "pages": 10,
+   "prepas": [
+    9073,
+    9071,
+    9070
+   ],
+   "site": "http://www.encpb.org/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 13e Arrondissement"
+  },
+  "0750691U": {
+   "filieres": [
+    "PCSI",
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Raspail",
+   "prepas": [
+    9102,
+    9103
+   ],
+   "site": null,
+   "statut": "sans-site",
+   "verifie": "2026-10-26",
+   "ville": "Paris 14e Arrondissement"
+  },
+  "0750693W": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Buffon",
+   "pages": 5,
+   "prepas": [
+    9114,
+    9115
+   ],
+   "site": "http://www.lycee-buffon.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 15e Arrondissement"
+  },
+  "0750698B": {
+   "filieres": [
+    "PCSI",
+    "MP2I"
+   ],
+   "lien": null,
+   "lycee": "Lycée Claude Bernard",
+   "pages": 10,
+   "prepas": [
+    9128,
+    43009
+   ],
+   "site": "https://pia.ac-paris.fr/serail/jcms/s2_1659532/fr/cite-scolaire-claude-bernard",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 16e Arrondissement"
+  },
+  "0750699C": {
+   "annee": 2025,
+   "document": "https://www.janson-de-sailly.fr/wp-content/uploads/2026/02/synthese_resultats_concours_2025.pdf",
+   "ecoles": 28,
+   "filieres": [
+    "PCSI",
+    "BCPST",
+    "MP2I",
+    "MPSI"
+   ],
+   "lien": "https://www.janson-de-sailly.fr/enseignement-superieur-presentation-generale-resultats-concours/",
+   "lycee": "Lycée Janson De Sailly",
+   "pages": 1,
+   "prepas": [
+    9131,
+    9132,
+    32124,
+    9130
+   ],
+   "site": "http://www.janson-de-sailly.fr",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Paris 16e Arrondissement"
+  },
+  "0750700D": {
+   "filieres": [
+    "BCPST",
+    "PCSI",
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean-Baptiste Say",
+   "pages": 10,
+   "prepas": [
+    9139,
+    9137,
+    9138
+   ],
+   "site": "https://lyc-jb-say.ac-paris.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 16e Arrondissement"
+  },
+  "0750704H": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Carnot",
+   "pages": 10,
+   "prepas": [
+    9141
+   ],
+   "site": "http://lyc-carnot.ac-paris.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 17e Arrondissement"
+  },
+  "0750705J": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Honoré De Balzac",
+   "pages": 10,
+   "prepas": [
+    9144
+   ],
+   "site": "https://lyc-balzac.ac-paris.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 17e Arrondissement"
+  },
+  "0753840S": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Stanislas",
+   "pages": 10,
+   "prepas": [
+    9468,
+    9467
+   ],
+   "site": "https://www.stanislas.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 6e Arrondissement"
+  },
+  "0753873C": {
+   "filieres": [
+    "PCSI",
+    "MPSI",
+    "MP2I"
+   ],
+   "lien": null,
+   "lycee": "Lycée Fénelon Sainte-Marie",
+   "pages": 10,
+   "prepas": [
+    9475,
+    9474,
+    32125
+   ],
+   "site": "http://www.fenelonsaintemarie.org",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Paris 8e Arrondissement"
+  },
+  "0760052U": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée François 1er",
+   "pages": 10,
+   "prepas": [
+    9571,
+    9570
+   ],
+   "site": "https://francois1er-lehavre.lycee.ac-normandie.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Le Havre"
+  },
+  "0760058A": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Schuman Perret",
+   "pages": 4,
+   "prepas": [
+    9579
+   ],
+   "site": "https://schuman.lycee.ac-normandie.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Le Havre"
+  },
+  "0760090K": {
+   "filieres": [
+    "BCPST",
+    "MP2I",
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Pierre Corneille",
+   "pages": 10,
+   "prepas": [
+    9588,
+    39561,
+    9586,
+    9587
+   ],
+   "site": "https://corneille-rouen.lycee.ac-normandie.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Rouen"
+  },
+  "0760095R": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Blaise Pascal",
+   "pages": 10,
+   "prepas": [
+    9601
+   ],
+   "site": "https://pascal.lycee.ac-normandie.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Rouen"
+  },
+  "0770920G": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée polyvalent La Fayette",
+   "pages": 10,
+   "prepas": [
+    9779
+   ],
+   "site": "http://www.lyceelafayette.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Champagne-sur-Seine"
+  },
+  "0770927P": {
+   "filieres": [
+    "BCPST",
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Francois Ier",
+   "pages": 1,
+   "prepas": [
+    9798,
+    9797,
+    9796
+   ],
+   "site": "http://www.lyceefrancois1.net/",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Fontainebleau"
+  },
+  "0770930T": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Henri Moissan",
+   "pages": 3,
+   "prepas": [
+    9799
+   ],
+   "site": "http://www.lyceemoissan.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Meaux"
+  },
+  "0770931U": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Pierre de Coubertin",
+   "pages": 7,
+   "prepas": [
+    9802
+   ],
+   "site": "https://www.coubertin-meaux.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Meaux"
+  },
+  "0770933W": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jacques Amyot",
+   "pages": 1,
+   "prepas": [
+    9808,
+    9809
+   ],
+   "site": "http://www.lyceejamyot-melun.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Melun"
+  },
+  "0780015T": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Militaire de Saint-Cyr",
+   "pages": 3,
+   "prepas": [
+    9954
+   ],
+   "site": "https://www.terre.defense.gouv.fr/lycee-militaire-saintcyr-ecole",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Cyr-l'Ecole"
+  },
+  "0781512V": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Descartes",
+   "pages": 1,
+   "prepas": [
+    9969
+   ],
+   "site": "https://lyc-descartes-montigny.ac-versailles.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Montigny-le-Bretonneux"
+  },
+  "0782132U": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jeanne D'Albret",
+   "pages": 1,
+   "prepas": [
+    10021,
+    10022
+   ],
+   "site": "https://lyc-albret-st-germain-laye.ac-versailles.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Germain-en-Laye"
+  },
+  "0782539L": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Saint Exupéry",
+   "pages": 10,
+   "prepas": [
+    10025
+   ],
+   "site": "https://lyc-stexupery-mantes.ac-versailles.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Mantes-la-Jolie"
+  },
+  "0782562L": {
+   "filieres": [
+    "MP2I",
+    "BCPST",
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Hoche",
+   "pages": 1,
+   "prepas": [
+    32132,
+    10045,
+    10043,
+    10044
+   ],
+   "site": "https://lyc-hoche-versailles.ac-versailles.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Versailles"
+  },
+  "0782565P": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jules Ferry",
+   "pages": 10,
+   "prepas": [
+    10050
+   ],
+   "site": "https://lyc-ferry-versailles.ac-versailles.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Versailles"
+  },
+  "0783053V": {
+   "filieres": [
+    "MPSI",
+    "BCPST",
+    "PCSI",
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Sainte Geneviève",
+   "prepas": [
+    10072,
+    10074,
+    10073,
+    13188
+   ],
+   "site": null,
+   "statut": "sans-site",
+   "verifie": "2026-10-26",
+   "ville": "Versailles"
+  },
+  "0800009A": {
+   "annee": null,
+   "document": "https://lycee-thuillier.fr/resultats-tsi/",
+   "ecoles": 7,
+   "filieres": [
+    "MP2I",
+    "PCSI",
+    "MPSI",
+    "BCPST"
+   ],
+   "lien": "https://lycee-thuillier.fr/resultats-tsi/",
+   "lycee": "Lycée Louis Thuillier",
+   "pages": 1,
+   "prepas": [
+    32098,
+    10151,
+    10150,
+    10153
+   ],
+   "site": "https://lycee-thuillier.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Amiens"
+  },
+  "0810006S": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Laperouse",
+   "pages": 10,
+   "prepas": [
+    10267
+   ],
+   "site": "https://laperouse.mon-ent-occitanie.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Albi"
+  },
+  "0810959C": {
+   "annee": null,
+   "document": "https://borde-basse.mon-ent-occitanie.fr/le-lycee-et-ses-formations/filieres-post-bac/mpsi-mp/resultats-de-la-promo-10-concours-2021--132522.htm",
+   "ecoles": 8,
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": "https://borde-basse.mon-ent-occitanie.fr/le-lycee-et-ses-formations/filieres-post-bac/mpsi-mp/resultats-de-la-promo-10-concours-2021--132522.htm",
+   "lycee": "Lycée La Borde Basse",
+   "pages": 8,
+   "prepas": [
+    10281
+   ],
+   "site": "https://borde-basse.mon-ent-occitanie.fr",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Castres"
+  },
+  "0820021C": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Antoine Bourdelle",
+   "pages": 10,
+   "prepas": [
+    15992
+   ],
+   "site": "https://bourdelle.mon-ent-occitanie.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Montauban"
+  },
+  "0830053G": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Dumont d'Urville",
+   "pages": 7,
+   "prepas": [
+    10343,
+    10342
+   ],
+   "site": "https://lyceedumontdurville.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Toulon"
+  },
+  "0831616F": {
+   "annee": null,
+   "document": "https://www.lycee-rouviere.fr/index.php/superieur/classes-prepas/cpge-tsi/resultats",
+   "ecoles": 21,
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": "https://www.lycee-rouviere.fr/index.php/superieur/classes-prepas/cpge-tsi/resultats",
+   "lycee": "Lycée Rouvière",
+   "pages": 2,
+   "prepas": [
+    10402
+   ],
+   "site": "https://www.lycee-rouviere.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Toulon"
+  },
+  "0840003X": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Frédéric Mistral",
+   "pages": 1,
+   "prepas": [
+    10410
+   ],
+   "site": "http://www.lyc-mistral-avignon.ac-aix-marseille.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Avignon"
+  },
+  "0840072X": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée St Joseph",
+   "pages": 1,
+   "prepas": [
+    10436
+   ],
+   "site": "http://www.stjoavignon.com",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Avignon"
+  },
+  "0851642Y": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "LGT PRIVE SAINT-FRANCOIS D'ASSISE",
+   "pages": 10,
+   "prepas": [
+    10491
+   ],
+   "site": "https://www.stfrancoislaroche.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "La Roche-sur-Yon"
+  },
+  "0860035W": {
+   "annee": 2026,
+   "document": "https://lyc-camilleguerin.fr/wp-content/uploads/2026/09/Resultats-BCPST-2026.pdf",
+   "ecoles": 10,
+   "filieres": [
+    "BCPST",
+    "MP2I",
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": "https://lyc-camilleguerin.fr/resultats-concours/resultats-concours-bcpst/",
+   "lycee": "Lycée Camille Guérin",
+   "pages": 3,
+   "prepas": [
+    10586,
+    35998,
+    10585,
+    10584
+   ],
+   "site": "https://lyc-camilleguerin.fr",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Poitiers"
+  },
+  "0860037Y": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Nelson Mandela",
+   "pages": 10,
+   "prepas": [
+    14480
+   ],
+   "site": "https://lycee-mandela-poitiers.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Poitiers"
+  },
+  "0870015U": {
+   "annee": null,
+   "document": "https://lycee-gay-lussac-limoges.com/cpge/concours.html",
+   "ecoles": 7,
+   "filieres": [
+    "MPSI",
+    "PCSI",
+    "MP2I"
+   ],
+   "lien": "https://lycee-gay-lussac-limoges.com/cpge/concours.html",
+   "lycee": "Lycée Gay-Lussac",
+   "pages": 2,
+   "prepas": [
+    10660,
+    10661,
+    31679
+   ],
+   "site": "https://lycee-gay-lussac-limoges.com",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Limoges"
+  },
+  "0870016V": {
+   "filieres": [
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Leonard Limosin",
+   "pages": 2,
+   "prepas": [
+    13180
+   ],
+   "site": "https://www.lyceelimosin.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Limoges"
+  },
+  "0870056N": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Turgot",
+   "pages": 10,
+   "prepas": [
+    10675
+   ],
+   "site": "https://www.lyc-turgot.ac-limoges.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Limoges"
+  },
+  "0880020U": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Claude Gellee",
+   "pages": 10,
+   "prepas": [
+    10731
+   ],
+   "site": "https://lyc-gellee.monbureaunumerique.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Epinal"
+  },
+  "0890003V": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jacques Amyot",
+   "pages": 10,
+   "prepas": [
+    10770
+   ],
+   "site": "https://lyc-jamyot-auxerre.eclat-bfc.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Auxerre"
+  },
+  "0900004R": {
+   "filieres": [
+    "PTSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Raoul Follereau",
+   "pages": 10,
+   "prepas": [
+    10808,
+    17638
+   ],
+   "site": "http://lyc-rfollereau-belfort.eclat-bfc.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Belfort"
+  },
+  "0910626L": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Blaise Pascal",
+   "pages": 8,
+   "prepas": [
+    10859,
+    10860
+   ],
+   "site": "https://lyc-pascal-orsay.ac-versailles.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Orsay"
+  },
+  "0910627M": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean Baptiste Corot",
+   "pages": 1,
+   "prepas": [
+    10861,
+    10862
+   ],
+   "site": "https://lyc-corot-savigny.ac-versailles.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Savigny-sur-Orge"
+  },
+  "0910727W": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Parc de Vilgenis",
+   "pages": 10,
+   "prepas": [
+    10872
+   ],
+   "site": "https://www.lyceevilgenis.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Massy"
+  },
+  "0911251R": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée du Parc des Loges",
+   "pages": 1,
+   "prepas": [
+    10927,
+    10926
+   ],
+   "site": "https://lyc-parc-evry.ac-versailles.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Evry-Courcouronnes"
+  },
+  "0911492C": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée de l'Essouriau",
+   "pages": 10,
+   "prepas": [
+    10931
+   ],
+   "site": "http://lyceedelessouriau.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Les Ulis"
+  },
+  "0920134W": {
+   "filieres": [
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jacques Prevert",
+   "pages": 1,
+   "prepas": [
+    10981
+   ],
+   "site": "https://lyc-prevert-boulogne.ac-versailles.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Boulogne-Billancourt"
+  },
+  "0920136Y": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Newton-Enrea",
+   "pages": 1,
+   "prepas": [
+    10991
+   ],
+   "site": "http://www.lycee-newton.fr",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Clichy"
+  },
+  "0920142E": {
+   "annee": null,
+   "document": "https://lyc-pasteur-neuilly.ac-versailles.fr/cpge/resultats-d-integration-des-cpge/article/resultats-2025",
+   "ecoles": 12,
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": "https://lyc-pasteur-neuilly.ac-versailles.fr/cpge/resultats-d-integration-des-cpge/article/resultats-2025",
+   "lycee": "Lycée Louis Pasteur",
+   "pages": 2,
+   "prepas": [
+    11004,
+    11005
+   ],
+   "site": "https://lyc-pasteur-neuilly.ac-versailles.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Neuilly-sur-Seine"
+  },
+  "0920145H": {
+   "filieres": [
+    "MPSI",
+    "PCSI",
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Lakanal",
+   "pages": 4,
+   "prepas": [
+    11012,
+    11013,
+    11014
+   ],
+   "site": "https://www.citescolairelakanal.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Sceaux"
+  },
+  "0920149M": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Michelet",
+   "pages": 1,
+   "prepas": [
+    11022,
+    11023
+   ],
+   "site": "http://www.cite-scolaire-michelet-vanves.ac-versailles.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Vanves"
+  },
+  "0920904H": {
+   "filieres": [
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Sainte Marie",
+   "pages": 10,
+   "prepas": [
+    11049,
+    11048
+   ],
+   "site": "http://www.saintemarieantony.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Antony"
+  },
+  "0920928J": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée La Salle Passy Buzenval",
+   "pages": 10,
+   "prepas": [
+    11052
+   ],
+   "site": "http://www.passy-buzenval.com",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Rueil-Malmaison"
+  },
+  "0930117X": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Le Corbusier",
+   "pages": 6,
+   "prepas": [
+    11161
+   ],
+   "site": "https://www.lgtlecorbusier.org/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Aubervilliers"
+  },
+  "0930121B": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean Jaurès",
+   "pages": 1,
+   "prepas": [
+    11177
+   ],
+   "site": "http://www.lyceejaures.levillage.org",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Montreuil"
+  },
+  "0930125F": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Paul Eluard",
+   "pages": 1,
+   "prepas": [
+    11189,
+    11190
+   ],
+   "site": "http://www.lyceepauleluard.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Denis"
+  },
+  "0930830X": {
+   "annee": 2021,
+   "document": "https://lyceeschweitzer.fr/wp-content/uploads/2021/12/CPGE-Concours-accessibles-2020-2021.pdf",
+   "ecoles": 26,
+   "filieres": [
+    "MPSI",
+    "PCSI",
+    "BCPST"
+   ],
+   "lien": "https://lyceeschweitzer.fr/prepa-litteraire-espace-etudiants/concours-universites-partenaires/",
+   "lycee": "Lycée Albert Schweitzer",
+   "pages": 5,
+   "prepas": [
+    11200,
+    11201,
+    11202
+   ],
+   "site": "http://lyceeschweitzer.fr/",
+   "statut": "trouve",
+   "verifie": "2026-10-26",
+   "ville": "Le Raincy"
+  },
+  "0940113M": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Langevin-Wallon",
+   "pages": 7,
+   "prepas": [
+    11369
+   ],
+   "site": "http://www.lycee-langevin-wallon.com",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Champigny-sur-Marne"
+  },
+  "0940120V": {
+   "filieres": [
+    "PCSI",
+    "BCPST",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Marcelin Berthelot",
+   "pages": 4,
+   "prepas": [
+    11392,
+    11393,
+    11391
+   ],
+   "site": "https://lycee-berthelot.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Maur-des-Fossés"
+  },
+  "0940121W": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée D'Arsonval",
+   "pages": 10,
+   "prepas": [
+    11398
+   ],
+   "site": "http://www.lyceedarsonval.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Maur-des-Fossés"
+  },
+  "0940580V": {
+   "annee": null,
+   "document": null,
+   "ecoles": null,
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée polyvalent de Cachan",
+   "pages": 3,
+   "prepas": [
+    11363
+   ],
+   "site": "http://lyceedecachan.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Cachan"
+  },
+  "0950641F": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Jean Jaures",
+   "pages": 1,
+   "prepas": [
+    11554
+   ],
+   "site": "https://lyc-jaures-argenteuil.ac-versailles.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Argenteuil"
+  },
+  "0950649P": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Camille Pissarro",
+   "pages": 10,
+   "prepas": [
+    11574
+   ],
+   "site": "https://lyc-pissarro-pontoise.ac-versailles.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Pontoise"
+  },
+  "0952196W": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "LYCEE POLYVALENT GUSTAVE MONOD",
+   "pages": 1,
+   "prepas": [
+    11561,
+    11562
+   ],
+   "site": "https://www.lyc-polyvalent-monod-enghien.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Enghien-les-Bains"
+  },
+  "6200002H": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Laetitia Bonaparte",
+   "pages": 1,
+   "prepas": [
+    11678
+   ],
+   "site": "http://llb.ac-corse.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Ajaccio"
+  },
+  "9710003B": {
+   "filieres": [
+    "BCPST",
+    "PCSI",
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Baimbridge",
+   "pages": 3,
+   "prepas": [
+    11735,
+    11734,
+    11733
+   ],
+   "site": "http://www.lgtbaimbridge.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Les Abymes"
+  },
+  "9711032V": {
+   "filieres": [
+    "MP2I",
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Charles Coeffin",
+   "pages": 10,
+   "prepas": [
+    31677,
+    11759
+   ],
+   "site": "https://charlescoeffin.lyc.ac-guadeloupe.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Baie-Mahault"
+  },
+  "9720003W": {
+   "filieres": [
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Bellevue",
+   "pages": 0,
+   "prepas": [
+    11783,
+    11784
+   ],
+   "site": "https://site.ac-martinique.fr/lyc-bellevue",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Fort-de-France"
+  },
+  "9720825P": {
+   "filieres": [
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Paulette NARDAL (Ex Centre Sud)",
+   "pages": 0,
+   "prepas": [
+    11832
+   ],
+   "site": "https://site.ac-martinique.fr/lyc-paulettenardal/",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Ducos"
+  },
+  "9730196A": {
+   "filieres": [
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Leon-Gontran Damas",
+   "pages": 10,
+   "prepas": [
+    11859
+   ],
+   "site": "http://lgt-leon-gontran-damas.eta.ac-guyane.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Remire-Montjoly"
+  },
+  "9740001H": {
+   "filieres": [
+    "MP2I",
+    "MPSI",
+    "PCSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Leconte de Lisle",
+   "pages": 1,
+   "prepas": [
+    36001,
+    11879,
+    11880
+   ],
+   "site": "https://etab.ac-reunion.fr/lyc-leconte-de-lisle",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Denis"
+  },
+  "9740002J": {
+   "filieres": [
+    "PCSI",
+    "BCPST"
+   ],
+   "lien": null,
+   "lycee": "Lycée Roland Garros",
+   "pages": 1,
+   "prepas": [
+    19594,
+    11885
+   ],
+   "site": "https://etab.ac-reunion.fr/lyc-roland-garros",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Le Tampon"
+  },
+  "9740054R": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Lislet Geoffroy",
+   "pages": 10,
+   "prepas": [
+    11901
+   ],
+   "site": "http://lycee-lgeoffroy.ac-reunion.fr",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Denis"
+  },
+  "9741255W": {
+   "filieres": [
+    "MPSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Catholique St Charles",
+   "pages": 1,
+   "prepas": [
+    13218
+   ],
+   "site": "http://lasalle.stcharles.fr",
+   "statut": "site-injoignable",
+   "verifie": "2026-10-26",
+   "ville": "Saint-Pierre"
+  },
+  "9760127J": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée Younoussa Bamana",
+   "pages": 10,
+   "prepas": [
+    29417
+   ],
+   "site": "https://lpo-bamana.ac-mayotte.fr/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Mamoudzou"
+  },
+  "9840482B": {
+   "filieres": [
+    "PTSI"
+   ],
+   "lien": null,
+   "lycee": "Lycée du Diadème - Te tara o mai'ao",
+   "pages": 10,
+   "prepas": [
+    18981
+   ],
+   "site": "http://lycee2pirae.com/",
+   "statut": "introuvable",
+   "verifie": "2026-10-26",
+   "ville": "Pirae"
+  }
+ },
+ "meta": {
+  "maj": "2026-10-26T23:39:35+00:00",
+  "source": "sites des lycees (annuaire de l'education)"
+ }
+}
