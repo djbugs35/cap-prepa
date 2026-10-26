@@ -127,6 +127,10 @@ dialog#fiche ul{margin:6px 0 0;padding-left:18px}
 .vue-donnees[hidden]{display:none}
 .compare small{display:block;color:var(--muted);font-weight:400;font-size:11.5px}
 .journal{background:var(--soft);border-radius:6px;padding:8px 10px;font-size:12px;max-height:200px;overflow:auto;white-space:pre-wrap;margin:0}
+.choix{display:flex;flex-direction:column;gap:4px}
+.choix button{font:inherit;font-size:13px;text-align:left;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);padding:5px 8px;cursor:pointer}
+.choix button:hover{border-color:var(--accent)}
+.choix small{color:var(--muted);margin-left:6px}
 .bk-row.sous{padding-left:16px}
 .bk-reseau{font-size:13px;margin-top:4px}
 .bk-int{display:block;margin-top:3px;font:inherit;font-size:12px}
@@ -201,10 +205,11 @@ details.method p{margin:8px 0}
     <form id="lycee-form" class="cityform" autocomplete="off">
       <label for="lycee" class="row">Lycée d'origine <span class="hint" style="display:inline">(facultatif)</span></label>
       <div class="cityrow">
-        <input type="text" id="lycee" list="lycee-list" placeholder="Ex. Chateaubriand Rennes" aria-describedby="lycee-msg">
+        <input type="text" id="lycee" placeholder="Ex. St Joseph Bruz" aria-describedby="lycee-msg" aria-controls="lycee-choix">
         <button type="submit" class="btn">Valider</button>
       </div>
-      <datalist id="lycee-list"></datalist>
+      <!-- Pas de datalist : le navigateur la refiltre sur le texte exact, « st joseph » y cachait « Saint-Joseph ». -->
+      <div class="choix" id="lycee-choix" role="group" aria-label="Lycées trouvés"></div>
       <p class="hint" id="lycee-msg" aria-live="polite">Sert de point de départ et indique l'académie de l'élève.</p>
     </form>
     <label class="row" for="radius">Rayon <output id="radius-o"></output>

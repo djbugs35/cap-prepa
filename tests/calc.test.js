@@ -205,3 +205,14 @@ test("chercherLycees : tous les mots, sans accents, dans le nom ou la commune",(
   assert.deepEqual(chercherLycees(L,"z"),[]); // un seul caractère : trop vague
   assert.equal(L[0].academie,"Rennes");assert.equal(L[0].pub,true);
 });
+
+test("chercherLycees : « lycée st joseph à bruz » trouve le lycée Saint-Joseph de Bruz",()=>{
+  // Bug signalé : « st » ne correspondait pas à « Saint », et la recherche ne trouvait aucun lycée.
+  const L=lyceesFromData({meta:{fields:["uai","nom","commune","dep","academie","lat","lon","public"]},rows:[
+    ["0352341E","Lycée Saint-Joseph","Bruz","035","Rennes",48.025,-1.7455,0],["0352686E","Lycée Anita Conti","Bruz","035","Rennes",48.03,-1.73,1],
+    ["9","Agricampus de Laval","Laval","053","Nantes",48.05,-0.8,1]]});
+  assert.deepEqual(chercherLycees(L,"lycée st joseph à bruz").map(l=>l.uai),["0352341E"]);
+  assert.deepEqual(chercherLycees(L,"Ste").map(l=>l.uai),[]); // « sainte » absent
+  assert.deepEqual(chercherLycees(L,"lycée agricampus laval").map(l=>l.uai),["9"]); // nom sans « lycée »
+  assert.deepEqual(chercherLycees(L,"lycée"),[]); // aucun mot discriminant
+});
