@@ -8,12 +8,14 @@ import {chargerLeaflet,creerCarteOsm} from "./carte-osm.js";
 import {htmlFiche,htmlComparaison} from "./fiche.js";
 import {htmlListe,htmlImpression} from "./liste.js";
 import {creerOngletDonnees} from "./donnees.js";
+import {CLASSEMENTS_INTEGRES,classementPerso,calculerCentiles,noteSynthese,detailClassements} from "./classements.js";
 
 const CFG=Object.assign({
   villeParDefaut:"Rennes",rayonParDefaut:150,
   filieresParDefaut:["MPSI","MP2I","PCSI","PTSI","ING"],
   fichierDonnees:"data/formations.json",fichierLycees:"data/lycees.json",geoApi:"https://geo.api.gouv.fr/communes",
   sceiStatistiques:"https://www.scei-concours.fr/stat{annee}/{filiere}.html",sceiAnnee:2025,
+  poidsClassements:{niveau:1,selectivite:1,attractivite:.5,emploi:1,salaire:1,perso:1},
   carteOsm:{tuiles:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",attribution:"&copy; contributeurs OpenStreetMap"},
   carteLeaflet:{
     js:"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",css:"https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
@@ -111,8 +113,22 @@ function shareUrl(){
 }
 function writeParams(){try{history.replaceState(null,"",shareUrl());}catch(e){}}
 
+// ---------- classements ----------
+// Classements importés : propres à ce navigateur (localStorage), jamais envoyés ni versionnés.
+const CLE_CLASSEMENTS="capprepa-classements";
+let persos=[],centiles=new Map();
+try{persos=JSON.parse(localStorage.getItem(CLE_CLASSEMENTS)||"[]");}catch(e){persos=[];}
+const tousClassements=()=>[...CLASSEMENTS_INTEGRES,...persos.map(classementPerso)];
+// Rangs centiles calculés sur toute la France : la note d'une formation ne dépend pas du rayon choisi.
+function recalculerClassements(){centiles=calculerCentiles(rows,tousClassements());}
+function enregistrerPersos(liste){
+  persos=liste;try{localStorage.setItem(CLE_CLASSEMENTS,JSON.stringify(persos));}catch(e){}
+  recalculerClassements();upd(true);
+}
+const avecClassements=r=>{const cl=centiles.get(r.id)||{};return Object.assign(r,{cl,synth:noteSynthese(cl,CFG.poidsClassements),clDetail:detailClassements(cl,tousClassements())});};
+
 function filtered(){
-  return filterRows(rows,st).map(r=>Object.assign(r,{ch:chanceOf(r)}));
+  return filterRows(rows,st).map(r=>avecClassements(Object.assign(r,{ch:chanceOf(r)})));
 }
 
 // ---------- rendu ----------
@@ -156,7 +172,7 @@ function tauxCell(r,prevY){
 }
 function renderList(all){
   const shown=all.slice(0,limit),prevY=(META.sessionsHist||[]).slice(-1)[0]||META.previousSession||"";
-  let h=`<div class="item head" aria-hidden="true"><span>Chances</span><span>Formation</span><span title="Taux d'accès estimé pour les élèves de terminale générale">Accès term. G</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
+  let h=`<div class="item head" aria-hidden="true"><span>Chances</span><span>Formation</span><span title="Note de synthèse /20 des classements où figure la formation">Classements</span><span title="Part des candidats de terminale générale qui ont reçu une proposition d'admission (estimation de Cap Prépa). En dessous : le taux officiel, tous candidats confondus.">Taux d'accès</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
   if(!all.length) h+=`<div class="empty" role="listitem">${st.home?"Aucune formation ne correspond. Élargissez le rayon ou ajoutez une filière.":"Indiquez une ville de résidence pour commencer."}</div>`;
   shown.forEach(r=>{
     const inB=st.basket.includes(r.id),inC=st.compare.includes(r.id);
@@ -165,6 +181,7 @@ function renderList(all){
       <span class="c-ch"><span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span>${r.ch.bas.k!==r.ch.haut.k?`<small title="Selon que les notes finales sont de ${fmt(R.ecartFourchette)} point plus basses ou plus hautes">${libelleFourchette(r.ch)}</small>`:""}</span>
       <span class="c-n name"><span class="badge${r.pub?"":" priv"}">${r.fil==="ING"?"École":r.fil}</span>${esc(r.etab)}<small>${esc(r.ville)} · ${Math.round(r.d)} km${r.det?" · "+esc(r.det):""}${r.pub?"":" · privé"}${intern}</small>
         <details class="why"><summary>Pourquoi ?</summary><ul>${r.ch.raisons.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></details></span>
+      <span class="c-s num">${r.synth?`<b class="synth">${fmt(r.synth.note)}</b><small>/20 · ${r.synth.n} classement${r.synth.n>1?"s":""}</small>`:`<small>non classée</small>`}</span>
       <span class="c-t num">${tauxCell(r,prevY)}</span>
       <span class="c-m">${mbar(r)}</span>
       <span class="c-d num">${r.aca} %<small>${r.capa} places · ${(r.voeux??0).toLocaleString("fr-FR")} vœux</small></span>
@@ -176,7 +193,7 @@ function renderList(all){
 }
 // Formations choisies par identifiant, avec distance et estimation (hors des filtres de la liste).
 const formationsParId=ids=>ids.map(id=>rows.find(r=>r.id===id)).filter(Boolean)
-  .map(r=>Object.assign({d:st.home?dist(st.home.lat,st.home.lon,r.lat,r.lon):0},r)).map(r=>Object.assign(r,{ch:chanceOf(r)}));
+  .map(r=>Object.assign({d:st.home?dist(st.home.lat,st.home.lon,r.lat,r.lon):0},r)).map(r=>avecClassements(Object.assign(r,{ch:chanceOf(r)})));
 function ouvrirDialogue(html){$("fiche-corps").innerHTML=html;const d=$("fiche");if(!d.open)d.showModal();}
 function renderCompareBar(){
   const n=st.compare.length,el=$("compare-bar");
@@ -281,7 +298,8 @@ function initOnglets(){
   let donnees=null;
   const activer=o=>{
     onglets.forEach(x=>{const oui=x===o;x.setAttribute("aria-selected",oui);x.tabIndex=oui?0:-1;$(x.getAttribute("aria-controls")).hidden=!oui;});
-    if(o.id==="tab-donnees"){donnees??=creerOngletDonnees($("vue-donnees"),META,rows.length);donnees.charger(false);}
+    if(o.id==="tab-donnees"){donnees??=creerOngletDonnees($("vue-donnees"),META,rows.length,{
+      lister:()=>persos,formations:()=>affichees,poids:CFG.poidsClassements,enregistrer:enregistrerPersos});donnees.charger(false);}
   };
   onglets.forEach((o,i)=>{
     o.onclick=()=>activer(o);
@@ -303,6 +321,7 @@ async function start(){
     if(!res.ok) throw new Error("HTTP "+res.status);
     const data=await res.json();META=data.meta||{};
     rows=rowsFromData(data).filter(r=>W[r.fil]);
+    recalculerClassements();
     if(META.session) $("h-session").textContent=META.session;
   }catch(e){
     $("list").innerHTML=`<div class="empty">Impossible de lire ${esc(CFG.fichierDonnees)} (${esc(e.message)}). Ouvrez l'outil via un petit serveur web, par exemple <code>python3 -m http.server</code>, pas en double-cliquant sur le fichier.</div>`;

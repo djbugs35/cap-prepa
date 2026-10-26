@@ -43,6 +43,13 @@ API_EDUCATION = "https://data.education.gouv.fr/api/explore/v2.1/catalog/dataset
 JEU_LYCEES = "fr-en-annuaire-education"
 FILTRE_LYCEES = 'type_etablissement="Lycée" and voie_generale="1" and etat="OUVERT"'
 CHAMPS_LYCEES = "identifiant_de_l_etablissement,nom_etablissement,nom_commune,code_departement,libelle_academie,latitude,longitude,statut_public_prive"
+# InserSup (Licence Ouverte) : insertion des diplomes ingenieurs, une ligne « tout diplome » par etablissement.
+JEU_INSERSUP = "fr-esr-insersup"
+FILTRE_INSERSUP = (
+    'type_diplome="Formation ingénieur" and diplome="all" and genre="ensemble" and nationalite="ensemble" '
+    'and regime_inscription="ensemble" and obtention_diplome="diplômé"'
+)
+CHAMPS_INSERSUP = "etablissement,uo_lib,promo,tx_sortants_en_emploi_sal_fr_18,salaire_q2_18"
 FIELDS_LYCEES = ["uai", "nom", "commune", "dep", "academie", "lat", "lon", "public"]
 HTTP_ABSENT = 404
 
@@ -66,6 +73,7 @@ FIELDS = [
     "id", "etab", "ville", "dep", "lat", "lon", "filiere", "detail", "public", "capa", "voeux",
     "taux", "tauxGen", "rangDernier", "classes", "pTBF", "pTB", "pB", "pAB", "pSans", "pBours", "pF",
     "internat", "pAcaOrig", "admis", "tauxHist", "tauxGenHist", "lien", "academie",
+    "insEmploi", "insSalaire", "insPromo",
 ]  # fmt: skip
 CHAMPS_OBLIGATOIRES = ["id", "etab", "lat", "lon", "filiere", "taux", "admis"]
 INTERNAT_SANS, INTERNAT_MIXTE, INTERNAT_FILLES = 0, 1, 2
@@ -168,10 +176,12 @@ def code_internat(r: dict, internats: dict) -> int | None:
     return INTERNAT_MIXTE if (r.get("nb_cla_pp_internat") or 0) > 0 else INTERNAT_SANS
 
 
-def construire_ligne(r: dict, historique: list[dict], internats: dict) -> list:
+def construire_ligne(r: dict, historique: list[dict], internats: dict, insertion: dict | None = None) -> list:
     """Rendre la ligne compacte d'une formation, dans l'ordre de FIELDS."""
     cle = str(r.get("cod_aff_form"))
     passees = [h.get(cle) for h in historique]
+    # Ecoles seulement, et par UAI strict : un campus rattache ailleurs reste sans chiffre plutot qu'avec celui d'un autre.
+    ins = (insertion or {}).get(r.get("cod_uai"), {}) if r.get("fili") != "CPGE" else {}
     valeurs = {
         "id": int(r["cod_aff_form"]), "etab": clean(r.get("g_ea_lib_vx")), "ville": clean(r.get("ville_etab")),
         "dep": r.get("dep"), "lat": round(r["g_olocalisation_des_formations"]["lat"], 3),
@@ -185,6 +195,7 @@ def construire_ligne(r: dict, historique: list[dict], internats: dict) -> list:
         "tauxHist": [p and taux_officiel(p) for p in passees],
         "tauxGenHist": [p and taux_acces_generaux(p) for p in passees],
         "lien": r.get("lien_form_psup"), "academie": r.get("acad_mies"),
+        "insEmploi": ins.get("emploi"), "insSalaire": ins.get("salaire"), "insPromo": ins.get("promo"),
     }  # fmt: skip
     return [valeurs[f] for f in FIELDS]
 
@@ -202,13 +213,14 @@ def est_retenue(r: dict, metropole: bool, centre: tuple | None, rayon: float | N
     return r.get("fili") == "CPGE" or not EXCLURE.search(detail_formation(r))
 
 
-def build_rows(cur, historique=(), internats=None, metropole=True, centre=None, rayon=None):
+def build_rows(cur, historique=(), internats=None, metropole=True, centre=None, rayon=None, *, insertion=None):  # noqa: PLR0913 (sources et filtres distincts, tous facultatifs)
     """Rendre les lignes triees par identifiant, une par formation retenue.
 
     Args:
         cur: lignes brutes de la session courante.
         historique: pour chaque session passee, un dict cod_aff_form -> ligne brute.
         internats: dict cod_aff_form -> libelle d'internat de la cartographie.
+        insertion: dict UAI -> indicateurs InserSup (voir indicateurs_insertion).
         metropole: exclure les DROM et l'etranger.
         centre: (lat, lon) du centre de la zone a garder, avec rayon.
         rayon: rayon en km autour de centre.
@@ -222,9 +234,40 @@ def build_rows(cur, historique=(), internats=None, metropole=True, centre=None, 
         if key in seen:
             continue
         seen.add(key)
-        rows.append(construire_ligne(r, list(historique), internats or {}))
+        rows.append(construire_ligne(r, list(historique), internats or {}, insertion))
     rows.sort(key=lambda x: x[0])
     return rows
+
+
+def _nombre(x) -> float | None:
+    """Rendre x en nombre ; None pour « nd » (non diffuse, effectif trop faible) ou une valeur absente."""
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return None
+
+
+def _plus_recent(lignes: list, champ: str) -> dict:
+    """Rendre UAI -> (promo, valeur) de la promotion la plus recente ou champ est diffuse."""
+    retenues = {}
+    for x in lignes:
+        valeur, promo = _nombre(x.get(champ)), max(x.get("promo") or [""])
+        if valeur is not None and promo > retenues.get(x["etablissement"], ("", None))[0]:
+            retenues[x["etablissement"]] = (promo, round(valeur))
+    return retenues
+
+
+def indicateurs_insertion(lignes: list) -> dict:
+    """Rendre UAI -> {emploi, salaire, promo}, chaque indicateur pris dans la derniere promotion qui le diffuse.
+
+    emploi : % de diplomes en emploi salarie en France a 18 mois ; salaire : salaire net mensuel median a 18 mois,
+    souvent « nd » pour la derniere promotion, d'ou une recherche separee ; promo : celle du taux d'emploi.
+    """
+    emplois, salaires = _plus_recent(lignes, "tx_sortants_en_emploi_sal_fr_18"), _plus_recent(lignes, "salaire_q2_18")
+    return {
+        uai: {"emploi": emploi, "salaire": salaires.get(uai, (None, None))[1], "promo": promo}
+        for uai, (promo, emploi) in emplois.items()
+    }
 
 
 def statistiques_doublettes(lignes: list) -> dict:
@@ -291,6 +334,8 @@ def definir_sources(session: int | None) -> list[dict]:
                     "requetes": [(filtre_internats, "gta,int")]})  # fmt: skip
     sources.append({"cle": "lycees", "jeu": JEU_LYCEES, "api": API_EDUCATION, "role": "Lycées d'origine (annuaire de l'éducation)",
                     "requetes": [(FILTRE_LYCEES, CHAMPS_LYCEES)]})  # fmt: skip
+    sources.append({"cle": "insersup", "jeu": JEU_INSERSUP, "role": "Insertion des diplômés ingénieurs (InserSup)",
+                    "requetes": [(FILTRE_INSERSUP, CHAMPS_INSERSUP)]})  # fmt: skip
     sources.append({"cle": "doublettes", "jeu": JEU_DOUBLETTES, "role": f"Propositions par doublette de spécialités, {session}",
                     "requetes": [(f'annee_du_bac="{session}" and niveau_d_agregation="2"', None)]})  # fmt: skip
     return sources
@@ -412,7 +457,8 @@ def construire_formations(dossier: Path, centre=None, rayon=None, metropole=True
         if x.get("int")
     }
     doublettes = statistiques_doublettes((lire_source(dossier, sources["doublettes"]) or {}).get("lignes", []))
-    rows = build_rows(courante["lignes"], historique, internats, metropole, centre, rayon)
+    insertion = indicateurs_insertion((lire_source(dossier, sources["insersup"]) or {}).get("lignes", []))
+    rows = build_rows(courante["lignes"], historique, internats, metropole, centre, rayon, insertion=insertion)
     zone = bool(centre and rayon)
     valider(rows, MIN_LIGNES_ZONE if zone else MIN_LIGNES_NATIONAL)
     meta = {
