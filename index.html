@@ -70,7 +70,9 @@ main{display:flex;flex-direction:column;gap:18px;min-width:0}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
 .mapbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;overflow:hidden}
-.mapbox svg{width:100%;height:auto;display:block}
+.mapbox>svg{width:100%;height:auto;display:block}
+#map-osm{height:400px;border-radius:6px}
+#map-osm[hidden],.mapbox>svg[hidden]{display:none}
 .mapbox text{font-family:var(--font-body)}
 .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
 .toolbar .grp{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
@@ -197,7 +199,7 @@ details.method p{margin:8px 0}
     <span class="big" id="count"></span>
     <span class="legend" id="legend"></span>
   </div>
-  <div class="mapbox"><svg id="map" viewBox="0 0 640 400" role="img" aria-label="Carte schématique des formations autour du point de départ"></svg></div>
+  <div class="mapbox"><div id="map-osm" hidden aria-label="Carte OpenStreetMap des formations autour du point de départ"></div><svg id="map" viewBox="0 0 640 400" role="img" aria-label="Carte schématique des formations autour du point de départ"></svg></div>
   <div class="toolbar">
     <div class="grp"><label for="sort">Trier par</label>
       <select id="sort">

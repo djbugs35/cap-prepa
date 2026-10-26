@@ -4,11 +4,16 @@
 import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,estimation,libelleFourchette,reglagesDepuis,avertissementMathsExpertes,filterRows,sortRows,vowKey,balanceAdvice,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
 import {geocode,suggestions} from "./geo.js";
 import {renderSvgMap} from "./carte.js";
+import {chargerLeaflet,creerCarteOsm} from "./carte-osm.js";
 
 const CFG=Object.assign({
   villeParDefaut:"Rennes",rayonParDefaut:150,
   filieresParDefaut:["MPSI","MP2I","PCSI","PTSI","ING"],
-  fichierDonnees:"data/formations.json",geoApi:"https://geo.api.gouv.fr/communes"
+  fichierDonnees:"data/formations.json",geoApi:"https://geo.api.gouv.fr/communes",
+  carteOsm:{tuiles:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",attribution:"&copy; contributeurs OpenStreetMap"},
+  carteLeaflet:{
+    js:"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",css:"https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+    integriteJs:"sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=",integriteCss:"sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="}
 },window.CAP_PREPA_CONFIG||{});
 const R=reglagesDepuis(CFG);
 
@@ -29,7 +34,7 @@ st.fils=st.fils.filter(f=>W[f]); // filières retirées depuis la dernière visi
 function save(){try{localStorage.setItem("capprepa",JSON.stringify(st));}catch(e){}}
 
 let rows=[],META={};
-let limit=60,flashId=null;
+let limit=60,flashId=null,osm=null,affichees=[];
 const chanceOf=r=>estimation(r,st,R,META.sessionsHist||[]);
 
 // ---------- ville ----------
@@ -139,12 +144,32 @@ function renderBasket(){
    items.map(r=>`<div class="bk-row"><i class="dot" style="background:var(--c${r.ch.cat.k})" title="${r.ch.cat.l}"></i><span>${r.fil==="ING"?"":`<b>${r.fil}</b> `}${esc(r.etab)} <span class="hint" style="display:inline">${Math.round(r.d)} km</span></span><button type="button" class="x" data-rm="${r.id}" aria-label="Retirer ${esc(r.etab)}">×</button></div>`).join("")+
    `<p class="hint">Un concours commun (Geipi Polytech, Puissance Alpha, Avenir…) compte pour un seul vœu, ses écoles sont des sous-vœux. Règles à vérifier sur Parcoursup.</p>`;
 }
+// OpenStreetMap si Leaflet est chargé et les tuiles arrivent, carte schématique sinon.
+function dessinerCarte(){
+  if(!st.home){$("map").innerHTML="";return;}
+  if(osm) osm.afficher(st.home,st.radius,affichees,st.basket);
+  else renderSvgMap($("map"),st.home,st.radius,affichees,st.basket);
+}
+function basculerCarte(L){
+  // toggleAttribute : un élément SVG n'a pas de propriété hidden, seulement l'attribut.
+  const montrerOsm=oui=>{$("map-osm").hidden=!oui;$("map").toggleAttribute("hidden",oui);};
+  const surEchec=()=>{osm=null;montrerOsm(false);dessinerCarte();};
+  montrerOsm(true);
+  osm=creerCarteOsm(L,$("map-osm"),CFG.carteOsm,selectionner,surEchec);
+  dessinerCarte();
+}
+// Met en avant la formation choisie sur la carte et fait défiler la liste jusqu'à elle.
+function selectionner(id){
+  flashId=id;
+  const all=sortRows(filtered(),st.sort);const idx=all.findIndex(r=>r.id===id);if(idx>=limit)limit=idx+10;renderList(all);
+  const el=document.getElementById("it-"+id);if(el)el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});
+}
 function upd(keepLimit){
   if(!keepLimit){limit=60;flashId=null;}
   save();writeParams();renderScores();renderCoverage();
   const all=sortRows(filtered(),st.sort);
   $("count").textContent=all.length+" formation"+(all.length>1?"s":"");
-  if(st.home) renderSvgMap($("map"),st.home,st.radius,all,st.basket); else $("map").innerHTML="";
+  affichees=all;dessinerCarte();
   renderList(all);renderBasket();
 }
 
@@ -171,9 +196,7 @@ function initControls(){
   $("sort").value=st.sort;$("sort").onchange=e=>{st.sort=e.target.value;upd();};
   $("q").value=st.q;$("q").oninput=e=>{st.q=e.target.value;upd();};
   $("legend").innerHTML=[...CH,NON_ESTIMABLE].map(c=>`<span><i class="dot" style="background:var(--c${c.k})"></i>${c.l}</span>`).join("");
-  $("map").addEventListener("click",e=>{const c=e.target.closest("circle[data-id]");if(!c)return;const id=+c.dataset.id;flashId=id;
-    const all=sortRows(filtered(),st.sort);const idx=all.findIndex(r=>r.id===id);if(idx>=limit)limit=idx+10;renderList(all);
-    const el=document.getElementById("it-"+id);if(el)el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});});
+  $("map").addEventListener("click",e=>{const c=e.target.closest("circle[data-id]");if(c)selectionner(+c.dataset.id);});
   $("list").addEventListener("click",e=>{const b=e.target.closest("[data-add]");if(!b)return;const id=+b.dataset.add;
     st.basket=st.basket.includes(id)?st.basket.filter(x=>x!==id):[...st.basket,id];upd(true);});
   $("basket").addEventListener("click",e=>{const b=e.target.closest("[data-rm]");if(!b)return;st.basket=st.basket.filter(x=>x!==+b.dataset.rm);upd(true);});
@@ -199,5 +222,7 @@ async function start(){
   else if(p.ville) await setCity(p.ville,true);
   else if(st.home){$("city").value=st.home.name;upd();}
   else await setCity(CFG.villeParDefaut,true);
+  const L=await chargerLeaflet(CFG.carteLeaflet);
+  if(L) basculerCarte(L);
 }
 start();
