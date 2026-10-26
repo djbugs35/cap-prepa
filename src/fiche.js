@@ -33,7 +33,18 @@ function apresPrepa(r,scei){
   if(!liens.length) return "";
   return `<section><h3>Après la prépa</h3><p class="hint">En fin de 2e année, les concours des écoles d'ingénieurs. Inscrits, admissibles, intégrés et places par école, session ${scei.annee} (SCEI) :</p>
     <p>${liens.map(l=>`<a class="btn ghost" href="${esc(l.url)}" target="_blank" rel="noopener">${l.filiere}</a>`).join(" ")}</p>
-    <p class="hint">Le SCEI ne publie plus de résultats par lycée : ces chiffres valent pour toute la filière.</p></section>`;
+    <p class="hint">Le SCEI ne publie plus de résultats par lycée : ces chiffres valent pour toute la filière.</p>
+    ${debouchesDuLycee(r,scei)}</section>`;
+}
+// Écoles intégrées saisies pour cette prépa, et où chercher ces résultats (palmarès, site du lycée).
+function debouchesDuLycee(r,scei){
+  const requete=encodeURIComponent(`résultats concours ${r.fil} ${r.etab} ${r.ville||""}`);
+  const liens=[scei.palmares&&`<a class="btn ghost" href="${esc(scei.palmares)}" target="_blank" rel="noopener">Palmarès des prépas (L'Étudiant)</a>`,
+    scei.recherche&&`<a class="btn ghost" href="${esc(scei.recherche.replace("{q}",requete))}" target="_blank" rel="noopener">Résultats publiés par le lycée</a>`].filter(Boolean).join(" ");
+  const saisie=r.deb?`<p><b>${r.deb.total} intégrés</b> dans ${r.deb.ecoles} école${r.deb.ecoles>1?"s":""} (vos saisies) :</p>
+    <ol>${r.deb.top.map(e=>`<li>${esc(e.ecole)} — ${e.integres}</li>`).join("")}</ol>`
+    :`<p class="hint">Aucun débouché saisi pour cette prépa : importez-les depuis l'onglet « Données ».</p>`;
+  return `<h3>Débouchés de cette prépa</h3>${saisie}<p>${liens}</p>`;
 }
 
 /* Rend le HTML de la fiche. annees : meta.sessionsHist ; session : meta.session ; scei : {modele, annee} (config.js). */

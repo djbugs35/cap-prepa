@@ -9,13 +9,15 @@ import {htmlFiche,htmlComparaison} from "./fiche.js";
 import {htmlListe,htmlImpression} from "./liste.js";
 import {creerOngletDonnees} from "./donnees.js";
 import {CLASSEMENTS_INTEGRES,classementPerso,calculerCentiles,noteSynthese,detailClassements} from "./classements.js";
+import {resumeDebouches,classementDebouches} from "./debouches.js";
 
 const CFG=Object.assign({
   villeParDefaut:"Rennes",rayonParDefaut:150,
   filieresParDefaut:["MPSI","MP2I","PCSI","PTSI","ING"],
   fichierDonnees:"data/formations.json",fichierLycees:"data/lycees.json",geoApi:"https://geo.api.gouv.fr/communes",
   sceiStatistiques:"https://www.scei-concours.fr/stat{annee}/{filiere}.html",sceiAnnee:2025,
-  poidsClassements:{niveau:1,selectivite:1,attractivite:.5,emploi:1,salaire:1,perso:1},
+  poidsClassements:{niveau:1,selectivite:1,attractivite:.5,emploi:1,salaire:1,debouches:1,perso:1},
+  lienPalmaresPrepas:"https://www.letudiant.fr/palmares/classement-prepa.html",rechercheResultats:"https://duckduckgo.com/?q={q}",
   carteOsm:{tuiles:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",attribution:"&copy; contributeurs OpenStreetMap"},
   carteLeaflet:{
     js:"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",css:"https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
@@ -116,16 +118,36 @@ function writeParams(){try{history.replaceState(null,"",shareUrl());}catch(e){}}
 // ---------- classements ----------
 // Classements importés : propres à ce navigateur (localStorage), jamais envoyés ni versionnés.
 const CLE_CLASSEMENTS="capprepa-classements";
-let persos=[],centiles=new Map();
+// Débouchés saisis : {id prépa: [{ecole, integres}]}, eux aussi propres à ce navigateur.
+const CLE_DEBOUCHES="capprepa-debouches";
+let persos=[],debouches={},centiles=new Map();
 try{persos=JSON.parse(localStorage.getItem(CLE_CLASSEMENTS)||"[]");}catch(e){persos=[];}
-const tousClassements=()=>[...CLASSEMENTS_INTEGRES,...persos.map(classementPerso)];
+try{debouches=JSON.parse(localStorage.getItem(CLE_DEBOUCHES)||"{}");}catch(e){debouches={};}
+const tousClassements=()=>[...CLASSEMENTS_INTEGRES,classementDebouches(debouches),...persos.map(classementPerso)];
 // Rangs centiles calculés sur toute la France : la note d'une formation ne dépend pas du rayon choisi.
 function recalculerClassements(){centiles=calculerCentiles(rows,tousClassements());}
+function enregistrerDebouches(d){
+  debouches=d;try{localStorage.setItem(CLE_DEBOUCHES,JSON.stringify(debouches));}catch(e){}
+  recalculerClassements();upd(true);
+}
 function enregistrerPersos(liste){
   persos=liste;try{localStorage.setItem(CLE_CLASSEMENTS,JSON.stringify(persos));}catch(e){}
   recalculerClassements();upd(true);
 }
-const avecClassements=r=>{const cl=centiles.get(r.id)||{};return Object.assign(r,{cl,synth:noteSynthese(cl,CFG.poidsClassements),clDetail:detailClassements(cl,tousClassements(),CFG.poidsClassements)});};
+const avecClassements=r=>{const cl=centiles.get(r.id)||{};return Object.assign(r,{cl,synth:noteSynthese(cl,CFG.poidsClassements),clDetail:detailClassements(cl,tousClassements(),CFG.poidsClassements),
+  deb:r.fil==="ING"?null:resumeDebouches(debouches[r.id])});};
+// Infobulle des débouchés : les 10 écoles qui ont accueilli le plus d'élèves de la prépa, d'après la saisie.
+function infobulleDebouches(r){
+  const d=r.deb;
+  return `<span class="tip" role="tooltip" id="tipd-${r.id}"><b>Écoles les plus intégrées</b><ol>${d.top.map(e=>`<li><span class="tip-l"><span>${esc(e.ecole)}</span><b>${e.integres}</b></span></li>`).join("")}</ol>
+    <span class="tip-l tip-total"><span>Total saisi</span><b>${d.total} intégrés · ${d.ecoles} école${d.ecoles>1?"s":""}</b></span>
+    <small>D'après vos saisies (onglet « Données »). Liens vers les sources dans la fiche.</small></span>`;
+}
+function celluleDebouches(r){
+  if(r.fil==="ING") return `<small>—</small>`;
+  if(!r.deb) return `<small>non saisis</small>`;
+  return `<button type="button" class="tip-btn" aria-describedby="tipd-${r.id}"><b class="synth">${r.deb.total}</b><small>intégrés · ${r.deb.ecoles} école${r.deb.ecoles>1?"s":""} ⓘ</small></button>${infobulleDebouches(r)}`;
+}
 // Infobulle de la note de synthèse : note /20 de chaque classement, valeur, rang et poids, puis la moyenne.
 function infobulleClassements(r){
   const lignes=r.clDetail.map(c=>`<span class="tip-l"><span>${esc(c.nom)}</span><b>${c.note==null?"—":fmt(c.note)+"/20"}</b></span>
@@ -179,7 +201,7 @@ function tauxCell(r,prevY){
 }
 function renderList(all){
   const shown=all.slice(0,limit),prevY=(META.sessionsHist||[]).slice(-1)[0]||META.previousSession||"";
-  let h=`<div class="item head" aria-hidden="true"><span>Chances</span><span>Formation</span><span title="Note de synthèse /20 des classements où figure la formation">Classements</span><span title="Part des candidats de terminale générale qui ont reçu une proposition d'admission (estimation de Cap Prépa). En dessous : le taux officiel, tous candidats confondus.">Taux d'accès</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
+  let h=`<div class="item head" aria-hidden="true"><span>Chances</span><span>Formation</span><span title="Note de synthèse /20 des classements où figure la formation">Classements</span><span title="Écoles intégrées après la prépa, d'après vos saisies (onglet « Données »)">Débouchés</span><span title="Part des candidats de terminale générale qui ont reçu une proposition d'admission (estimation de Cap Prépa). En dessous : le taux officiel, tous candidats confondus.">Taux d'accès</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
   if(!all.length) h+=`<div class="empty" role="listitem">${st.home?"Aucune formation ne correspond. Élargissez le rayon ou ajoutez une filière.":"Indiquez une ville de résidence pour commencer."}</div>`;
   shown.forEach(r=>{
     const inB=st.basket.includes(r.id),inC=st.compare.includes(r.id);
@@ -188,10 +210,11 @@ function renderList(all){
       <span class="c-ch"><span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span>${r.ch.bas.k!==r.ch.haut.k?`<small title="Selon que les notes finales sont de ${fmt(R.ecartFourchette)} point plus basses ou plus hautes">${libelleFourchette(r.ch)}</small>`:""}</span>
       <span class="c-n name"><span class="badge${r.pub?"":" priv"}">${r.fil==="ING"?"École":r.fil}</span>${esc(r.etab)}<small>${esc(r.ville)} · ${Math.round(r.d)} km${r.det?" · "+esc(r.det):""}${r.pub?"":" · privé"}${intern}</small>
         <details class="why"><summary>Pourquoi ?</summary><ul>${r.ch.raisons.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></details></span>
-      <span class="c-s num">${r.synth?`<button type="button" class="synth-btn" aria-describedby="tip-${r.id}"><b class="synth">${fmt(r.synth.note)}/20</b><small>sur ${r.synth.n} classement${r.synth.n>1?"s":""} ⓘ</small></button>${infobulleClassements(r)}`:`<small>non classée</small>`}</span>
-      <span class="c-t num">${tauxCell(r,prevY)}</span>
-      <span class="c-m">${mbar(r)}</span>
-      <span class="c-d num">${r.aca} %<small>${r.capa} places · ${(r.voeux??0).toLocaleString("fr-FR")} vœux</small></span>
+      <span class="c-s num" data-l="Classements">${r.synth?`<button type="button" class="tip-btn" aria-describedby="tip-${r.id}"><b class="synth">${fmt(r.synth.note)}/20</b><small>sur ${r.synth.n} classement${r.synth.n>1?"s":""} ⓘ</small></button>${infobulleClassements(r)}`:`<small>non classée</small>`}</span>
+      <span class="c-b num" data-l="Débouchés">${celluleDebouches(r)}</span>
+      <span class="c-t num" data-l="Taux d'accès">${tauxCell(r,prevY)}</span>
+      <span class="c-m" data-l="Profil des admis">${mbar(r)}</span>
+      <span class="c-d num" data-l="Académie · places">${r.aca} %<small>${r.capa} places · ${(r.voeux??0).toLocaleString("fr-FR")} vœux</small></span>
       <span class="c-a acts"><button type="button" class="btn${inB?" on":""}" data-add="${r.id}">${inB?"Dans la liste":"Ajouter"}</button><button type="button" class="btn ghost" data-fiche="${r.id}">Fiche</button><button type="button" class="btn ghost${inC?" on":""}" data-cmp="${r.id}" aria-pressed="${inC}">Comparer</button></span>
     </div>`;});
   if(all.length>limit) h+=`<div class="more" role="listitem"><button type="button" class="btn" id="more">Afficher ${Math.min(60,all.length-limit)} de plus (${all.length-limit} restantes)</button></div>`;
@@ -277,10 +300,10 @@ function initControls(){
   $("legend").innerHTML=[...CH,NON_ESTIMABLE].map(c=>`<span><i class="dot" style="background:var(--c${c.k})"></i>${c.l}</span>`).join("");
   $("map").addEventListener("click",e=>{const c=e.target.closest("circle[data-id]");if(c)selectionner(+c.dataset.id);});
   // Échap referme l'infobulle des classements (ouverte au clavier) sans quitter la ligne.
-  $("list").addEventListener("keydown",e=>{if(e.key==="Escape"&&e.target.classList.contains("synth-btn"))e.target.blur();});
+  $("list").addEventListener("keydown",e=>{if(e.key==="Escape"&&e.target.classList.contains("tip-btn"))e.target.blur();});
   $("list").addEventListener("click",e=>{
     const f=e.target.closest("[data-fiche]");
-    if(f){ouvrirDialogue(htmlFiche(formationsParId([+f.dataset.fiche])[0],META.sessionsHist||[],META.session,{modele:CFG.sceiStatistiques,annee:CFG.sceiAnnee}));return;}
+    if(f){ouvrirDialogue(htmlFiche(formationsParId([+f.dataset.fiche])[0],META.sessionsHist||[],META.session,{modele:CFG.sceiStatistiques,annee:CFG.sceiAnnee,palmares:CFG.lienPalmaresPrepas,recherche:CFG.rechercheResultats}));return;}
     const c=e.target.closest("[data-cmp]");
     if(c){st.compare=basculerComparaison(st.compare,+c.dataset.cmp);garderFocus(()=>upd(true));return;}
     const b=e.target.closest("[data-add]");if(!b)return;const id=+b.dataset.add;
@@ -308,7 +331,8 @@ function initOnglets(){
   const activer=o=>{
     onglets.forEach(x=>{const oui=x===o;x.setAttribute("aria-selected",oui);x.tabIndex=oui?0:-1;$(x.getAttribute("aria-controls")).hidden=!oui;});
     if(o.id==="tab-donnees"){donnees??=creerOngletDonnees($("vue-donnees"),META,rows.length,{
-      lister:()=>persos,formations:()=>affichees,poids:CFG.poidsClassements,enregistrer:enregistrerPersos});donnees.charger(false);}
+      lister:()=>persos,formations:()=>affichees,poids:CFG.poidsClassements,enregistrer:enregistrerPersos,
+      debouches:{lire:()=>debouches,enregistrer:enregistrerDebouches}});donnees.charger(false);}
   };
   onglets.forEach((o,i)=>{
     o.onclick=()=>activer(o);
