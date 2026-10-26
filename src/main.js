@@ -233,7 +233,13 @@ function initControls(){
 }
 
 // ---------- démarrage ----------
+// Garde l'outil consultable hors ligne (sw.js). Seulement en HTTP(S) : en file:// le navigateur le refuse.
+function enregistrerHorsLigne(){
+  if(!("serviceWorker" in navigator)||!/^https?:$/.test(location.protocol)) return;
+  navigator.serviceWorker.register("sw.js").catch(e=>console.warn("Mode hors ligne indisponible :",e.message));
+}
 async function start(){
+  enregistrerHorsLigne();
   try{
     const res=await fetch(CFG.fichierDonnees);
     if(!res.ok) throw new Error("HTTP "+res.status);
