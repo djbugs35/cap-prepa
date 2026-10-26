@@ -55,26 +55,33 @@ function cellules(ligne,sep){
     else if(c==='"')guillemets=true;else if(c===sep){out.push(cur.trim());cur="";}else cur+=c;}
   out.push(cur.trim());return out;
 }
-const COLONNES_INFO=["id","etablissement","ville","filiere"];
+/* Rend {entete, lignes} d'un CSV (tableaux de cellules, lignes vides ignorées). Séparateur ; , ou tabulation
+   détecté sur l'en-tête ; BOM d'Excel retiré. Partagé avec debouches.js. */
+export function lireCsv(texte){
+  const brutes=String(texte).replace(/^\uFEFF/,"").split(/\r?\n/).filter(l=>l.trim());
+  if(!brutes.length) return {entete:[],lignes:[]};
+  const sep=[";","\t",","].find(s=>brutes[0].includes(s))||";";
+  return {entete:cellules(brutes[0],sep),lignes:brutes.slice(1).map(l=>cellules(l,sep))};
+}
+export const COLONNES_INFO=["id","etablissement","ville","filiere"];
 /* Rend [{nom, rangs}] d'un CSV : colonne « id » (identifiant Parcoursup, comme dans le modèle), puis une colonne
    par classement, rangs entiers (« 12 », « 12e » acceptés). Séparateur ; , ou tabulation détecté sur l'en-tête.
    Raises: Error si la colonne id manque. */
 export function lireCsvClassements(texte){
-  const lignes=String(texte).replace(/^﻿/,"").split(/\r?\n/).filter(l=>l.trim());
-  if(!lignes.length) return [];
-  const sep=[";","\t",","].find(s=>lignes[0].includes(s))||";",entete=cellules(lignes[0],sep);
+  const {entete,lignes}=lireCsv(texte);
+  if(!entete.length) return [];
   const iId=entete.findIndex(h=>h.toLowerCase()==="id");
   if(iId<0) throw new Error("colonne « id » absente : partez du modèle téléchargé");
   const colonnes=entete.map((h,i)=>[h,i]).filter(([h])=>h&&!COLONNES_INFO.includes(h.toLowerCase()));
   const classements=colonnes.map(([nom])=>({nom,rangs:{}}));
-  for(const l of lignes.slice(1)){
-    const c=cellules(l,sep),id=parseInt(c[iId],10);
+  for(const c of lignes){
+    const id=parseInt(c[iId],10);
     if(!Number.isInteger(id)) continue;
     colonnes.forEach(([,i],k)=>{const rang=parseInt(c[i],10);if(rang>0)classements[k].rangs[id]=rang;});
   }
   return classements.filter(c=>Object.keys(c.rangs).length);
 }
-const champCsv=v=>/[";\n]/.test(String(v??""))?`"${String(v).replace(/"/g,'""')}"`:String(v??"");
+export const champCsv=v=>/[";\n]/.test(String(v??""))?`"${String(v).replace(/"/g,'""')}"`:String(v??"");
 // Rend le modèle CSV à remplir : une ligne par formation, une colonne vide par classement à saisir.
 export function csvModele(rows,nomsClassements=["Mon classement"]){
   const entete=[...COLONNES_INFO,...nomsClassements].join(";");

@@ -1,6 +1,7 @@
 /* Onglet « Données » : sources open data téléchargées en local, leur version et leur mise à jour.
    La gestion passe par le serveur local (scripts/serveur.py) ; servi autrement, l'onglet n'affiche que le fichier en cours. */
 import {lireCsvClassements,csvModele} from "./classements.js";
+import {lireCsvDebouches,csvModeleDebouches,fusionnerDebouches} from "./debouches.js";
 
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const date=iso=>iso?new Date(iso).toLocaleString("fr-FR",{dateStyle:"medium",timeStyle:"short"}):"—";
@@ -59,6 +60,17 @@ export function htmlClassementsPerso(persos,poids){
     <p class="hint">Poids dans la note de synthèse (modifiables dans <code>config.js</code>) : ${Object.entries(poids).map(([k,v])=>esc(k)+" "+String(v).replace(".",",")).join(" · ")}.</p>`;
 }
 
+// Rend le HTML du panneau des débouchés saisis. debouches : {id prépa: [{ecole, integres}]}.
+export function htmlDebouches(debouches){
+  const prepas=Object.keys(debouches).length,ecoles=Object.values(debouches).reduce((n,l)=>n+l.length,0);
+  return `<p class="hint">Aucune source ouverte ne publie les écoles intégrées par chaque prépa. Saisissez-les pour les prépas qui vous intéressent, d'après le site du lycée ou le palmarès de L'Étudiant (liens dans chaque fiche).</p>
+    <ol class="hint"><li>Téléchargez le modèle : une ligne par prépa affichée.</li><li>Pour chaque école intégrée, dupliquez la ligne de la prépa et remplissez « ecole » et « integres » (nombre d'élèves). Lignes vides ignorées.</li><li>Importez le CSV : une prépa importée remplace sa saisie précédente.</li></ol>
+    <div class="compare-bar"><button type="button" class="btn ghost" id="deb-modele">Télécharger le modèle (CSV)</button>
+      <label class="btn">Importer un CSV<input type="file" id="deb-fichier" accept=".csv,text/csv" class="sr-only"></label>
+      ${prepas?`<button type="button" class="btn ghost" id="deb-effacer">Effacer les débouchés saisis</button>`:""}</div>
+    <p class="hint" id="deb-msg" role="status">${prepas?`${nb(prepas)} prépa${prepas>1?"s":""} renseignée${prepas>1?"s":""}, ${nb(ecoles)} lignes école.`:"Aucun débouché saisi."}</p>`;
+}
+
 const SANS_SERVEUR=`<p class="hint">La gestion des données demande le serveur local. Lancez <code>./lancer.command</code> (ou <code>python3 scripts/serveur.py</code>) depuis le dossier de Cap Prépa, puis rouvrez cet onglet.</p>`;
 
 /* Remplit conteneur et le tient à jour. meta, nbFormations : fichier chargé par l'outil.
@@ -68,10 +80,22 @@ export function creerOngletDonnees(conteneur,meta,nbFormations,perso){
   const zone=()=>conteneur.querySelector("#donnees-sources");
   conteneur.innerHTML=`<section class="panel" aria-labelledby="h-fichier"><h2 id="h-fichier">Fichier utilisé par l'outil</h2>${htmlFichierCourant(meta,nbFormations)}</section>
     <section class="panel" aria-labelledby="h-perso"><h2 id="h-perso">Classements personnels</h2><div id="perso"></div></section>
+    <section class="panel" aria-labelledby="h-deb"><h2 id="h-deb">Débouchés des prépas (saisie)</h2><div id="deb"></div></section>
     <section class="panel" aria-labelledby="h-sources"><h2 id="h-sources">Sources open data téléchargées</h2><div id="donnees-sources"><p class="hint">Chargement…</p></div></section>`;
   const dessinerPerso=msg=>{conteneur.querySelector("#perso").innerHTML=htmlClassementsPerso(perso.lister(),perso.poids);if(msg)conteneur.querySelector("#perso-msg").textContent=msg;};
   dessinerPerso();
+  const dessinerDeb=msg=>{conteneur.querySelector("#deb").innerHTML=htmlDebouches(perso.debouches.lire());if(msg)conteneur.querySelector("#deb-msg").textContent=msg;};
+  dessinerDeb();
   conteneur.addEventListener("change",async e=>{
+    if(e.target.id==="deb-fichier"&&e.target.files[0]){
+      try{
+        const lus=lireCsvDebouches(await e.target.files[0].text()),n=Object.keys(lus).length;
+        if(!n) throw new Error("aucune ligne complète : il faut id, ecole et integres");
+        perso.debouches.enregistrer(fusionnerDebouches(perso.debouches.lire(),lus));
+        dessinerDeb(`Importé : ${n} prépa${n>1?"s":""}.`);
+      }catch(err){dessinerDeb("Import impossible : "+err.message);}
+      return;
+    }
     if(e.target.id!=="perso-fichier"||!e.target.files[0]) return;
     try{
       const lus=lireCsvClassements(await e.target.files[0].text());
@@ -103,6 +127,8 @@ export function creerOngletDonnees(conteneur,meta,nbFormations,perso){
     if(e.target.id==="donnees-verifier"){zone().querySelector("[role=status]").textContent="Vérification auprès du catalogue…";charger(true);}
     if(e.target.id==="donnees-recharger") location.reload();
     if(e.target.id==="perso-modele") telecharger("cap-prepa-classements.csv",csvModele(perso.formations()));
+    if(e.target.id==="deb-modele") telecharger("cap-prepa-debouches.csv",csvModeleDebouches(perso.formations()));
+    if(e.target.id==="deb-effacer"){perso.debouches.enregistrer({});dessinerDeb("Débouchés saisis effacés.");}
     const s=e.target.closest("[data-suppr]");
     if(s){perso.enregistrer(perso.lister().filter(c=>c.nom!==s.dataset.suppr));dessinerPerso(`Classement « ${s.dataset.suppr} » supprimé.`);}
   });
