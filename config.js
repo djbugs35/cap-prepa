@@ -19,6 +19,8 @@ window.CAP_PREPA_CONFIG = {
   rayonParDefaut: 150,
   // Filières cochées au premier lancement.
   filieresParDefaut: ["MPSI", "MP2I", "PCSI", "PTSI", "ING"],
+  // Lycées d'origine proposés (annuaire de l'éducation), produit par scripts/update_data.py.
+  fichierLycees: "data/lycees.json",
   // Fichier de données produit par scripts/update_data.py
   fichierDonnees: "data/formations.json",
   // Service de géocodage des communes (API publique de l'État, sans clé).

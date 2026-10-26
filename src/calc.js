@@ -86,7 +86,10 @@ export function raisons(r,el,e,annees=[]){
   if(e.instable) out.push(`Taux d'accès instable (de ${Math.min(...vals)} % à ${Math.max(...vals)} % selon les années) : estimation fragile.`);
   else if(t[0]!=null&&annees.length&&Math.abs(tauxRef(r)-t[0])>=10)
     out.push(`Taux d'accès en ${tauxRef(r)<t[0]?"baisse":"hausse"} depuis ${annees[0]} (${t[0]} % puis ${tauxRef(r)} %).`);
-  if(r.aca>=75) out.push(`Recrute surtout dans son académie (${r.aca} % des admis).`);
+  if(r.aca>=75){
+    const m=el.academie&&r.academie?memeAcademie(el.academie,r.academie):null;
+    out.push(`Recrute surtout dans son académie (${r.aca} % des admis)`+(m===true?" : c'est la vôtre, un atout.":m===false?` : ${r.academie}, pas la vôtre.`:"."));
+  }
   return out.slice(0,3);
 }
 // L'open data ne renseigne pas l'internat des écoles d'ingénieurs : on ne peut ni les garder ni les exclure à coup sûr.
@@ -195,5 +198,25 @@ export function rowsFromData(data){
     taux:g(r,"taux"),tauxGen:g(r,"tauxGen"),rang:g(r,"rangDernier"),cla:g(r,"classes"),
     mp:["pTBF","pTB","pB","pAB","pSans"].map(f=>g(r,f)),bours:g(r,"pBours"),fem:g(r,"pF"),
     internatCode:g(r,"internat"),intern:g(r,"internat")===1||g(r,"internat")===2,filles:g(r,"internat")===2,
-    aca:g(r,"pAcaOrig"),admis:g(r,"admis"),tauxHist:g(r,"tauxHist")||[],tauxGenHist:g(r,"tauxGenHist")||[],lien:g(r,"lien")}));
+    aca:g(r,"pAcaOrig"),admis:g(r,"admis"),tauxHist:g(r,"tauxHist")||[],tauxGenHist:g(r,"tauxGenHist")||[],lien:g(r,"lien"),academie:g(r,"academie")}));
+}
+// Paris, Créteil et Versailles : Parcoursup traite souvent l'Île-de-France comme un seul secteur de recrutement.
+const ILE_DE_FRANCE=["paris","creteil","versailles"];
+// Les deux sources écrivent « Besancon » et « Besançon », « Nouvelle-Calédonie » et « Nouvelle Calédonie » : on compare sans accents ni tirets.
+export function memeAcademie(a,b){
+  const x=norm(a),y=norm(b);
+  return x===y||(ILE_DE_FRANCE.includes(x)&&ILE_DE_FRANCE.includes(y));
+}
+// Lignes compactes de data/lycees.json -> objets, avec une clé de recherche normalisée (nom et commune).
+export function lyceesFromData(data){
+  const F=data.meta.fields,ix=Object.fromEntries(F.map((f,i)=>[f,i]));
+  return data.rows.map(r=>{const g=f=>ix[f]==null?null:r[ix[f]];
+    return {uai:g("uai"),nom:g("nom"),commune:g("commune"),dep:g("dep"),academie:g("academie"),lat:g("lat"),lon:g("lon"),pub:g("public")===1,
+      cle:norm(g("nom")+" "+g("commune"))};});
+}
+// Rend au plus max lycées dont le nom ou la commune contient tous les mots de q (sans accents ni casse).
+export function chercherLycees(lycees,q,max=8){
+  const mots=norm(q).split(" ").filter(m=>m.length>1);
+  if(!mots.length) return [];
+  return lycees.filter(l=>mots.every(m=>l.cle.includes(m))).slice(0,max);
 }
