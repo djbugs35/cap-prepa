@@ -1,0 +1,30 @@
+# Regles reprises de metascrap (docs/CONVENTIONS.md § 10) : strict par defaut.
+line-length = 120
+target-version = "py312"
+
+[lint]
+extend-select = [
+    "B",      # bugbear — pieges classiques
+    "SIM",    # simplify
+    "UP",     # pyupgrade
+    "I",      # isort — ordre des imports
+    "PL",     # pylint
+    "PERF",   # performance
+    "RUF",    # regles propres a ruff
+    "C90",    # mccabe — complexite cyclomatique
+    "BLE",    # except Exception nu
+    "DTZ",    # datetime sans fuseau
+    "PTH",    # os.path -> pathlib
+    "ARG",    # arguments inutilises
+    "RET",    # returns inutilement verbeux
+]
+ignore = ["PLR2004"]
+
+[lint.mccabe]
+max-complexity = 12
+
+[lint.pylint]
+max-statements = 60
+max-branches = 15
+max-args = 6
+max-returns = 8
