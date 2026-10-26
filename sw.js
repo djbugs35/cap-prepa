@@ -4,10 +4,10 @@
    la politique d'usage d'OpenStreetMap interdit de stocker des tuiles pour un usage hors ligne. */
 
 // Changer ce nom à chaque modification de la liste ci-dessous : l'ancien cache est alors supprimé.
-const CACHE="cap-prepa-v4";
+const CACHE="cap-prepa-v6";
 // tests/sw.test.js vérifie que tout module de src/ figure ici : un oubli casserait l'outil hors ligne.
 const FICHIERS=["./","index.html","config.js","data/formations.json","data/lycees.json",
-  "src/main.js","src/calc.js","src/geo.js","src/carte.js","src/carte-osm.js","src/fiche.js","src/liste.js","src/donnees.js","src/classements.js"];
+  "src/main.js","src/calc.js","src/geo.js","src/carte.js","src/carte-osm.js","src/fiche.js","src/liste.js","src/donnees.js","src/classements.js","src/debouches.js"];
 const HOTES_VERSIONNES=["unpkg.com","fonts.googleapis.com","fonts.gstatic.com"];
 
 self.addEventListener("install",e=>{
@@ -17,11 +17,13 @@ self.addEventListener("activate",e=>{
   e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
 });
 
+// index.html?lycee=… et index.html sont la même page : on la range sous son adresse sans paramètres.
+// Bug corrigé : la version fraîche était rangée sous l'adresse complète, et l'ancienne restait servie indéfiniment.
+const cleDeCache=req=>{if(req.mode!=="navigate")return req;const u=new URL(req.url);u.search="";u.hash="";return new Request(u.href);};
 async function cacheEtMiseAJour(req){
-  const c=await caches.open(CACHE);
-  // ignoreSearch : index.html?ville=Nantes et index.html sont la même page.
-  const enCache=await c.match(req,{ignoreSearch:req.mode==="navigate"});
-  const reseau=fetch(req).then(r=>{if(r.ok)c.put(req,r.clone());return r;});
+  const c=await caches.open(CACHE),cle=cleDeCache(req);
+  const enCache=await c.match(cle,{ignoreSearch:req.mode==="navigate"});
+  const reseau=fetch(req).then(r=>{if(r.ok)c.put(cle,r.clone());return r;});
   if(enCache){reseau.catch(()=>{});return enCache;} // hors ligne : la copie en cache suffit
   return reseau;
 }
