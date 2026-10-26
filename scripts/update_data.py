@@ -7,13 +7,17 @@ Sources (Licence Ouverte, data.enseignementsup-recherche.gouv.fr) :
 
 Aucune dependance hors bibliotheque standard.
 
+Les exports bruts sont gardes dans data/sources/ (hors git) : --hors-ligne reconstruit sans reseau.
+
 Exemples :
     python3 scripts/update_data.py                                         # toute la France metropolitaine
+    python3 scripts/update_data.py --hors-ligne                            # depuis les sources deja telechargees
     python3 scripts/update_data.py --ville-centre 48.111,-1.68 --rayon 400  # une zone seulement
 """
 
 import argparse
 import datetime as dt
+import gzip
 import json
 import math
 import re
@@ -30,6 +34,10 @@ JEU_CARTOGRAPHIE = "fr-esr-cartographie_formations_parcoursup"
 # Le suffixe -3 est l'edition « bac 2025 » ; le filtre sur annee_du_bac ecarte une edition d'une autre session.
 JEU_DOUBLETTES = "fr-esr-parcoursup-enseignements-de-specialite-bacheliers-generaux-3"
 SORTIE_PAR_DEFAUT = Path(__file__).resolve().parent.parent / "data" / "formations.json"
+# Exports bruts de chaque jeu, gardes en local (hors git) pour reconstruire sans reseau et suivre leurs versions.
+DOSSIER_SOURCES = Path(__file__).resolve().parent.parent / "data" / "sources"
+CLE_COURANTE = "parcoursup"
+HTTP_ABSENT = 404
 
 # Public vise : terminale generale maths + physique-chimie. TSI, TB, TPC (bacs technologiques) sont hors perimetre.
 FILIERES_CPGE = ["MPSI", "MP2I", "PCSI", "PTSI", "BCPST"]
@@ -67,7 +75,11 @@ def telecharger_json(url: str, essais: int = ESSAIS_RESEAU):
     for essai in range(essais):
         try:
             with urllib.request.urlopen(requete, timeout=120) as reponse:
-                return json.load(reponse)
+                corps = reponse.read()
+                # Le catalogue repond en gzip meme sans Accept-Encoding : json.load echouait sur l'octet 0x8b.
+                if reponse.headers.get("Content-Encoding") == "gzip":
+                    corps = gzip.decompress(corps)
+                return json.loads(corps)
         except urllib.error.HTTPError as exc:
             if exc.code not in (429, 500, 502, 503, 504) or essai == essais - 1:
                 raise
@@ -248,37 +260,170 @@ def ecrire_atomique(chemin: Path, texte: str) -> None:
     temporaire.replace(chemin)
 
 
-def charger_historique(session: int) -> tuple[list[dict], list[int]]:
-    """Rendre les sessions passees disponibles, de la plus ancienne a la plus recente."""
-    historique, sessions = [], []
-    for annee in range(session - NB_SESSIONS_HISTORIQUE, session):
-        jeu = nom_jeu_session(annee, session)
-        try:
-            lignes = exporter(jeu, FILTRE_CPGE) + exporter(jeu, FILTRE_ING)
-        except urllib.error.HTTPError as exc:  # jeu pas encore ou plus publie : l'historique sera plus court
-            print(f"Session {annee} indisponible (HTTP {exc.code}), ignoree.", file=sys.stderr)
+class SourceAbsente(Exception):
+    """Fichier de source local manquant : il faut d'abord le telecharger."""
+
+
+def definir_sources(session: int | None) -> list[dict]:
+    """Rendre les sources d'une session : cle stable, jeu de donnees, role et requetes (filtre ODSQL, champs).
+
+    La premiere est toujours la session courante, dont on tire la session des autres ; sans elle (session None),
+    seule cette premiere source est rendue.
+    """
+    requetes_parcoursup = [(FILTRE_CPGE, None), (FILTRE_ING, None)]
+    sources = [{"cle": CLE_COURANTE, "jeu": JEU_COURANT, "role": "Statistiques par formation, dernière session",
+                "requetes": requetes_parcoursup}]  # fmt: skip
+    if session is None:
+        return sources
+    for recul in range(NB_SESSIONS_HISTORIQUE, 0, -1):  # de la plus ancienne a la plus recente
+        annee = session - recul
+        sources.append({"cle": f"parcoursup-n{recul}", "jeu": nom_jeu_session(annee, session), "session": annee,
+                        "role": f"Historique, session {annee}", "requetes": requetes_parcoursup})  # fmt: skip
+    filtre_internats = f'annee="{session}" and (search("CPGE") or search("ingénieur"))'
+    sources.append({"cle": "internats", "jeu": JEU_CARTOGRAPHIE, "role": f"Internats des CPGE, {session}",
+                    "requetes": [(filtre_internats, "gta,int")]})  # fmt: skip
+    sources.append({"cle": "doublettes", "jeu": JEU_DOUBLETTES, "role": f"Propositions par doublette de spécialités, {session}",
+                    "requetes": [(f'annee_du_bac="{session}" and niveau_d_agregation="2"', None)]})  # fmt: skip
+    return sources
+
+
+def version_distante(jeu: str) -> dict:
+    """Rendre le titre, la date de modification et le nombre total de lignes publies pour un jeu de donnees.
+
+    On retient `modified` et non `data_processed` : la cartographie est retraitee presque chaque jour sans
+    changement de contenu, elle paraitrait sinon toujours a mettre a jour.
+    """
+    metas = telecharger_json(API + jeu)["metas"]["default"]
+    return {"titre": metas.get("title"), "modifie": metas.get("modified"), "lignesPubliees": metas.get("records_count")}
+
+
+def chemin_source(dossier: Path, cle: str) -> Path:
+    """Rendre le fichier local d'une source."""
+    return dossier / f"{cle}.json"
+
+
+def telecharger_source(source: dict, dossier: Path) -> None:
+    """Telecharger une source et l'ecrire dans dossier, avec sa version distante et la date du telechargement."""
+    lignes = []
+    for filtre, champs in source["requetes"]:
+        lignes += exporter(source["jeu"], filtre, champs)
+    contenu = {"cle": source["cle"], "jeu": source["jeu"], "telecharge": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
+               **version_distante(source["jeu"]), "lignes": lignes}  # fmt: skip
+    dossier.mkdir(parents=True, exist_ok=True)
+    ecrire_atomique(chemin_source(dossier, source["cle"]), json.dumps(contenu, ensure_ascii=False))
+
+
+def lire_source(dossier: Path, source: dict) -> dict | None:
+    """Rendre le contenu local d'une source, None s'il manque ou vient d'un autre jeu (session courante changee)."""
+    chemin = chemin_source(dossier, source["cle"])
+    if not chemin.exists():
+        return None
+    contenu = json.loads(chemin.read_text(encoding="utf-8"))
+    return contenu if contenu.get("jeu") == source["jeu"] else None
+
+
+def session_locale(dossier: Path) -> int | None:
+    """Rendre la session de la source courante telechargee, None si elle manque."""
+    contenu = lire_source(dossier, definir_sources(None)[0])
+    return int(contenu["lignes"][0]["session"]) if contenu and contenu["lignes"] else None
+
+
+def mettre_a_jour_sources(dossier: Path, cles: list[str] | None = None, journal=print) -> int:
+    """Telecharger les sources demandees (toutes si cles vaut None) et rendre la session courante.
+
+    La source courante est telechargee d'abord si elle est demandee ou absente : elle fixe la session des autres.
+    Un historique pas encore ou plus publie (HTTP 404) est ignore, l'historique sera plus court.
+
+    Raises:
+        urllib.error.URLError: reseau indisponible apres les reprises, ou erreur HTTP sur une source indispensable.
+    """
+    courante = definir_sources(None)[0]
+    if cles is None or CLE_COURANTE in cles or session_locale(dossier) is None:
+        journal(f"Téléchargement : {courante['role']} ({courante['jeu']})")
+        telecharger_source(courante, dossier)
+    session = session_locale(dossier)
+    for source in definir_sources(session)[1:]:
+        if cles is not None and source["cle"] not in cles:
             continue
-        historique.append({str(r.get("cod_aff_form")): r for r in lignes})
-        sessions.append(annee)
-    return historique, sessions
+        journal(f"Téléchargement : {source['role']} ({source['jeu']})")
+        try:
+            telecharger_source(source, dossier)
+        except urllib.error.HTTPError as exc:
+            if not source["cle"].startswith("parcoursup-n") or exc.code != HTTP_ABSENT:
+                raise
+            journal(f"{source['jeu']} indisponible (HTTP {exc.code}), ignoré.")
+    return session
 
 
-def charger_internats(session: int) -> dict:
-    """Rendre cod_aff_form -> libelle d'internat, d'apres la cartographie de la meme annee."""
-    filtre = f'annee="{session}" and (search("CPGE") or search("ingénieur"))'
-    return {str(x["gta"]): " ".join(x["int"]) for x in exporter(JEU_CARTOGRAPHIE, filtre, "gta,int") if x.get("int")}
+def etat_sources(dossier: Path, verifier: bool = False) -> dict:
+    """Rendre la session locale et, pour chaque source, ce qui est en local et, si verifier, la version publiee.
+
+    Raises:
+        urllib.error.URLError: verifier demande et catalogue injoignable.
+    """
+    session = session_locale(dossier)
+    etats = []
+    for source in definir_sources(session):
+        contenu = lire_source(dossier, source)
+        chemin = chemin_source(dossier, source["cle"])
+        etat = {"cle": source["cle"], "jeu": source["jeu"], "role": source["role"], "present": contenu is not None}
+        if contenu:
+            etat |= {k: contenu.get(k) for k in ("titre", "modifie", "telecharge")}
+            etat |= {"lignes": len(contenu["lignes"]), "octets": chemin.stat().st_size}
+        if verifier:
+            distante = version_distante(source["jeu"])
+            etat["modifieDistant"] = distante["modifie"]
+            etat["aJour"] = bool(contenu) and contenu.get("modifie") == distante["modifie"]
+        etats.append(etat)
+    return {"session": session, "sources": etats}
 
 
-def charger_doublettes(session: int) -> dict:
-    """Rendre les statistiques de doublettes de la session courante, {} si le jeu porte sur une autre session."""
-    lignes = exporter(JEU_DOUBLETTES, f'annee_du_bac="{session}" and niveau_d_agregation="2"')
-    return statistiques_doublettes(lignes)
+def construire_formations(dossier: Path, centre=None, rayon=None, metropole=True) -> tuple[str, dict]:
+    """Rendre le texte de formations.json construit depuis les sources locales, et son meta.
+
+    Raises:
+        SourceAbsente: la source courante n'a pas ete telechargee.
+        ValueError: fichier trop court ou incomplet (voir valider).
+    """
+    sources = {s["cle"]: s for s in definir_sources(session_locale(dossier))}
+    courante = lire_source(dossier, sources[CLE_COURANTE])
+    if not courante:
+        raise SourceAbsente("source courante absente : lancer d'abord le telechargement")
+    session = int(courante["lignes"][0]["session"])
+    historique, sessions = [], []
+    for source in (s for s in sources.values() if "session" in s):
+        contenu = lire_source(dossier, source)
+        if contenu:
+            historique.append({str(r.get("cod_aff_form")): r for r in contenu["lignes"]})
+            sessions.append(source["session"])
+    internats = {
+        str(x["gta"]): " ".join(x["int"])
+        for x in (lire_source(dossier, sources["internats"]) or {}).get("lignes", [])
+        if x.get("int")
+    }
+    doublettes = statistiques_doublettes((lire_source(dossier, sources["doublettes"]) or {}).get("lignes", []))
+    rows = build_rows(courante["lignes"], historique, internats, metropole, centre, rayon)
+    zone = bool(centre and rayon)
+    valider(rows, MIN_LIGNES_ZONE if zone else MIN_LIGNES_NATIONAL)
+    meta = {
+        "session": session, "previousSession": session - 1, "sessionsHist": sessions,
+        "source": "https://data.enseignementsup-recherche.gouv.fr/explore/dataset/fr-esr-parcoursup/",
+        "licence": "Licence Ouverte / Open Licence (Etalab)",
+        "generated": dt.datetime.now(dt.UTC).date().isoformat(), "fields": FIELDS, "doublettes": doublettes,
+    }  # fmt: skip
+    if zone:
+        meta["coverage"] = {"label": f"{int(rayon)} km autour de {centre[0]},{centre[1]}",
+                            "center": list(centre), "radiusKm": rayon}  # fmt: skip
+    texte = json.dumps({"meta": meta, "rows": rows}, ensure_ascii=False, separators=(",", ":")).replace("],[", "],\n[")
+    return texte + "\n", meta | {"formations": len(rows)}
 
 
 def lire_arguments():
     """Rendre les options de la ligne de commande."""
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--sortie", default=str(SORTIE_PAR_DEFAUT))
+    ap.add_argument("--sources", default=str(DOSSIER_SOURCES), help="dossier des sources telechargees")
+    ap.add_argument("--hors-ligne", action="store_true", help="reconstruire depuis les sources deja telechargees")
     ap.add_argument("--ville-centre", help="lat,lon : ne garder qu'une zone autour de ce point")
     ap.add_argument("--rayon", type=float, help="rayon en km autour de --ville-centre")
     ap.add_argument("--avec-outre-mer", action="store_true", help="inclure les DROM et l'etranger")
@@ -288,30 +433,16 @@ def lire_arguments():
 def main():
     a = lire_arguments()
     centre = tuple(float(x) for x in a.ville_centre.split(",")) if a.ville_centre else None
-    print("Telechargement de la session courante…", file=sys.stderr)
-    cur = exporter(JEU_COURANT, FILTRE_CPGE) + exporter(JEU_COURANT, FILTRE_ING)
-    if not cur:
-        sys.exit("Aucune donnee recue.")
-    session = int(cur[0].get("session"))
-    historique, sessions = charger_historique(session)
-    rows = build_rows(cur, historique, charger_internats(session), not a.avec_outre_mer, centre, a.rayon)
-    zone = bool(centre and a.rayon)
-    valider(rows, MIN_LIGNES_ZONE if zone else MIN_LIGNES_NATIONAL)
-    meta = {
-        "session": session, "previousSession": session - 1, "sessionsHist": sessions,
-        "source": "https://data.enseignementsup-recherche.gouv.fr/explore/dataset/fr-esr-parcoursup/",
-        "licence": "Licence Ouverte / Open Licence (Etalab)",
-        "generated": dt.datetime.now(dt.UTC).date().isoformat(), "fields": FIELDS,
-        "doublettes": charger_doublettes(session),
-    }  # fmt: skip
-    if zone:
-        meta["coverage"] = {"label": f"{int(a.rayon)} km autour de {centre[0]},{centre[1]}",
-                            "center": list(centre), "radiusKm": a.rayon}  # fmt: skip
-    texte = json.dumps({"meta": meta, "rows": rows}, ensure_ascii=False, separators=(",", ":")).replace("],[", "],\n[")
-    ecrire_atomique(Path(a.sortie), texte + "\n")
-    print(
-        f"{len(rows)} formations ecrites dans {a.sortie} (session {session}, historique {sessions}).", file=sys.stderr
-    )
+    dossier = Path(a.sources)
+    if not a.hors_ligne:
+        mettre_a_jour_sources(dossier, journal=lambda m: print(m, file=sys.stderr))
+    try:
+        texte, meta = construire_formations(dossier, centre, a.rayon, not a.avec_outre_mer)
+    except SourceAbsente as exc:
+        sys.exit(str(exc))
+    ecrire_atomique(Path(a.sortie), texte)
+    print(f"{meta['formations']} formations ecrites dans {a.sortie} (session {meta['session']}, "
+          f"historique {meta['sessionsHist']}).", file=sys.stderr)  # fmt: skip
 
 
 if __name__ == "__main__":
