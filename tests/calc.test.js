@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {score,position,chance,estimation,libelleFourchette,raisons,reglagesDepuis,REGLAGES,tauxLisse,estInstable,avertissementMathsExpertes,historiqueTaux,basculerComparaison,regrouperVoeux,encoderPartage,decoderPartage,liensApresPrepa,filterRows,sortRows,vowKey,balanceAdvice,norm,dist,rowsFromData,tauxRef,internatInconnu,W} from "../src/calc.js";
+import {score,position,chance,estimation,libelleFourchette,raisons,reglagesDepuis,REGLAGES,tauxLisse,estInstable,avertissementMathsExpertes,historiqueTaux,basculerComparaison,regrouperVoeux,encoderPartage,decoderPartage,liensApresPrepa,memeAcademie,lyceesFromData,chercherLycees,filterRows,sortRows,vowKey,balanceAdvice,norm,dist,rowsFromData,tauxRef,internatInconnu,W} from "../src/calc.js";
 
 const EL={n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F"};
 const row=o=>Object.assign({id:1,etab:"Lycée Test",ville:"Rennes",det:"",fil:"MPSI",lat:48.111,lon:-1.68,pub:true,intern:true,internatCode:1,
@@ -181,4 +181,27 @@ test("liensApresPrepa : concours de 2e année de chaque CPGE, rien pour une éco
   assert.deepEqual(liensApresPrepa("PCSI",m,2025).map(l=>l.url),["https://www.scei-concours.fr/stat2025/pc.html","https://www.scei-concours.fr/stat2025/psi.html"]);
   assert.deepEqual(liensApresPrepa("MP2I",m,2025).map(l=>l.filiere),["MPI","MP"]);
   assert.deepEqual(liensApresPrepa("ING",m,2025),[]);
+});
+
+test("memeAcademie : accents et tirets ignorés, Île-de-France comptée comme un seul secteur",()=>{
+  assert.ok(memeAcademie("Besancon","Besançon"));
+  assert.ok(memeAcademie("Nouvelle-Calédonie","Nouvelle Calédonie"));
+  assert.ok(memeAcademie("Créteil","Versailles"));
+  assert.ok(!memeAcademie("Rennes","Nantes"));
+});
+test("raisons : le recrutement académique dit si c'est l'académie du lycée de l'élève",()=>{
+  const r=row({aca:85,academie:"Rennes"});
+  const dire=el=>raisons(r,el,estimation(r,el)).find(t=>/académie/.test(t));
+  assert.match(dire({...EL,academie:"Rennes"}),/c'est la vôtre/);
+  assert.match(dire({...EL,academie:"Nantes"}),/Rennes, pas la vôtre/);
+  assert.match(dire(EL),/\(85 % des admis\)\.$/); // lycée non renseigné
+});
+test("chercherLycees : tous les mots, sans accents, dans le nom ou la commune",()=>{
+  const L=lyceesFromData({meta:{fields:["uai","nom","commune","dep","academie","lat","lon","public"]},rows:[
+    ["1","Lycée Chateaubriand","Rennes","035","Rennes",48.12,-1.67,1],["2","Lycée Émile Zola","Rennes","035","Rennes",48.11,-1.68,1],
+    ["3","Lycée Émile Zola","Aix-en-Provence","013","Aix-Marseille",43.5,5.4,1]]});
+  assert.deepEqual(chercherLycees(L,"emile zola rennes").map(l=>l.uai),["2"]);
+  assert.deepEqual(chercherLycees(L,"ZOLA").map(l=>l.uai),["2","3"]);
+  assert.deepEqual(chercherLycees(L,"z"),[]); // un seul caractère : trop vague
+  assert.equal(L[0].academie,"Rennes");assert.equal(L[0].pub,true);
 });

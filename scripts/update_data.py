@@ -37,6 +37,13 @@ SORTIE_PAR_DEFAUT = Path(__file__).resolve().parent.parent / "data" / "formation
 # Exports bruts de chaque jeu, gardes en local (hors git) pour reconstruire sans reseau et suivre leurs versions.
 DOSSIER_SOURCES = Path(__file__).resolve().parent.parent / "data" / "sources"
 CLE_COURANTE = "parcoursup"
+SORTIE_LYCEES = Path(__file__).resolve().parent.parent / "data" / "lycees.json"
+# Annuaire de l'education (Licence Ouverte) : lycees d'origine possibles, avec leur academie.
+API_EDUCATION = "https://data.education.gouv.fr/api/explore/v2.1/catalog/datasets/"
+JEU_LYCEES = "fr-en-annuaire-education"
+FILTRE_LYCEES = 'type_etablissement="Lycée" and voie_generale="1" and etat="OUVERT"'
+CHAMPS_LYCEES = "identifiant_de_l_etablissement,nom_etablissement,nom_commune,code_departement,libelle_academie,latitude,longitude,statut_public_prive"
+FIELDS_LYCEES = ["uai", "nom", "commune", "dep", "academie", "lat", "lon", "public"]
 HTTP_ABSENT = 404
 
 # Public vise : terminale generale maths + physique-chimie. TSI, TB, TPC (bacs technologiques) sont hors perimetre.
@@ -58,7 +65,7 @@ ESSAIS_RESEAU = 4
 FIELDS = [
     "id", "etab", "ville", "dep", "lat", "lon", "filiere", "detail", "public", "capa", "voeux",
     "taux", "tauxGen", "rangDernier", "classes", "pTBF", "pTB", "pB", "pAB", "pSans", "pBours", "pF",
-    "internat", "pAcaOrig", "admis", "tauxHist", "tauxGenHist", "lien",
+    "internat", "pAcaOrig", "admis", "tauxHist", "tauxGenHist", "lien", "academie",
 ]  # fmt: skip
 CHAMPS_OBLIGATOIRES = ["id", "etab", "lat", "lon", "filiere", "taux", "admis"]
 INTERNAT_SANS, INTERNAT_MIXTE, INTERNAT_FILLES = 0, 1, 2
@@ -90,12 +97,12 @@ def telecharger_json(url: str, essais: int = ESSAIS_RESEAU):
     raise AssertionError("inatteignable")
 
 
-def exporter(jeu: str, filtre: str, champs: str | None = None) -> list:
+def exporter(jeu: str, filtre: str, champs: str | None = None, api: str = API) -> list:
     """Rendre toutes les lignes d'un jeu de donnees qui passent le filtre ODSQL."""
     parametres = {"where": filtre}
     if champs:
         parametres["select"] = champs
-    return telecharger_json(API + jeu + "/exports/json?" + urllib.parse.urlencode(parametres))
+    return telecharger_json(api + jeu + "/exports/json?" + urllib.parse.urlencode(parametres))
 
 
 def nom_jeu_session(session: int, session_courante: int) -> str:
@@ -177,7 +184,7 @@ def construire_ligne(r: dict, historique: list[dict], internats: dict) -> list:
         "internat": code_internat(r, internats), "pAcaOrig": r.get("pct_aca_orig"), "admis": r.get("acc_tot"),
         "tauxHist": [p and taux_officiel(p) for p in passees],
         "tauxGenHist": [p and taux_acces_generaux(p) for p in passees],
-        "lien": r.get("lien_form_psup"),
+        "lien": r.get("lien_form_psup"), "academie": r.get("acad_mies"),
     }  # fmt: skip
     return [valeurs[f] for f in FIELDS]
 
@@ -282,18 +289,20 @@ def definir_sources(session: int | None) -> list[dict]:
     filtre_internats = f'annee="{session}" and (search("CPGE") or search("ingénieur"))'
     sources.append({"cle": "internats", "jeu": JEU_CARTOGRAPHIE, "role": f"Internats des CPGE, {session}",
                     "requetes": [(filtre_internats, "gta,int")]})  # fmt: skip
+    sources.append({"cle": "lycees", "jeu": JEU_LYCEES, "api": API_EDUCATION, "role": "Lycées d'origine (annuaire de l'éducation)",
+                    "requetes": [(FILTRE_LYCEES, CHAMPS_LYCEES)]})  # fmt: skip
     sources.append({"cle": "doublettes", "jeu": JEU_DOUBLETTES, "role": f"Propositions par doublette de spécialités, {session}",
                     "requetes": [(f'annee_du_bac="{session}" and niveau_d_agregation="2"', None)]})  # fmt: skip
     return sources
 
 
-def version_distante(jeu: str) -> dict:
+def version_distante(jeu: str, api: str = API) -> dict:
     """Rendre le titre, la date de modification et le nombre total de lignes publies pour un jeu de donnees.
 
     On retient `modified` et non `data_processed` : la cartographie est retraitee presque chaque jour sans
     changement de contenu, elle paraitrait sinon toujours a mettre a jour.
     """
-    metas = telecharger_json(API + jeu)["metas"]["default"]
+    metas = telecharger_json(api + jeu)["metas"]["default"]
     return {"titre": metas.get("title"), "modifie": metas.get("modified"), "lignesPubliees": metas.get("records_count")}
 
 
@@ -305,10 +314,11 @@ def chemin_source(dossier: Path, cle: str) -> Path:
 def telecharger_source(source: dict, dossier: Path) -> None:
     """Telecharger une source et l'ecrire dans dossier, avec sa version distante et la date du telechargement."""
     lignes = []
+    api = source.get("api", API)
     for filtre, champs in source["requetes"]:
-        lignes += exporter(source["jeu"], filtre, champs)
+        lignes += exporter(source["jeu"], filtre, champs, api)
     contenu = {"cle": source["cle"], "jeu": source["jeu"], "telecharge": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
-               **version_distante(source["jeu"]), "lignes": lignes}  # fmt: skip
+               **version_distante(source["jeu"], api), "lignes": lignes}  # fmt: skip
     dossier.mkdir(parents=True, exist_ok=True)
     ecrire_atomique(chemin_source(dossier, source["cle"]), json.dumps(contenu, ensure_ascii=False))
 
@@ -371,7 +381,7 @@ def etat_sources(dossier: Path, verifier: bool = False) -> dict:
             etat |= {k: contenu.get(k) for k in ("titre", "modifie", "telecharge")}
             etat |= {"lignes": len(contenu["lignes"]), "octets": chemin.stat().st_size}
         if verifier:
-            distante = version_distante(source["jeu"])
+            distante = version_distante(source["jeu"], source.get("api", API))
             etat["modifieDistant"] = distante["modifie"]
             etat["aJour"] = bool(contenu) and contenu.get("modifie") == distante["modifie"]
         etats.append(etat)
@@ -418,6 +428,36 @@ def construire_formations(dossier: Path, centre=None, rayon=None, metropole=True
     return texte + "\n", meta | {"formations": len(rows)}
 
 
+def construire_lycees(dossier: Path) -> str | None:
+    """Rendre le texte de lycees.json depuis la source locale, None si elle n'a pas ete telechargee."""
+    session = session_locale(dossier)
+    source = next((s for s in definir_sources(session) if s["cle"] == "lycees"), None)
+    contenu = lire_source(dossier, source) if source else None
+    if not contenu:
+        return None
+    lignes = [
+        [x["identifiant_de_l_etablissement"], clean(x["nom_etablissement"]), clean(x["nom_commune"]), x.get("code_departement"),
+         x.get("libelle_academie"), round(x["latitude"], 4), round(x["longitude"], 4), 1 if x.get("statut_public_prive") == "Public" else 0]
+        for x in contenu["lignes"] if x.get("latitude") is not None and x.get("longitude") is not None
+    ]  # fmt: skip
+    lignes.sort(key=lambda x: (x[1], x[2]))
+    meta = {"source": "https://data.education.gouv.fr/explore/dataset/fr-en-annuaire-education/",
+            "licence": "Licence Ouverte / Open Licence (Etalab)", "version": contenu.get("modifie"), "fields": FIELDS_LYCEES}  # fmt: skip
+    texte = json.dumps({"meta": meta, "rows": lignes}, ensure_ascii=False, separators=(",", ":")).replace(
+        "],[", "],\n["
+    )
+    return texte + "\n"
+
+
+def ecrire_lycees(dossier: Path, sortie: Path = SORTIE_LYCEES) -> bool:
+    """Ecrire lycees.json depuis la source locale ; rendre False si la source manque (fichier precedent garde)."""
+    texte = construire_lycees(dossier)
+    if texte is None:
+        return False
+    ecrire_atomique(sortie, texte)
+    return True
+
+
 def lire_arguments():
     """Rendre les options de la ligne de commande."""
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -441,6 +481,8 @@ def main():
     except SourceAbsente as exc:
         sys.exit(str(exc))
     ecrire_atomique(Path(a.sortie), texte)
+    if ecrire_lycees(dossier):
+        print(f"Lycees ecrits dans {SORTIE_LYCEES}.", file=sys.stderr)
     print(f"{meta['formations']} formations ecrites dans {a.sortie} (session {meta['session']}, "
           f"historique {meta['sessionsHist']}).", file=sys.stderr)  # fmt: skip
 

@@ -33,7 +33,7 @@ export function htmlListe(items,internats){
 }
 
 /* Rend la version imprimable : notes, vœux et sous-vœux avec leur estimation, pour en parler avec le professeur principal.
-   el : {n, mxon, home} ; session : meta.session. */
+   el : {n, mxon, home, academie} ; session : meta.session. */
 export function htmlImpression(items,el,internats,session){
   const date=new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
   const notes=NOTES.filter(([k])=>k!=="mx"||el.mxon).map(([k,l])=>`<td>${l}<br><b>${fmt(el.n[k])}</b></td>`).join("");
@@ -42,7 +42,7 @@ export function htmlImpression(items,el,internats,session){
     return `<tr><td>${j?"":i+1}</td><td>${g.reseau&&!j?`<b>${esc(g.reseau)}</b><br>`:""}${g.reseau?"↳ ":""}${nom(r)}<br><small>${esc(r.ville||"")} · ${Math.round(r.d)} km${choix?" · "+CHOIX_INTERNAT.find(c=>c[0]===choix)[1].toLowerCase():""}</small></td>
       <td>${r.ch.cat.l}${r.ch.bas.k!==r.ch.haut.k?`<br><small>${libelleFourchette(r.ch)}</small>`:""}</td><td>${tauxRef(r)} %${r.ch.instable?"<br><small>instable</small>":""}</td><td>${r.ch.raisons.map(esc).join("<br>")}</td></tr>`;}).join("")).join("");
   return `<h1>Ma liste de vœux · Cap Prépa</h1>
-  <p>${date}${el.home?" · depuis "+esc(el.home.name):""} · données Parcoursup ${session??""}</p>
+  <p>${date}${el.home?" · depuis "+esc(el.home.name):""}${el.academie?" · académie de "+esc(el.academie):""} · données Parcoursup ${session??""}</p>
   <table class="imp-notes"><tr>${notes}</tr></table>
   ${el.mxon?"":"<p>L'élève ne suit pas l'option maths expertes.</p>"}
   <table class="imp-voeux"><thead><tr><th>Vœu</th><th>Formation</th><th>Chances estimées</th><th>Accès</th><th>Pourquoi</th></tr></thead><tbody>${lignes}</tbody></table>

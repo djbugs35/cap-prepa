@@ -198,6 +198,15 @@ details.method p{margin:8px 0}
       <datalist id="city-list"></datalist>
       <p class="hint" id="city-msg" aria-live="polite"></p>
     </form>
+    <form id="lycee-form" class="cityform" autocomplete="off">
+      <label for="lycee" class="row">Lycée d'origine <span class="hint" style="display:inline">(facultatif)</span></label>
+      <div class="cityrow">
+        <input type="text" id="lycee" list="lycee-list" placeholder="Ex. Chateaubriand Rennes" aria-describedby="lycee-msg">
+        <button type="submit" class="btn">Valider</button>
+      </div>
+      <datalist id="lycee-list"></datalist>
+      <p class="hint" id="lycee-msg" aria-live="polite">Sert de point de départ et indique l'académie de l'élève.</p>
+    </form>
     <label class="row" for="radius">Rayon <output id="radius-o"></output>
       <input type="range" id="radius" min="25" max="600" step="25">
     </label>
