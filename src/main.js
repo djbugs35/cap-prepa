@@ -7,6 +7,7 @@ import {renderSvgMap} from "./carte.js";
 import {chargerLeaflet,creerCarteOsm} from "./carte-osm.js";
 import {htmlFiche,htmlComparaison} from "./fiche.js";
 import {htmlListe,htmlImpression} from "./liste.js";
+import {creerOngletDonnees} from "./donnees.js";
 
 const CFG=Object.assign({
   villeParDefaut:"Rennes",rayonParDefaut:150,
@@ -233,6 +234,22 @@ function initControls(){
     st.internats={...st.internats,[s.dataset.internat]:s.value};save();garderFocus(renderBasket);});
 }
 
+// ---------- onglets ----------
+// Onglets ARIA : flèches gauche/droite entre onglets, seul l'onglet actif est dans l'ordre de tabulation.
+function initOnglets(){
+  const onglets=[$("tab-formations"),$("tab-donnees")];
+  let donnees=null;
+  const activer=o=>{
+    onglets.forEach(x=>{const oui=x===o;x.setAttribute("aria-selected",oui);x.tabIndex=oui?0:-1;$(x.getAttribute("aria-controls")).hidden=!oui;});
+    if(o.id==="tab-donnees"){donnees??=creerOngletDonnees($("vue-donnees"),META,rows.length);donnees.charger(false);}
+  };
+  onglets.forEach((o,i)=>{
+    o.onclick=()=>activer(o);
+    o.onkeydown=e=>{const d=e.key==="ArrowRight"?1:e.key==="ArrowLeft"?-1:0;if(!d)return;
+      const c=onglets[(i+d+onglets.length)%onglets.length];c.focus();activer(c);};
+  });
+}
+
 // ---------- démarrage ----------
 // Garde l'outil consultable hors ligne (sw.js). Seulement en HTTP(S) : en file:// le navigateur le refuse.
 function enregistrerHorsLigne(){
@@ -256,7 +273,7 @@ async function start(){
   if(partage){Object.assign(st,partage);st.n=Object.assign({},DEF.n,st.n);}
   if(p.rayon) st.radius=p.rayon;
   if(p.fils) st.fils=p.fils;
-  initControls();
+  initControls();initOnglets();
   if(p.coords){st.home=p.coords;$("city").value=p.coords.name;upd();}
   else if(p.ville) await setCity(p.ville,true);
   else if(st.home){$("city").value=st.home.name;upd();}

@@ -119,6 +119,14 @@ dialog#fiche ul{margin:6px 0 0;padding-left:18px}
 .compare th,.compare td{padding:8px;border-top:1px solid var(--line);text-align:left;vertical-align:top}
 .compare thead th{border-top:0}.compare th small{display:block;font-weight:400;color:var(--muted)}
 .compare-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.onglets{display:flex;gap:4px;padding-block:12px 0}
+.onglets [role=tab]{font:inherit;font-weight:600;border:1px solid var(--line);border-bottom:0;border-radius:8px 8px 0 0;background:var(--soft);color:var(--muted);padding:8px 16px;cursor:pointer}
+.onglets [role=tab][aria-selected=true]{background:var(--card);color:var(--ink)}
+.onglets [role=tab]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.vue-donnees{display:flex;flex-direction:column;gap:16px;padding-top:16px}
+.vue-donnees[hidden]{display:none}
+.compare small{display:block;color:var(--muted);font-weight:400;font-size:11.5px}
+.journal{background:var(--soft);border-radius:6px;padding:8px 10px;font-size:12px;max-height:200px;overflow:auto;white-space:pre-wrap;margin:0}
 .bk-row.sous{padding-left:16px}
 .bk-reseau{font-size:13px;margin-top:4px}
 .bk-int{display:block;margin-top:3px;font:inherit;font-size:12px}
@@ -171,8 +179,12 @@ details.method p{margin:8px 0}
   <h1>Cap Prépa <span id="h-city"></span></h1>
   <p>Prépas scientifiques et écoles d'ingénieurs post-bac autour de votre ville, d'après les données ouvertes Parcoursup <span id="h-session">2025</span>. Réglez le profil à gauche, comparez, puis composez une liste de vœux équilibrée.</p>
 </div></header>
+<nav class="onglets wrap" role="tablist" aria-label="Vues">
+  <button type="button" role="tab" id="tab-formations" aria-selected="true" aria-controls="vue-formations">Formations</button>
+  <button type="button" role="tab" id="tab-donnees" aria-selected="false" aria-controls="vue-donnees" tabindex="-1">Données</button>
+</nav>
 
-<div class="wrap">
+<div class="wrap" id="vue-formations" role="tabpanel" aria-labelledby="tab-formations">
 <div class="grid">
 <aside>
   <section class="panel" aria-labelledby="h-zone">
@@ -270,6 +282,7 @@ details.method p{margin:8px 0}
 </main>
 </div>
 </div>
+<div class="wrap vue-donnees" id="vue-donnees" role="tabpanel" aria-labelledby="tab-donnees" hidden></div>
 
 <section id="impression" aria-hidden="true"></section>
 <script src="config.js"></script>
