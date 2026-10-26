@@ -44,8 +44,8 @@ export function noteSynthese(scores,poids={}){
   }
   return t?{note:Math.round(s/t*200)/10,n}:null;
 }
-// « Top 12 % » : part des formations de la famille classées au moins aussi bien.
-export const libelleTop=centile=>"top "+Math.max(1,Math.round((1-centile)*100))+" %";
+// « mieux que 88 % » : se lit dans les deux sens, là où « top 85 % » semblait flatteur pour une formation mal placée.
+export const libelleRang=centile=>"mieux que "+Math.round(centile*100)+" %";
 
 // Découpe une ligne CSV, guillemets doubles et "" échappés compris.
 function cellules(ligne,sep){
@@ -80,8 +80,10 @@ export function csvModele(rows,nomsClassements=["Mon classement"]){
   const entete=[...COLONNES_INFO,...nomsClassements].join(";");
   return "﻿"+[entete,...rows.map(r=>[r.id,r.etab,r.ville,r.fil,...nomsClassements.map(()=>"")].map(champCsv).join(";"))].join("\n")+"\n";
 }
-// Rend [{id, nom, court, texte, centile}] des classements où la formation figure, dans l'ordre de classements.
-export function detailClassements(scores,classements){
+/* Rend [{id, nom, court, texte, centile, note, poids}] des classements où la formation figure, dans l'ordre de
+   classements. note : le centile ramené sur 20 (null sans rang) ; poids : celui de noteSynthese. */
+export function detailClassements(scores,classements,poids={}){
   return classements.filter(c=>scores&&scores[c.id]).map(c=>{const x=scores[c.id];
-    return {id:c.id,nom:c.nom,court:c.court,centile:x.centile,texte:c.format(x.valeur)+(x.centile==null?"":" · "+libelleTop(x.centile))};});
+    return {id:c.id,nom:c.nom,court:c.court,centile:x.centile,texte:c.format(x.valeur)+(x.centile==null?"":" · "+libelleRang(x.centile)),
+      note:x.centile==null?null:Math.round(x.centile*200)/10,poids:poids[c.perso?"perso":c.id]??1};});
 }
