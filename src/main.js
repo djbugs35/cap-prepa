@@ -5,7 +5,7 @@ import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,estimation,basculerComparaison,e
 import {geocode,suggestions} from "./geo.js";
 import {renderSvgMap} from "./carte.js";
 import {chargerLeaflet,creerCarteOsm} from "./carte-osm.js";
-import {htmlFiche,htmlComparaison} from "./fiche.js";
+import {htmlFiche,htmlComparaison,htmlPropositionDebouches} from "./fiche.js";
 import {htmlListe,htmlImpression} from "./liste.js";
 import {creerOngletDonnees} from "./donnees.js";
 import {CLASSEMENTS_INTEGRES,classementPerso,calculerCentiles,noteSynthese,detailClassements} from "./classements.js";
@@ -120,7 +120,10 @@ function writeParams(){try{history.replaceState(null,"",shareUrl());}catch(e){}}
 const CLE_CLASSEMENTS="capprepa-classements";
 // Débouchés saisis : {id prépa: [{ecole, integres}]}, eux aussi propres à ce navigateur.
 const CLE_DEBOUCHES="capprepa-debouches";
-let persos=[],debouches={},centiles=new Map();
+// Source de chaque saisie faite depuis la fiche : {id prépa: {url, annee}}.
+const CLE_SOURCES_DEBOUCHES="capprepa-debouches-sources";
+let persos=[],debouches={},sourcesDebouches={},centiles=new Map();
+try{sourcesDebouches=JSON.parse(localStorage.getItem(CLE_SOURCES_DEBOUCHES)||"{}");}catch(e){sourcesDebouches={};}
 try{persos=JSON.parse(localStorage.getItem(CLE_CLASSEMENTS)||"[]");}catch(e){persos=[];}
 try{debouches=JSON.parse(localStorage.getItem(CLE_DEBOUCHES)||"{}");}catch(e){debouches={};}
 const tousClassements=()=>[...CLASSEMENTS_INTEGRES,classementDebouches(debouches),...persos.map(classementPerso)];
@@ -135,13 +138,13 @@ function enregistrerPersos(liste){
   recalculerClassements();upd(true);
 }
 const avecClassements=r=>{const cl=centiles.get(r.id)||{};return Object.assign(r,{cl,synth:noteSynthese(cl,CFG.poidsClassements),clDetail:detailClassements(cl,tousClassements(),CFG.poidsClassements),
-  deb:r.fil==="ING"?null:resumeDebouches(debouches[r.id])});};
+  deb:r.fil==="ING"?null:resumeDebouches(debouches[r.id]),debSource:sourcesDebouches[r.id]||null});};
 // Infobulle des débouchés : les 10 écoles qui ont accueilli le plus d'élèves de la prépa, d'après la saisie.
 function infobulleDebouches(r){
   const d=r.deb;
   return `<span class="tip" role="tooltip" id="tipd-${r.id}"><b>Écoles les plus intégrées</b><ol>${d.top.map(e=>`<li><span class="tip-l"><span>${esc(e.ecole)}</span><b>${e.integres}</b></span></li>`).join("")}</ol>
     <span class="tip-l tip-total"><span>Total saisi</span><b>${d.total} intégrés · ${d.ecoles} école${d.ecoles>1?"s":""}</b></span>
-    <small>D'après vos saisies (onglet « Données »). Liens vers les sources dans la fiche.</small></span>`;
+    <small>Résultats enregistrés depuis la fiche ou l'onglet « Données » ; source dans la fiche.</small></span>`;
 }
 function celluleDebouches(r){
   if(r.fil==="ING") return `<small>—</small>`;
@@ -224,6 +227,29 @@ function renderList(all){
 // Formations choisies par identifiant, avec distance et estimation (hors des filtres de la liste).
 const formationsParId=ids=>ids.map(id=>rows.find(r=>r.id===id)).filter(Boolean)
   .map(r=>Object.assign({d:st.home?dist(st.home.lat,st.home.lon,r.lat,r.lon):0},r)).map(r=>avecClassements(Object.assign(r,{ch:chanceOf(r)})));
+const ficheDe=id=>htmlFiche(formationsParId([id])[0],META.sessionsHist||[],META.session,{modele:CFG.sceiStatistiques,annee:CFG.sceiAnnee,palmares:CFG.lienPalmaresPrepas,recherche:CFG.rechercheResultats});
+// Extraction des débouchés depuis la fiche : le serveur local lit la page collée, l'utilisateur valide.
+async function extraireDebouches(zone){
+  const url=zone.querySelector("#deb-url").value.trim(),etat=zone.querySelector("#deb-etat");
+  if(!url){etat.textContent="Collez d'abord l'adresse de la page ou du PDF de résultats.";return;}
+  etat.textContent="Lecture du document…";zone.querySelector("#deb-proposition").innerHTML="";
+  try{
+    const r=await fetch("api/debouches/extraire",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url,filiere:zone.dataset.filiere})});
+    const rep=await r.json().catch(()=>({erreur:"le serveur local ne répond pas (lancez ./lancer.command)"}));
+    if(!r.ok) throw new Error(rep.erreur||"HTTP "+r.status);
+    etat.textContent="";zone.querySelector("#deb-proposition").innerHTML=htmlPropositionDebouches(rep,zone.dataset.filiere);
+  }catch(e){etat.textContent="Extraction impossible : "+e.message+". Vous pouvez aussi saisir les débouchés via l'onglet « Données ».";}
+}
+function enregistrerProposition(zone,bouton){
+  const id=+zone.dataset.prepa,liste=[...zone.querySelectorAll(".deb-table tbody tr")]
+    .filter(tr=>tr.querySelector("input[type=checkbox]").checked)
+    .map(tr=>({ecole:tr.querySelector("input[type=text]").value.trim(),integres:parseInt(tr.querySelector("input[type=number]").value,10)}))
+    .filter(e=>e.ecole&&e.integres>0);
+  sourcesDebouches={...sourcesDebouches,[id]:{url:bouton.dataset.source,annee:+bouton.dataset.annee||null}};
+  try{localStorage.setItem(CLE_SOURCES_DEBOUCHES,JSON.stringify(sourcesDebouches));}catch(e){}
+  enregistrerDebouches({...debouches,[id]:liste});
+  ouvrirDialogue(ficheDe(id));
+}
 function ouvrirDialogue(html){$("fiche-corps").innerHTML=html;const d=$("fiche");if(!d.open)d.showModal();}
 function renderCompareBar(){
   const n=st.compare.length,el=$("compare-bar");
@@ -303,11 +329,17 @@ function initControls(){
   $("list").addEventListener("keydown",e=>{if(e.key==="Escape"&&e.target.classList.contains("tip-btn"))e.target.blur();});
   $("list").addEventListener("click",e=>{
     const f=e.target.closest("[data-fiche]");
-    if(f){ouvrirDialogue(htmlFiche(formationsParId([+f.dataset.fiche])[0],META.sessionsHist||[],META.session,{modele:CFG.sceiStatistiques,annee:CFG.sceiAnnee,palmares:CFG.lienPalmaresPrepas,recherche:CFG.rechercheResultats}));return;}
+    if(f){ouvrirDialogue(ficheDe(+f.dataset.fiche));return;}
     const c=e.target.closest("[data-cmp]");
     if(c){st.compare=basculerComparaison(st.compare,+c.dataset.cmp);garderFocus(()=>upd(true));return;}
     const b=e.target.closest("[data-add]");if(!b)return;const id=+b.dataset.add;
     st.basket=st.basket.includes(id)?st.basket.filter(x=>x!==id):[...st.basket,id];garderFocus(()=>upd(true));});
+  $("fiche").addEventListener("click",e=>{
+    const zone=e.target.closest(".deb-chercher");if(!zone)return;
+    if(e.target.closest("[data-extraire]")) extraireDebouches(zone);
+    const b=e.target.closest("[data-enregistrer-deb]");if(b) enregistrerProposition(zone,b);
+  });
+  $("fiche").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="deb-url"){e.preventDefault();extraireDebouches(e.target.closest(".deb-chercher"));}});
   $("compare-bar").addEventListener("click",e=>{
     if(e.target.id==="cmp-go") ouvrirDialogue(htmlComparaison(formationsParId(st.compare)));
     if(e.target.id==="cmp-clear"){st.compare=[];upd(true);}});

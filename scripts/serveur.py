@@ -6,6 +6,7 @@ API :
     GET  /api/donnees               etat local des sources et de la derniere mise a jour
     GET  /api/donnees?verifier=1    idem, avec la version publiee de chaque source (reseau)
     POST /api/donnees/mettre-a-jour {"cles": [...] ou null} : telecharge puis reconstruit data/formations.json
+    POST /api/debouches/extraire    {"url": ..., "filiere": "MPSI"} : ecoles integrees lues dans une page de resultats
 
 Exemple :
     python3 scripts/serveur.py                 # ouvre http://127.0.0.1:8765 dans le navigateur
@@ -23,6 +24,7 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+import debouches as deb
 import update_data as ud
 
 RACINE = Path(__file__).resolve().parent.parent
@@ -78,6 +80,21 @@ class MiseAJour:
             self._etat |= {"enCours": False, "fin": fin, "erreur": erreur}
 
 
+def extraire_debouches(corps: bytes) -> tuple[int, dict]:
+    """Rendre (code HTTP, reponse) de l'extraction des debouches depuis l'adresse donnee par l'utilisateur."""
+    try:
+        demande = json.loads(corps or b"{}")
+        adresse, filiere = str(demande["url"]).strip(), str(demande["filiere"])
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return HTTPStatus.BAD_REQUEST, {"erreur": 'corps JSON attendu : {"url": ..., "filiere": ...}'}
+    try:
+        return HTTPStatus.OK, deb.extraire_depuis_adresse(adresse, filiere, journal=lambda _m: None)
+    except (ValueError, deb.Introuvable) as exc:
+        return HTTPStatus.UNPROCESSABLE_ENTITY, {"erreur": str(exc)}
+    except urllib.error.URLError as exc:
+        return HTTPStatus.BAD_GATEWAY, {"erreur": f"page injoignable ({getattr(exc, 'reason', exc)})"}
+
+
 def traiter_api(methode: str, chemin: str, corps: bytes, mise_a_jour: MiseAJour) -> tuple[int, dict]:
     """Rendre (code HTTP, reponse JSON) d'une requete /api/…, sans toucher au reseau sauf verification demandee."""
     url = urllib.parse.urlsplit(chemin)
@@ -100,6 +117,8 @@ def traiter_api(methode: str, chemin: str, corps: bytes, mise_a_jour: MiseAJour)
         if not mise_a_jour.lancer(cles):
             return HTTPStatus.CONFLICT, {"erreur": "une mise a jour est deja en cours"}
         return HTTPStatus.ACCEPTED, {"miseAJour": mise_a_jour.etat()}
+    if methode == "POST" and url.path == "/api/debouches/extraire":
+        return extraire_debouches(corps)
     return HTTPStatus.NOT_FOUND, {"erreur": "route inconnue"}
 
 
