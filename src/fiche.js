@@ -41,10 +41,28 @@ function debouchesDuLycee(r,scei){
   const requete=encodeURIComponent(`résultats concours ${r.fil} ${r.etab} ${r.ville||""}`);
   const liens=[scei.palmares&&`<a class="btn ghost" href="${esc(scei.palmares)}" target="_blank" rel="noopener">Palmarès des prépas (L'Étudiant)</a>`,
     scei.recherche&&`<a class="btn ghost" href="${esc(scei.recherche.replace("{q}",requete))}" target="_blank" rel="noopener">Résultats publiés par le lycée</a>`].filter(Boolean).join(" ");
-  const saisie=r.deb?`<p><b>${r.deb.total} intégrés</b> dans ${r.deb.ecoles} école${r.deb.ecoles>1?"s":""} (vos saisies) :</p>
+  const source=r.debSource?` Source : <a href="${esc(r.debSource.url)}" target="_blank" rel="noopener">résultats du lycée</a>${r.debSource.annee?" ("+r.debSource.annee+")":""}.`:" (vos saisies)";
+  const saisie=r.deb?`<p><b>${r.deb.total} intégrés</b> dans ${r.deb.ecoles} école${r.deb.ecoles>1?"s":""}.${source}</p>
     <ol>${r.deb.top.map(e=>`<li>${esc(e.ecole)} — ${e.integres}</li>`).join("")}</ol>`
-    :`<p class="hint">Aucun débouché saisi pour cette prépa : importez-les depuis l'onglet « Données ».</p>`;
-  return `<h3>Débouchés de cette prépa</h3>${saisie}<p>${liens}</p>`;
+    :`<p class="hint">Aucun débouché enregistré pour cette prépa.</p>`;
+  return `<h3>Débouchés de cette prépa</h3>${saisie}
+    <div class="deb-chercher" data-prepa="${r.id}" data-filiere="${esc(r.fil)}">
+      <p class="hint">Pour les récupérer : ouvrez la recherche, repérez la page « résultats aux concours » ou « intégrations » du lycée, puis collez son adresse (page ou PDF).</p>
+      <p>${liens}</p>
+      <div class="cityrow"><input type="url" id="deb-url" placeholder="https://… page ou PDF de résultats" aria-label="Adresse de la page de résultats du lycée">
+        <button type="button" class="btn" data-extraire>Extraire</button></div>
+      <p class="hint" id="deb-etat" role="status"></p><div id="deb-proposition"></div>
+    </div>`;
+}
+
+/* Rend le tableau de validation des écoles extraites (réponse de POST /api/debouches/extraire) :
+   chaque ligne se décoche ou se corrige avant enregistrement. */
+export function htmlPropositionDebouches(res,filiere){
+  return `<p class="hint">${res.ecoles.length} écoles lues dans <a href="${esc(res.source)}" target="_blank" rel="noopener">ce document</a>${res.annee?" ("+res.annee+")":""}, classes de ${esc(filiere==="BCPST"?"BCPST":"2e année suivant la "+filiere)}. Vérifiez avant d'enregistrer : la lecture automatique peut se tromper.</p>
+    <div class="compare-wrap"><table class="compare deb-table"><thead><tr><th scope="col">Garder</th><th scope="col">École</th><th scope="col">Intégrés</th></tr></thead><tbody>
+    ${res.ecoles.map((e,i)=>`<tr><td><input type="checkbox" checked aria-label="Garder la ligne ${i+1}"></td><td><input type="text" value="${esc(e.ecole)}" aria-label="École, ligne ${i+1}"></td><td><input type="number" min="1" max="999" value="${e.integres}" aria-label="Intégrés, ligne ${i+1}"></td></tr>`).join("")}
+    </tbody></table></div>
+    <p><button type="button" class="btn" data-enregistrer-deb data-source="${esc(res.source)}" data-annee="${res.annee??""}">Enregistrer pour cette prépa</button></p>`;
 }
 
 /* Rend le HTML de la fiche. annees : meta.sessionsHist ; session : meta.session ; scei : {modele, annee} (config.js). */
