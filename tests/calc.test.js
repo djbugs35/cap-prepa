@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {score,position,chance,estimation,libelleFourchette,raisons,reglagesDepuis,REGLAGES,tauxLisse,estInstable,avertissementMathsExpertes,filterRows,sortRows,vowKey,balanceAdvice,norm,dist,rowsFromData,tauxRef,internatInconnu,W} from "../src/calc.js";
+import {score,position,chance,estimation,libelleFourchette,raisons,reglagesDepuis,REGLAGES,tauxLisse,estInstable,avertissementMathsExpertes,historiqueTaux,basculerComparaison,regrouperVoeux,encoderPartage,decoderPartage,filterRows,sortRows,vowKey,balanceAdvice,norm,dist,rowsFromData,tauxRef,internatInconnu,W} from "../src/calc.js";
 
 const EL={n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F"};
 const row=o=>Object.assign({id:1,etab:"Lycée Test",ville:"Rennes",det:"",fil:"MPSI",lat:48.111,lon:-1.68,pub:true,intern:true,internatCode:1,
@@ -143,4 +143,35 @@ test("avertissementMathsExpertes : seulement sans l'option et si MPSI ou MP2I es
   assert.match(avertissementMathsExpertes({mxon:false},["MPSI","MP2I","PCSI"]),/MPSI et MP2I/);
   assert.equal(avertissementMathsExpertes({mxon:true},["MPSI"]),null);
   assert.equal(avertissementMathsExpertes({mxon:false},["PCSI"]),null);
+});
+
+test("historiqueTaux : années alignées sur les taux, années inconnues retirées",()=>{
+  assert.deepEqual(historiqueTaux(row({taux:50,tauxHist:[40,null]}),[2023,2024],2025),[{annee:2023,taux:40},{annee:2025,taux:50}]);
+  assert.deepEqual(historiqueTaux(row({taux:50,tauxHist:[]}),[],2025),[{annee:2025,taux:50}]);
+});
+test("basculerComparaison : ajoute, retire, et garde les 4 plus récentes",()=>{
+  assert.deepEqual(basculerComparaison([1,2],3),[1,2,3]);
+  assert.deepEqual(basculerComparaison([1,2,3],2),[1,3]);
+  assert.deepEqual(basculerComparaison([1,2,3,4],5),[2,3,4,5]);
+});
+
+test("regrouperVoeux : les écoles d'un même concours forment un vœu à sous-vœux",()=>{
+  const g=regrouperVoeux([row({id:1}),row({fil:"ING",id:10,etab:"Polytech Nantes",det:"Concours Geipi Polytech · Bac général"}),
+    row({fil:"ING",id:11,etab:"Polytech Tours",det:"Concours Geipi Polytech · Bac général"}),row({fil:"ING",id:12,etab:"EPF",det:"Bac général"})]);
+  assert.equal(g.length,3);
+  assert.equal(g[0].reseau,null);
+  assert.equal(g[1].reseau,"Concours Geipi Polytech");assert.deepEqual(g[1].formations.map(r=>r.id),[10,11]);
+  assert.equal(g[2].reseau,null);
+});
+test("partage : le fragment redonne la liste, les notes et les choix d'internat",()=>{
+  const st={basket:[3,7],n:EL.n,mxon:false,s3type:"SI",avis:"TF",internats:{3:"deux",99:"sans"}};
+  const h=encoderPartage(st);
+  assert.match(h,/^#/);
+  assert.deepEqual(decoderPartage(h),{basket:[3,7],n:EL.n,mxon:false,s3type:"SI",avis:"TF",internats:{3:"deux"}}); // 99 hors liste
+});
+test("partage : valeurs invalides ignorées, fragment étranger refusé",()=>{
+  const d=decoderPartage("#liste=1,abc,-2&notes=12,25,1,1,1,1,1&avis=XX&internat=1:peut-etre");
+  assert.deepEqual(d,{basket:[1],internats:{}});
+  assert.equal(decoderPartage("#autre=1"),null);
+  assert.equal(decoderPartage(""),null);
 });
