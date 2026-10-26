@@ -65,6 +65,8 @@ class MiseAJour:
             self._noter("Reconstruction de data/formations.json…")
             texte, meta = ud.construire_formations(self.dossier)
             ud.ecrire_atomique(self.sortie, texte)
+            if ud.ecrire_lycees(self.dossier, self.sortie.with_name("lycees.json")):
+                self._noter("Lycées : data/lycees.json reconstruit.")
             self._noter(
                 f"{meta['formations']} formations, session {meta['session']}, historique {meta['sessionsHist']}."
             )

@@ -1,7 +1,7 @@
 /* Cap Prépa — aide aux vœux Parcoursup (CPGE scientifiques et écoles d'ingénieurs post-bac).
    Données : data/formations.json, produit par scripts/update_data.py à partir de l'open data Parcoursup.
    Paramètres d'adresse : ?ville=Rennes&rayon=150&filieres=MPSI,PCSI  (ou ?lat=48.11&lon=-1.68) */
-import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,estimation,basculerComparaison,encoderPartage,decoderPartage,libelleFourchette,reglagesDepuis,avertissementMathsExpertes,filterRows,sortRows,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
+import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,estimation,basculerComparaison,encoderPartage,decoderPartage,lyceesFromData,chercherLycees,libelleFourchette,reglagesDepuis,avertissementMathsExpertes,filterRows,sortRows,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
 import {geocode,suggestions} from "./geo.js";
 import {renderSvgMap} from "./carte.js";
 import {chargerLeaflet,creerCarteOsm} from "./carte-osm.js";
@@ -12,7 +12,7 @@ import {creerOngletDonnees} from "./donnees.js";
 const CFG=Object.assign({
   villeParDefaut:"Rennes",rayonParDefaut:150,
   filieresParDefaut:["MPSI","MP2I","PCSI","PTSI","ING"],
-  fichierDonnees:"data/formations.json",geoApi:"https://geo.api.gouv.fr/communes",
+  fichierDonnees:"data/formations.json",fichierLycees:"data/lycees.json",geoApi:"https://geo.api.gouv.fr/communes",
   sceiStatistiques:"https://www.scei-concours.fr/stat{annee}/{filiere}.html",sceiAnnee:2025,
   carteOsm:{tuiles:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",attribution:"&copy; contributeurs OpenStreetMap"},
   carteLeaflet:{
@@ -31,7 +31,7 @@ const fmt=x=>(Math.round(x*10)/10).toFixed(1).replace(".",",");
 
 // ---------- état ----------
 const DEF={home:null,radius:CFG.rayonParDefaut,fils:CFG.filieresParDefaut.filter(f=>W[f]),pub:false,intern:false,
-  n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F",sort:"chance",q:"",basket:[],compare:[],internats:{}};
+  n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F",sort:"chance",q:"",basket:[],compare:[],internats:{},lycee:null,academie:null};
 let st=JSON.parse(JSON.stringify(DEF));
 try{const s=localStorage.getItem("capprepa");if(s){const o=JSON.parse(s);st=Object.assign(st,o);st.n=Object.assign({},DEF.n,o.n||{});}}catch(e){}
 st.fils=st.fils.filter(f=>W[f]); // filières retirées depuis la dernière visite
@@ -51,11 +51,49 @@ async function setCity(name,quiet){
   upd();return true;
 }
 
+// ---------- lycée d'origine ----------
+let lycees=null,suggestionsLycee=[];
+// lycees.json (≈ 220 Ko) n'est chargé qu'au premier usage du champ.
+async function chargerLycees(){
+  if(lycees) return lycees;
+  try{const r=await fetch(CFG.fichierLycees);if(!r.ok)throw new Error("HTTP "+r.status);lycees=lyceesFromData(await r.json());}
+  catch(e){lycees=[];$("lycee-msg").textContent="Liste des lycées indisponible ("+e.message+"). Mettez les données à jour depuis l'onglet « Données ».";}
+  return lycees;
+}
+const libelleLycee=l=>l.nom+" — "+l.commune;
+// Le lycée fixe le point de départ et l'académie de l'élève ; une ville choisie ensuite ne change que le point de départ.
+function choisirLycee(l,quiet){
+  st.lycee={uai:l.uai,nom:l.nom,commune:l.commune};st.academie=l.academie;
+  st.home={name:l.nom+" ("+l.commune+")",lat:l.lat,lon:l.lon,dep:l.dep};
+  $("lycee").value=libelleLycee(l);$("city").value=l.commune;
+  $("lycee-msg").textContent=quiet?"":`Point de départ : ${l.nom}, ${l.commune}. Académie de ${l.academie}.`;
+  upd();
+}
+async function validerLycee(texte){
+  if(!texte){st.lycee=null;st.academie=null;$("lycee-msg").textContent="Lycée retiré : l'académie de l'élève n'est plus prise en compte.";upd();return;}
+  const L=await chargerLycees();
+  const exact=L.find(l=>libelleLycee(l)===texte),trouves=exact?[exact]:chercherLycees(L,texte,2);
+  if(trouves.length===1) choisirLycee(trouves[0]);
+  else $("lycee-msg").textContent=trouves.length?"Plusieurs lycées correspondent : précisez la commune ou choisissez dans la liste.":"Lycée introuvable. Essayez le nom sans « lycée », ou la commune.";
+}
+function initLycee(){
+  let t=null;
+  if(st.lycee) $("lycee").value=st.lycee.nom+" — "+st.lycee.commune;
+  $("lycee").onfocus=()=>chargerLycees();
+  $("lycee").oninput=e=>{clearTimeout(t);t=setTimeout(async()=>{
+    suggestionsLycee=chercherLycees(await chargerLycees(),e.target.value);
+    $("lycee-list").innerHTML=suggestionsLycee.map(l=>`<option value="${esc(libelleLycee(l))}">${esc(l.academie||"")}</option>`).join("");
+  },200);};
+  $("lycee-form").onsubmit=e=>{e.preventDefault();validerLycee($("lycee").value.trim());};
+  $("lycee").onchange=e=>{const v=e.target.value.trim();if(suggestionsLycee.some(l=>libelleLycee(l)===v))validerLycee(v);};
+}
+
 // ---------- adresse (paramètres) ----------
 function readParams(){
   const p=new URLSearchParams(location.search);
   const out={};
   if(p.get("ville")) out.ville=p.get("ville");
+  if(/^\w{8}$/.test(p.get("lycee")||"")) out.lycee=p.get("lycee");
   if(p.get("lat")&&p.get("lon")&&!isNaN(+p.get("lat"))&&!isNaN(+p.get("lon"))) out.coords={name:p.get("ville")||"Point choisi",lat:+p.get("lat"),lon:+p.get("lon")};
   if(p.get("rayon")&&!isNaN(+p.get("rayon"))) out.rayon=Math.max(25,Math.min(600,+p.get("rayon")));
   if(p.get("filieres")){const f=p.get("filieres").split(",").map(s=>s.trim().toUpperCase()).filter(x=>W[x]);if(f.length)out.fils=f;}
@@ -64,7 +102,8 @@ function readParams(){
 function shareUrl(){
   const u=new URL(location.href);
   const parts=[];
-  if(st.home) parts.push("ville="+encodeURIComponent(st.home.name));
+  if(st.lycee) parts.push("lycee="+encodeURIComponent(st.lycee.uai));
+  else if(st.home) parts.push("ville="+encodeURIComponent(st.home.name));
   parts.push("rayon="+st.radius,"filieres="+st.fils.join(","));
   u.search="?"+parts.join("&");u.hash="";
   return u.toString();
@@ -273,10 +312,12 @@ async function start(){
   if(partage){Object.assign(st,partage);st.n=Object.assign({},DEF.n,st.n);}
   if(p.rayon) st.radius=p.rayon;
   if(p.fils) st.fils=p.fils;
-  initControls();initOnglets();
-  if(p.coords){st.home=p.coords;$("city").value=p.coords.name;upd();}
+  initControls();initOnglets();initLycee();
+  const lyceeLien=p.lycee&&(await chargerLycees()).find(l=>l.uai===p.lycee);
+  if(lyceeLien) choisirLycee(lyceeLien,true);
+  else if(p.coords){st.home=p.coords;$("city").value=p.coords.name;upd();}
   else if(p.ville) await setCity(p.ville,true);
-  else if(st.home){$("city").value=st.home.name;upd();}
+  else if(st.home){$("city").value=st.lycee?st.lycee.commune:st.home.name;upd();}
   else await setCity(CFG.villeParDefaut,true);
   const L=await chargerLeaflet(CFG.carteLeaflet);
   if(L) basculerCarte(L);
