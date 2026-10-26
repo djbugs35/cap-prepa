@@ -21,12 +21,12 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --paper:#11141E; --card:#181C29; --ink:#E7EAF3; --muted:#A0A7BD; --line:#2B3144; --soft:#1F2434;
   --accent:#8EA8F0; --accent-soft:#232C48; --seyes:#2E3A5E; --marge:#E0646C;
-  --c1:#3FBF8A; --c2:#8CC75B; --c3:#E5B83A; --c4:#F08650; --c5:#EE6A6A; --c0:#7C8399;
+  --c1:#3FBF8A; --c2:#8CC75B; --c3:#E5B83A; --c4:#F08650; --c5:#EE6A6A; --c0:#868DA3;
   --m1:#C9D5FA; --m2:#8EA8F0; --m3:#5B74BC; --m4:#38487A; --m5:#262E48; color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#11141E; --card:#181C29; --ink:#E7EAF3; --muted:#A0A7BD; --line:#2B3144; --soft:#1F2434;
   --accent:#8EA8F0; --accent-soft:#232C48; --seyes:#2E3A5E; --marge:#E0646C;
-  --c1:#3FBF8A; --c2:#8CC75B; --c3:#E5B83A; --c4:#F08650; --c5:#EE6A6A; --c0:#7C8399;
+  --c1:#3FBF8A; --c2:#8CC75B; --c3:#E5B83A; --c4:#F08650; --c5:#EE6A6A; --c0:#868DA3;
   --m1:#C9D5FA; --m2:#8EA8F0; --m3:#5B74BC; --m4:#38487A; --m5:#262E48; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -54,7 +54,9 @@ select,input[type=text]{font:inherit;color:var(--ink);background:var(--soft);bor
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:999px;padding:5px 11px;cursor:pointer}
 .chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--card)}
-.chip:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chip:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible,summary:focus-visible,#map-osm:focus-visible,.item:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.skip{position:absolute;left:-9999px;top:8px;z-index:1000;background:var(--card);color:var(--accent);padding:8px 12px;border-radius:6px;border:1px solid var(--accent)}
+.skip:focus{left:8px}
 .check{display:flex;gap:8px;align-items:center;font-size:14px}
 .check input{accent-color:var(--accent);width:16px;height:16px}
 .hint{font-size:12.5px;color:var(--muted);margin:0}
@@ -140,6 +142,7 @@ dialog#fiche ul{margin:6px 0 0;padding-left:18px}
 .btn{font:inherit;font-size:12.5px;font-weight:600;border-radius:6px;border:1px solid var(--accent);background:transparent;color:var(--accent);padding:4px 8px;cursor:pointer;text-align:center;text-decoration:none}
 .btn.on{background:var(--accent);color:var(--card)}
 .btn.ghost{border-color:var(--line);color:var(--muted)}
+.btn.ghost.on{background:var(--accent);border-color:var(--accent);color:var(--card)}
 @media (max-width:1100px){
   .item{grid-template-columns:110px minmax(0,1fr) 90px;grid-template-areas:"c n n" "d t a" "m m m"}
   .item.head{display:none}
@@ -163,6 +166,7 @@ details.method p{margin:8px 0}
 </style>
 </head>
 <body>
+<a class="skip" href="#list">Aller à la liste des formations</a>
 <header class="seyes"><div class="in">
   <h1>Cap Prépa <span id="h-city"></span></h1>
   <p>Prépas scientifiques et écoles d'ingénieurs post-bac autour de votre ville, d'après les données ouvertes Parcoursup <span id="h-session">2025</span>. Réglez le profil à gauche, comparez, puis composez une liste de vœux équilibrée.</p>
@@ -219,7 +223,7 @@ details.method p{margin:8px 0}
   </section>
 
   <section class="panel" aria-labelledby="h-bk">
-    <h2 id="h-bk">Ma liste de vœux</h2>
+    <h2 id="h-bk" tabindex="-1">Ma liste de vœux</h2>
     <div class="basket" id="basket"></div>
   </section>
 
@@ -232,7 +236,8 @@ details.method p{margin:8px 0}
     <span class="big" id="count"></span>
     <span class="legend" id="legend"></span>
   </div>
-  <div class="mapbox"><div id="map-osm" hidden aria-label="Carte OpenStreetMap des formations autour du point de départ"></div><svg id="map" viewBox="0 0 640 400" role="img" aria-label="Carte schématique des formations autour du point de départ"></svg></div>
+  <p class="sr-only" id="map-aide">Carte d'appoint : la liste qui suit contient les mêmes formations, utilisable au clavier.</p>
+  <div class="mapbox"><div id="map-osm" hidden role="region" aria-label="Carte OpenStreetMap des formations autour du point de départ" aria-describedby="map-aide"></div><svg id="map" viewBox="0 0 640 400" role="img" aria-label="Carte schématique des formations autour du point de départ"></svg></div>
   <div class="toolbar">
     <div class="grp"><label for="sort">Trier par</label>
       <select id="sort">
@@ -245,7 +250,7 @@ details.method p{margin:8px 0}
     <div class="grp"><label for="q">Chercher</label><input type="text" id="q" placeholder="Lycée, ville, école…"></div>
   </div>
   <div class="note compare-bar" id="compare-bar" hidden></div>
-  <div class="list" id="list"></div>
+  <div class="list" id="list" role="list" aria-label="Formations" tabindex="-1"></div>
   <dialog id="fiche" aria-labelledby="fiche-titre">
     <form method="dialog" class="fiche-fermer"><button class="btn ghost" aria-label="Fermer">Fermer</button></form>
     <div id="fiche-corps"></div>

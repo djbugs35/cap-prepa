@@ -114,12 +114,12 @@ function tauxCell(r,prevY){
 }
 function renderList(all){
   const shown=all.slice(0,limit),prevY=(META.sessionsHist||[]).slice(-1)[0]||META.previousSession||"";
-  let h=`<div class="item head"><span>Chances</span><span>Formation</span><span title="Taux d'accès estimé pour les élèves de terminale générale">Accès term. G</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
-  if(!all.length) h+=`<div class="empty">${st.home?"Aucune formation ne correspond. Élargissez le rayon ou ajoutez une filière.":"Indiquez une ville de résidence pour commencer."}</div>`;
+  let h=`<div class="item head" aria-hidden="true"><span>Chances</span><span>Formation</span><span title="Taux d'accès estimé pour les élèves de terminale générale">Accès term. G</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
+  if(!all.length) h+=`<div class="empty" role="listitem">${st.home?"Aucune formation ne correspond. Élargissez le rayon ou ajoutez une filière.":"Indiquez une ville de résidence pour commencer."}</div>`;
   shown.forEach(r=>{
     const inB=st.basket.includes(r.id),inC=st.compare.includes(r.id);
     const intern=r.filles?" · internat filles":r.intern?" · internat":internatInconnu(r)?" · internat non renseigné":"";
-    h+=`<div class="item${flashId===r.id?" flash":""}" id="it-${r.id}">
+    h+=`<div class="item${flashId===r.id?" flash":""}" id="it-${r.id}" role="listitem" tabindex="-1">
       <span class="c-ch"><span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span>${r.ch.bas.k!==r.ch.haut.k?`<small title="Selon que les notes finales sont de ${fmt(R.ecartFourchette)} point plus basses ou plus hautes">${libelleFourchette(r.ch)}</small>`:""}</span>
       <span class="c-n name"><span class="badge${r.pub?"":" priv"}">${r.fil==="ING"?"École":r.fil}</span>${esc(r.etab)}<small>${esc(r.ville)} · ${Math.round(r.d)} km${r.det?" · "+esc(r.det):""}${r.pub?"":" · privé"}${intern}</small>
         <details class="why"><summary>Pourquoi ?</summary><ul>${r.ch.raisons.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></details></span>
@@ -128,7 +128,7 @@ function renderList(all){
       <span class="c-d num">${r.aca} %<small>${r.capa} places · ${(r.voeux??0).toLocaleString("fr-FR")} vœux</small></span>
       <span class="c-a acts"><button type="button" class="btn${inB?" on":""}" data-add="${r.id}">${inB?"Dans la liste":"Ajouter"}</button><button type="button" class="btn ghost" data-fiche="${r.id}">Fiche</button><button type="button" class="btn ghost${inC?" on":""}" data-cmp="${r.id}" aria-pressed="${inC}">Comparer</button></span>
     </div>`;});
-  if(all.length>limit) h+=`<div class="more"><button type="button" class="btn" id="more">Afficher ${Math.min(60,all.length-limit)} de plus (${all.length-limit} restantes)</button></div>`;
+  if(all.length>limit) h+=`<div class="more" role="listitem"><button type="button" class="btn" id="more">Afficher ${Math.min(60,all.length-limit)} de plus (${all.length-limit} restantes)</button></div>`;
   $("list").innerHTML=h;
   const m=$("more");if(m)m.onclick=()=>{limit+=60;renderList(all);};
 }
@@ -164,7 +164,18 @@ function basculerCarte(L){
 function selectionner(id){
   flashId=id;
   const all=sortRows(filtered(),st.sort);const idx=all.findIndex(r=>r.id===id);if(idx>=limit)limit=idx+10;renderList(all);
-  const el=document.getElementById("it-"+id);if(el)el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});
+  const el=document.getElementById("it-"+id);if(!el)return;
+  el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});
+  el.focus({preventScroll:true}); // au clavier, la tabulation repart de la formation choisie
+}
+// Le rendu remplace le HTML : on redonne le focus au bouton équivalent, sinon le clavier repart du haut de la page.
+const ATTRS_FOCUS=["data-add","data-cmp","data-fiche","data-rm","data-internat"];
+function garderFocus(rendre){
+  const a=document.activeElement,attr=a&&ATTRS_FOCUS.find(x=>a.hasAttribute(x)),val=attr&&a.getAttribute(attr);
+  rendre();
+  if(!attr) return;
+  const cible=document.querySelector(`[${attr}="${val}"]`)||(attr==="data-rm"?$("h-bk"):null);
+  if(cible) cible.focus();
 }
 function upd(keepLimit){
   if(!keepLimit){limit=60;flashId=null;}
@@ -203,9 +214,9 @@ function initControls(){
     const f=e.target.closest("[data-fiche]");
     if(f){ouvrirDialogue(htmlFiche(formationsParId([+f.dataset.fiche])[0],META.sessionsHist||[],META.session));return;}
     const c=e.target.closest("[data-cmp]");
-    if(c){st.compare=basculerComparaison(st.compare,+c.dataset.cmp);upd(true);return;}
+    if(c){st.compare=basculerComparaison(st.compare,+c.dataset.cmp);garderFocus(()=>upd(true));return;}
     const b=e.target.closest("[data-add]");if(!b)return;const id=+b.dataset.add;
-    st.basket=st.basket.includes(id)?st.basket.filter(x=>x!==id):[...st.basket,id];upd(true);});
+    st.basket=st.basket.includes(id)?st.basket.filter(x=>x!==id):[...st.basket,id];garderFocus(()=>upd(true));});
   $("compare-bar").addEventListener("click",e=>{
     if(e.target.id==="cmp-go") ouvrirDialogue(htmlComparaison(formationsParId(st.compare)));
     if(e.target.id==="cmp-clear"){st.compare=[];upd(true);}});
@@ -216,9 +227,9 @@ function initControls(){
       try{await navigator.clipboard.writeText(u);$("bk-msg").textContent="Lien copié. Il contient les notes saisies : ne le partagez qu'avec des personnes de confiance.";}
       catch(err){$("bk-msg").textContent=u;}
       return;}
-    const b=e.target.closest("[data-rm]");if(!b)return;st.basket=st.basket.filter(x=>x!==+b.dataset.rm);upd(true);});
+    const b=e.target.closest("[data-rm]");if(!b)return;st.basket=st.basket.filter(x=>x!==+b.dataset.rm);garderFocus(()=>upd(true));});
   $("basket").addEventListener("change",e=>{const s=e.target.closest("[data-internat]");if(!s)return;
-    st.internats={...st.internats,[s.dataset.internat]:s.value};save();renderBasket();});
+    st.internats={...st.internats,[s.dataset.internat]:s.value};save();garderFocus(renderBasket);});
 }
 
 // ---------- démarrage ----------
