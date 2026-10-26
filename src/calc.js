@@ -104,6 +104,13 @@ export function estInstable(r,ecart=REGLAGES.ecartTauxInstable){
   const v=tauxAnnuels(r).filter(x=>x!=null);
   return v.length>=2&&Math.max(...v)-Math.min(...v)>=ecart;
 }
+// Filières de 2e année accessibles après chaque CPGE de 1re année (concours SCEI de fin de 2e année).
+export const SUITES={MPSI:["MP","MPI","PSI"],MP2I:["MPI","MP"],PCSI:["PC","PSI"],PTSI:["PT","PSI"],BCPST:["BCPST"]};
+// Rend [{filiere, url}] des statistiques SCEI des concours visés après la formation ; [] pour une école post-bac.
+// modele : adresse avec {annee} et {filiere} (config.js, clé sceiStatistiques).
+export function liensApresPrepa(fil,modele,annee){
+  return (SUITES[fil]||[]).map(f=>({filiere:f,url:modele.replace("{annee}",annee).replace("{filiere}",f.toLowerCase())}));
+}
 // Rend [{annee, taux}] des sessions connues, de la plus ancienne à la plus récente. annees : meta.sessionsHist.
 export function historiqueTaux(r,annees,session){
   const ans=[...annees,session];

@@ -1,6 +1,6 @@
 /* Fiche détaillée d'une formation et comparaison côte à côte (2 à 4 formations), rendues en HTML.
    Les formations reçues portent déjà leur estimation (r.ch, voir estimation() dans calc.js) et leur distance (r.d). */
-import {libelleFourchette,historiqueTaux,internatInconnu,tauxRef} from "./calc.js";
+import {libelleFourchette,historiqueTaux,internatInconnu,tauxRef,liensApresPrepa} from "./calc.js";
 
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const MENTIONS=["TB félicitations","TB","B","AB","Sans mention"];
@@ -21,8 +21,16 @@ function barresMentions(mp){
   return `<div class="histo" role="list">${mp.map((v,i)=>`<div role="listitem"><span>${MENTIONS[i]}</span><span class="bar"><i style="width:${(v||0)/tot*100}%;background:var(--m${i+1})"></i></span><span class="mono">${pct(v??0)}</span></div>`).join("")}</div>`;
 }
 
-/* Rend le HTML de la fiche. annees : meta.sessionsHist ; session : meta.session. */
-export function htmlFiche(r,annees,session){
+function apresPrepa(r,scei){
+  const liens=liensApresPrepa(r.fil,scei.modele,scei.annee);
+  if(!liens.length) return "";
+  return `<section><h3>Après la prépa</h3><p class="hint">En fin de 2e année, les concours des écoles d'ingénieurs. Inscrits, admissibles, intégrés et places par école, session ${scei.annee} (SCEI) :</p>
+    <p>${liens.map(l=>`<a class="btn ghost" href="${esc(l.url)}" target="_blank" rel="noopener">${l.filiere}</a>`).join(" ")}</p>
+    <p class="hint">Le SCEI ne publie plus de résultats par lycée : ces chiffres valent pour toute la filière.</p></section>`;
+}
+
+/* Rend le HTML de la fiche. annees : meta.sessionsHist ; session : meta.session ; scei : {modele, annee} (config.js). */
+export function htmlFiche(r,annees,session,scei){
   const e=r.ch,rang=r.rang!=null?`rang ${nb(r.rang)}${r.cla!=null?" sur "+nb(r.cla)+" classés":""}`:"non publié";
   return `<h2 id="fiche-titre"><span class="badge${r.pub?"":" priv"}">${filiere(r)}</span>${esc(r.etab)}</h2>
   <p class="hint">${esc(r.ville||"")}${r.dep?" ("+esc(r.dep)+")":""} · ${Math.round(r.d)} km${r.det?" · "+esc(r.det):""} · ${r.pub?"public":"privé"}</p>
@@ -37,6 +45,7 @@ export function htmlFiche(r,annees,session){
     <dt>Dernier appelé</dt><dd>${rang}</dd><dt>Admis</dt><dd>${nb(r.admis)}</dd>
     <dt>Boursiers</dt><dd>${pct(r.bours)}</dd><dt>Filles</dt><dd>${pct(r.fem)}</dd>
     <dt>Même académie</dt><dd>${pct(r.aca)}</dd><dt>Internat</dt><dd>${internat(r)}</dd></dl></section>
+  ${scei?apresPrepa(r,scei):""}
   <p><a class="btn" href="${esc(lienParcoursup(r))}" target="_blank" rel="noopener">Fiche officielle sur Parcoursup</a></p>`;
 }
 
