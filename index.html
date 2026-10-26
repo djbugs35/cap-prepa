@@ -81,7 +81,7 @@ main{display:flex;flex-direction:column;gap:18px;min-width:0}
 .toolbar select{width:auto}
 .toolbar input[type=text]{width:220px;max-width:100%}
 .list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;background:var(--card);overflow:hidden}
-.item{display:grid;grid-template-columns:118px minmax(0,1.6fr) 92px minmax(150px,1.1fr) 110px 86px;gap:12px;align-items:center;padding:11px 14px;border-top:1px solid var(--line)}
+.item{display:grid;grid-template-columns:118px minmax(0,1.6fr) 92px 92px minmax(150px,1.1fr) 110px 86px;gap:12px;align-items:center;padding:11px 14px;border-top:1px solid var(--line)}
 .item:first-child{border-top:0}
 .item.head{background:var(--soft);font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-block:8px}
 .item.flash{background:var(--accent-soft)}
@@ -100,6 +100,7 @@ main{display:flex;flex-direction:column;gap:18px;min-width:0}
 .why summary{cursor:pointer;width:max-content}
 .why ul{margin:4px 0 0;padding-left:18px}
 .warn{color:var(--c4)}
+.c-s .synth{display:block;font-size:16px;font-weight:700}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 dialog#fiche{width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 48px);border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);padding:20px}
 dialog#fiche::backdrop{background:rgba(0,0,0,.45)}
@@ -156,9 +157,9 @@ dialog#fiche ul{margin:6px 0 0;padding-left:18px}
 .btn.ghost{border-color:var(--line);color:var(--muted)}
 .btn.ghost.on{background:var(--accent);border-color:var(--accent);color:var(--card)}
 @media (max-width:1100px){
-  .item{grid-template-columns:110px minmax(0,1fr) 90px;grid-template-areas:"c n n" "d t a" "m m m"}
+  .item{grid-template-columns:110px minmax(0,1fr) 90px;grid-template-areas:"c n n" "d t s" "m m a"}
   .item.head{display:none}
-  .item>.c-ch{grid-area:c}.item>.c-n{grid-area:n}.item>.c-d{grid-area:d}.item>.c-t{grid-area:t}.item>.c-m{grid-area:m}.item>.c-a{grid-area:a}
+  .item>.c-ch{grid-area:c}.item>.c-n{grid-area:n}.item>.c-d{grid-area:d}.item>.c-t{grid-area:t}.item>.c-m{grid-area:m}.item>.c-a{grid-area:a}.item>.c-s{grid-area:s}
   .item>.c-a{flex-direction:row;justify-content:flex-end}
 }
 .empty{padding:28px 16px;text-align:center;color:var(--muted)}
@@ -268,6 +269,7 @@ details.method p{margin:8px 0}
     <div class="grp"><label for="sort">Trier par</label>
       <select id="sort">
         <option value="chance">Chances estimées</option>
+        <option value="synthese">Note de synthèse des classements</option>
         <option value="dist">Distance</option>
         <option value="sel">Sélectivité (taux d'accès)</option>
         <option value="level">Niveau des admis</option>
@@ -290,6 +292,7 @@ details.method p{margin:8px 0}
       <p><b>Profil des admis.</b> Répartition des néo-bacheliers admis par mention au bac (TB félicitations, TB, B, AB, sans mention). Le trait rouge situe le score de dossier de l'élève dans cette répartition, en assimilant 18+ à TB félicitations, 16–18 à TB, 14–16 à B et 12–14 à AB.</p>
       <p><b>Score de dossier.</b> Les formations ne publient pas de barème chiffré. Les pondérations utilisées ici sont des hypothèses inspirées des critères affichés sur les fiches Parcoursup (maths très lourdes en MPSI, physique-chimie en PCSI, SVT en BCPST, profil plus global en école post-bac). L'avis du lycée décale le score de quelques dixièmes. Lisez toujours la rubrique « Critères généraux d'examen des vœux » de la fiche officielle.</p>
       <p><b>Chances estimées.</b> Indice qui combine la position de l'élève parmi les admis (65 %) et le taux d'accès des terminales générales lissé sur trois sessions, la plus récente comptant le plus (35 %). Une formation dont le taux a varié d'au moins 20 points est signalée « instable ». Quand un demi-point de plus ou de moins sur les notes change la catégorie, l'outil affiche une fourchette (par exemple « Possible à probable »). Ces réglages sont modifiables dans <code>config.js</code>. Quand une formation a moins de 15 admis, sa répartition par mention est trop fragile : elle est marquée « Non estimable ». C'est une aide au tri, pas une prédiction : le niveau du lycée d'origine, les appréciations et le rang dans la classe pèsent beaucoup et ne sont pas publics.</p>
+      <p><b>Classements et note de synthèse.</b> Chaque formation est rangée parmi celles de sa famille (CPGE d'un côté, écoles post-bac de l'autre, sur toute la France) selon le niveau des admis (part de mentions TB), la sélectivité (taux d'accès), l'attractivité (vœux par place) et, pour les écoles, l'emploi salarié et le salaire net médian 18 mois après le diplôme (InserSup, ministère, licence ouverte ; seulement quand l'école se relie sans ambiguïté par son code UAI, soit environ 4 écoles sur 10). La note de synthèse /20 est la moyenne pondérée de ces rangs, sur les seuls classements où figure la formation : comparez donc aussi le nombre de classements. Les palmarès de presse ne sont pas sous licence ouverte : importez-les vous-même depuis l'onglet « Données ».</p>
       <p><b>Ce qui manque.</b> Les destinations des anciens élèves par lycée et les taux d'intégration en école après la prépa (publiés par le SCEI, à consulter à part).</p>
     </div>
   </details>

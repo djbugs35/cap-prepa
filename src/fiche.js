@@ -21,6 +21,13 @@ function barresMentions(mp){
   return `<div class="histo" role="list">${mp.map((v,i)=>`<div role="listitem"><span>${MENTIONS[i]}</span><span class="bar"><i style="width:${(v||0)/tot*100}%;background:var(--m${i+1})"></i></span><span class="mono">${pct(v??0)}</span></div>`).join("")}</div>`;
 }
 
+function sectionClassements(r){
+  if(!r.clDetail||!r.clDetail.length) return "";
+  const synth=r.synth?`<p><b class="mono">${String(r.synth.note).replace(".",",")}/20</b> <span class="hint" style="display:inline">note de synthèse sur ${r.synth.n} classement${r.synth.n>1?"s":""}</span></p>`:"";
+  return `<section><h3>Classements</h3>${synth}<dl class="chiffres">${r.clDetail.map(c=>`<dt>${esc(c.nom)}</dt><dd>${esc(c.texte)}</dd>`).join("")}</dl>
+    <p class="hint">Rangs parmi les ${r.fil==="ING"?"écoles post-bac":"CPGE"} de France ; « top 12 % » : seules 12 % font au moins aussi bien.</p></section>`;
+}
+
 function apresPrepa(r,scei){
   const liens=liensApresPrepa(r.fil,scei.modele,scei.annee);
   if(!liens.length) return "";
@@ -37,6 +44,7 @@ export function htmlFiche(r,annees,session,scei){
   <section><h3>Chances estimées</h3>
     <p><span class="pill k${e.cat.k}">${e.cat.l}</span>${e.bas.k!==e.haut.k?` <span class="hint" style="display:inline">${libelleFourchette(e)} selon les notes finales</span>`:""}</p>
     <ul>${e.raisons.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></section>
+  ${sectionClassements(r)}
   <section><h3>Taux d'accès ${r.tauxGen!=null?"des terminales générales":""}</h3>${barresTaux(historiqueTaux(r,annees,session))}
     ${r.tauxGen!=null&&r.tauxGen!==r.taux?`<p class="hint">Taux officiel ${session}, tous candidats confondus : ${r.taux} %.</p>`:""}</section>
   <section><h3>Profil des admis ${session} (mention au bac)</h3>${barresMentions(r.mp)}</section>
@@ -53,6 +61,7 @@ export function htmlFiche(r,annees,session,scei){
 export function htmlComparaison(rs){
   const lignes=[
     ["Chances",r=>`<span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span>${r.ch.bas.k!==r.ch.haut.k?`<br><small>${libelleFourchette(r.ch)}</small>`:""}`],
+    ["Note de synthèse",r=>r.synth?`${String(r.synth.note).replace(".",",")}/20<small>${r.synth.n} classement${r.synth.n>1?"s":""}</small>`:"—"],
     ["Distance",r=>Math.round(r.d)+" km"],
     ["Taux d'accès",r=>pct(tauxRef(r))+(r.ch.instable?" <small>instable</small>":"")],
     ["Admis TB ou TB fél.",r=>pct((r.mp[0]||0)+(r.mp[1]||0))],
@@ -62,6 +71,9 @@ export function htmlComparaison(rs){
     ["Internat",internat],
     ["Statut",r=>r.pub?"Public":"Privé"],
   ];
+  // Une ligne par classement où figure au moins une des formations comparées.
+  const vus=new Map();rs.forEach(r=>(r.clDetail||[]).forEach(c=>vus.set(c.id,c.nom)));
+  for(const [id,nom] of vus) lignes.push([esc(nom),r=>{const c=(r.clDetail||[]).find(x=>x.id===id);return c?esc(c.texte):"—";}]);
   return `<h2 id="fiche-titre">Comparaison</h2><div class="compare-wrap"><table class="compare">
     <thead><tr><th scope="col"><span class="sr-only">Critère</span></th>${rs.map(r=>`<th scope="col"><span class="badge${r.pub?"":" priv"}">${filiere(r)}</span>${esc(r.etab)}<small>${esc(r.ville||"")}</small></th>`).join("")}</tr></thead>
     <tbody>${lignes.map(([l,f])=>`<tr><th scope="row">${l}</th>${rs.map(r=>`<td>${f(r)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
