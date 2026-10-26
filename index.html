@@ -117,6 +117,20 @@ dialog#fiche ul{margin:6px 0 0;padding-left:18px}
 .compare th,.compare td{padding:8px;border-top:1px solid var(--line);text-align:left;vertical-align:top}
 .compare thead th{border-top:0}.compare th small{display:block;font-weight:400;color:var(--muted)}
 .compare-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.bk-row.sous{padding-left:16px}
+.bk-reseau{font-size:13px;margin-top:4px}
+.bk-int{display:block;margin-top:3px;font:inherit;font-size:12px}
+.bk-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+#impression{display:none}
+@media print{
+  body>*:not(#impression){display:none!important}
+  body{background:#fff}
+  #impression{display:block;color:#000;font:10.5pt/1.35 var(--font-body)}
+  #impression h1{font-size:16pt;margin:0 0 4px}
+  #impression table{border-collapse:collapse;width:100%;margin:10px 0}
+  #impression th,#impression td{border:1px solid #999;padding:4px 6px;text-align:left;vertical-align:top}
+  #impression tr{break-inside:avoid}
+}
 .mbar{position:relative;height:12px;display:flex;border-radius:3px;overflow:visible}
 .mbar i{display:block;height:100%}
 .mbar i:first-child{border-radius:3px 0 0 3px}.mbar i:last-child{border-radius:0 3px 3px 0}
@@ -252,6 +266,7 @@ details.method p{margin:8px 0}
 </div>
 </div>
 
+<section id="impression" aria-hidden="true"></section>
 <script src="config.js"></script>
 <script type="module" src="src/main.js"></script>
 </body>

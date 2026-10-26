@@ -1,11 +1,12 @@
 /* Cap Prépa — aide aux vœux Parcoursup (CPGE scientifiques et écoles d'ingénieurs post-bac).
    Données : data/formations.json, produit par scripts/update_data.py à partir de l'open data Parcoursup.
    Paramètres d'adresse : ?ville=Rennes&rayon=150&filieres=MPSI,PCSI  (ou ?lat=48.11&lon=-1.68) */
-import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,estimation,basculerComparaison,libelleFourchette,reglagesDepuis,avertissementMathsExpertes,filterRows,sortRows,vowKey,balanceAdvice,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
+import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,estimation,basculerComparaison,encoderPartage,decoderPartage,libelleFourchette,reglagesDepuis,avertissementMathsExpertes,filterRows,sortRows,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
 import {geocode,suggestions} from "./geo.js";
 import {renderSvgMap} from "./carte.js";
 import {chargerLeaflet,creerCarteOsm} from "./carte-osm.js";
 import {htmlFiche,htmlComparaison} from "./fiche.js";
+import {htmlListe,htmlImpression} from "./liste.js";
 
 const CFG=Object.assign({
   villeParDefaut:"Rennes",rayonParDefaut:150,
@@ -28,7 +29,7 @@ const fmt=x=>(Math.round(x*10)/10).toFixed(1).replace(".",",");
 
 // ---------- état ----------
 const DEF={home:null,radius:CFG.rayonParDefaut,fils:CFG.filieresParDefaut.filter(f=>W[f]),pub:false,intern:false,
-  n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F",sort:"chance",q:"",basket:[],compare:[]};
+  n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F",sort:"chance",q:"",basket:[],compare:[],internats:{}};
 let st=JSON.parse(JSON.stringify(DEF));
 try{const s=localStorage.getItem("capprepa");if(s){const o=JSON.parse(s);st=Object.assign(st,o);st.n=Object.assign({},DEF.n,o.n||{});}}catch(e){}
 st.fils=st.fils.filter(f=>W[f]); // filières retirées depuis la dernière visite
@@ -141,16 +142,9 @@ function renderCompareBar(){
   el.innerHTML=`<span>${n} formation${n>1?"s":""} à comparer (4 au plus).</span><button type="button" class="btn" id="cmp-go"${n<2?" disabled":""}>Comparer</button><button type="button" class="btn ghost" id="cmp-clear">Vider</button>`;
 }
 function renderBasket(){
-  const items=formationsParId(st.basket)
-    .sort((a,b)=>(b.ch.c??-1)-(a.ch.c??-1));
-  if(!items.length){$("basket").innerHTML=`<p class="hint">Cliquez sur « Ajouter » pour construire une liste et vérifier qu'elle est équilibrée.</p>`;return;}
-  const cnt=[0,0,0,0,0,0];items.forEach(r=>cnt[r.ch.cat.k]++);
-  const vows=new Set(items.map(vowKey)).size;
-  const cats=[...CH,NON_ESTIMABLE];
-  $("basket").innerHTML=`<div class="balance">${cats.map(c=>cnt[c.k]?`<i style="width:${cnt[c.k]/items.length*100}%;background:var(--c${c.k})" title="${c.l} : ${cnt[c.k]}"></i>`:"").join("")}</div>
-   <p class="advice"><b class="mono">${vows}/10</b> vœux estimés. ${balanceAdvice(cnt,vows)}</p>`+
-   items.map(r=>`<div class="bk-row"><i class="dot" style="background:var(--c${r.ch.cat.k})" title="${r.ch.cat.l}"></i><span>${r.fil==="ING"?"":`<b>${r.fil}</b> `}${esc(r.etab)} <span class="hint" style="display:inline">${Math.round(r.d)} km</span></span><button type="button" class="x" data-rm="${r.id}" aria-label="Retirer ${esc(r.etab)}">×</button></div>`).join("")+
-   `<p class="hint">Un concours commun (Geipi Polytech, Puissance Alpha, Avenir…) compte pour un seul vœu, ses écoles sont des sous-vœux. Règles à vérifier sur Parcoursup.</p>`;
+  const items=formationsParId(st.basket).sort((a,b)=>(b.ch.c??-1)-(a.ch.c??-1));
+  $("basket").innerHTML=htmlListe(items,st.internats);
+  $("impression").innerHTML=items.length?htmlImpression(items,st,st.internats,META.session):"";
 }
 // OpenStreetMap si Leaflet est chargé et les tuiles arrivent, carte schématique sinon.
 function dessinerCarte(){
@@ -215,7 +209,16 @@ function initControls(){
   $("compare-bar").addEventListener("click",e=>{
     if(e.target.id==="cmp-go") ouvrirDialogue(htmlComparaison(formationsParId(st.compare)));
     if(e.target.id==="cmp-clear"){st.compare=[];upd(true);}});
-  $("basket").addEventListener("click",e=>{const b=e.target.closest("[data-rm]");if(!b)return;st.basket=st.basket.filter(x=>x!==+b.dataset.rm);upd(true);});
+  $("basket").addEventListener("click",async e=>{
+    if(e.target.id==="bk-print"){window.print();return;}
+    if(e.target.id==="bk-share"){
+      const u=shareUrl()+encoderPartage(st);
+      try{await navigator.clipboard.writeText(u);$("bk-msg").textContent="Lien copié. Il contient les notes saisies : ne le partagez qu'avec des personnes de confiance.";}
+      catch(err){$("bk-msg").textContent=u;}
+      return;}
+    const b=e.target.closest("[data-rm]");if(!b)return;st.basket=st.basket.filter(x=>x!==+b.dataset.rm);upd(true);});
+  $("basket").addEventListener("change",e=>{const s=e.target.closest("[data-internat]");if(!s)return;
+    st.internats={...st.internats,[s.dataset.internat]:s.value};save();renderBasket();});
 }
 
 // ---------- démarrage ----------
@@ -230,7 +233,9 @@ async function start(){
     $("list").innerHTML=`<div class="empty">Impossible de lire ${esc(CFG.fichierDonnees)} (${esc(e.message)}). Ouvrez l'outil via un petit serveur web, par exemple <code>python3 -m http.server</code>, pas en double-cliquant sur le fichier.</div>`;
     return;
   }
-  const p=readParams();
+  const p=readParams(),partage=decoderPartage(location.hash);
+  // Liste reçue par lien : elle remplace la liste et les notes enregistrées dans ce navigateur.
+  if(partage){Object.assign(st,partage);st.n=Object.assign({},DEF.n,st.n);}
   if(p.rayon) st.radius=p.rayon;
   if(p.fils) st.fils=p.fils;
   initControls();
