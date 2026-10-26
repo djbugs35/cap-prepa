@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {score,position,chance,estimation,libelleFourchette,raisons,reglagesDepuis,REGLAGES,tauxLisse,estInstable,avertissementMathsExpertes,historiqueTaux,basculerComparaison,regrouperVoeux,encoderPartage,decoderPartage,filterRows,sortRows,vowKey,balanceAdvice,norm,dist,rowsFromData,tauxRef,internatInconnu,W} from "../src/calc.js";
+import {score,position,chance,estimation,libelleFourchette,raisons,reglagesDepuis,REGLAGES,tauxLisse,estInstable,avertissementMathsExpertes,historiqueTaux,basculerComparaison,regrouperVoeux,encoderPartage,decoderPartage,liensApresPrepa,filterRows,sortRows,vowKey,balanceAdvice,norm,dist,rowsFromData,tauxRef,internatInconnu,W} from "../src/calc.js";
 
 const EL={n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F"};
 const row=o=>Object.assign({id:1,etab:"Lycée Test",ville:"Rennes",det:"",fil:"MPSI",lat:48.111,lon:-1.68,pub:true,intern:true,internatCode:1,
@@ -174,4 +174,11 @@ test("partage : valeurs invalides ignorées, fragment étranger refusé",()=>{
   assert.deepEqual(d,{basket:[1],internats:{}});
   assert.equal(decoderPartage("#autre=1"),null);
   assert.equal(decoderPartage(""),null);
+});
+
+test("liensApresPrepa : concours de 2e année de chaque CPGE, rien pour une école post-bac",()=>{
+  const m="https://www.scei-concours.fr/stat{annee}/{filiere}.html";
+  assert.deepEqual(liensApresPrepa("PCSI",m,2025).map(l=>l.url),["https://www.scei-concours.fr/stat2025/pc.html","https://www.scei-concours.fr/stat2025/psi.html"]);
+  assert.deepEqual(liensApresPrepa("MP2I",m,2025).map(l=>l.filiere),["MPI","MP"]);
+  assert.deepEqual(liensApresPrepa("ING",m,2025),[]);
 });
