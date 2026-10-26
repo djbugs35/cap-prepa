@@ -10,5 +10,7 @@ window.CAP_PREPA_CONFIG = {
   // Fichier de données produit par scripts/update_data.py
   fichierDonnees: "data/formations.json",
   // Service de géocodage des communes (API publique de l'État, sans clé).
-  geoApi: "https://geo.api.gouv.fr/communes"
+  geoApi: "https://geo.api.gouv.fr/communes",
+  // Nombre minimal d'admis pour situer le dossier dans le profil des admis (sinon « Non estimable »).
+  admisMinProfil: 15
 };
