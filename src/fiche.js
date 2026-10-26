@@ -25,7 +25,7 @@ function sectionClassements(r){
   if(!r.clDetail||!r.clDetail.length) return "";
   const synth=r.synth?`<p><b class="mono">${String(r.synth.note).replace(".",",")}/20</b> <span class="hint" style="display:inline">note de synthèse sur ${r.synth.n} classement${r.synth.n>1?"s":""}</span></p>`:"";
   return `<section><h3>Classements</h3>${synth}<dl class="chiffres">${r.clDetail.map(c=>`<dt>${esc(c.nom)}</dt><dd>${esc(c.texte)}</dd>`).join("")}</dl>
-    <p class="hint">Rangs parmi les ${r.fil==="ING"?"écoles post-bac":"CPGE"} de France ; « top 12 % » : seules 12 % font au moins aussi bien.</p></section>`;
+    <p class="hint">Rangs parmi les ${r.fil==="ING"?"écoles post-bac":"CPGE"} de France ; « mieux que 88 % » : la formation fait mieux que 88 % de celles de sa famille.</p></section>`;
 }
 
 function apresPrepa(r,scei){
