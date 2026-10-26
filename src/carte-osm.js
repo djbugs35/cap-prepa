@@ -35,7 +35,8 @@ export function creerCarteOsm(L,div,{tuiles,attribution},surSelection,surEchec){
   function afficher(home,radius,list,basket){
     // Recadrer seulement quand le lieu ou le rayon change : sinon chaque mouvement de curseur ferait sauter la carte.
     const cadrage=home.lat+","+home.lon+","+radius;
-    if(cadrage!==dernierCadrage){dernierCadrage=cadrage;carte.fitBounds(L.latLng(home.lat,home.lon).toBounds(radius*2000),{padding:[8,8]});}
+    // Compteurs remis à zéro : hors ligne, une zone déjà vue s'affiche depuis le cache, une nouvelle zone doit basculer en SVG.
+    if(cadrage!==dernierCadrage){dernierCadrage=cadrage;tuilesChargees=0;erreurs=0;carte.fitBounds(L.latLng(home.lat,home.lon).toBounds(radius*2000),{padding:[8,8]});}
     calque.clearLayers();
     L.circle([home.lat,home.lon],{radius:radius*1000,color:couleur(div,"--line"),weight:1.5,fill:false,interactive:false}).addTo(calque);
     L.circleMarker([home.lat,home.lon],{radius:6,color:couleur(div,"--marge"),weight:3,fillOpacity:0}).bindTooltip(esc(home.name)).addTo(calque);
