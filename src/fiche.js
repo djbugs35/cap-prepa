@@ -49,7 +49,8 @@ function debouchesDuLycee(r,scei){
     <div class="deb-chercher" data-prepa="${r.id}" data-filiere="${esc(r.fil)}">
       <p class="hint">Pour les récupérer : ouvrez la recherche, repérez la page « résultats aux concours » ou « intégrations » du lycée, puis collez son adresse (page ou PDF).</p>
       <p>${liens}</p>
-      <div class="cityrow"><input type="url" id="deb-url" placeholder="https://… page ou PDF de résultats" aria-label="Adresse de la page de résultats du lycée">
+      ${r.lienResultats?`<p class="hint">Adresse trouvée dans la base de liens (onglet « Données ») : vérifiez-la ou remplacez-la.</p>`:""}
+      <div class="cityrow"><input type="url" id="deb-url" value="${esc(r.lienResultats||"")}" placeholder="https://… page ou PDF de résultats" aria-label="Adresse de la page de résultats du lycée">
         <button type="button" class="btn" data-extraire>Extraire</button></div>
       <p class="hint" id="deb-etat" role="status"></p><div id="deb-proposition"></div>
     </div>`;

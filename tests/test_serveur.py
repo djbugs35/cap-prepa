@@ -103,3 +103,19 @@ def test_extraction_impossible_expliquee(monkeypatch, mise_a_jour):
         "POST", "/api/debouches/extraire", b'{"url": "u", "filiere": "MPSI"}', mise_a_jour
     )
     assert code == 422 and "aucune ecole" in reponse["erreur"]
+
+
+def test_recherche_de_liens(monkeypatch, tmp_path, mise_a_jour):
+    recherche = serveur.RechercheLiens(tmp_path, tmp_path / "liens.json")
+    vues = []
+    monkeypatch.setattr(serveur.liens, "lycees_a_prepa", lambda _d: {"U1": {"prepas": [1, 2]}, "U2": {"prepas": [3]}})
+    monkeypatch.setattr(
+        serveur.liens,
+        "completer_base",
+        lambda _d, uais, *_a: vues.append(uais) or {"lycees": {"U1": {"statut": "trouve"}}},
+    )
+    assert serveur.traiter_api("POST", "/api/liens/chercher", b'{"prepas": [2]}', mise_a_jour, recherche)[0] == 202
+    assert attendre_fin(recherche)["erreur"] is None and vues == [["U1"]]  # prepa 2 : lycee U1 seulement
+    assert serveur.traiter_api("POST", "/api/liens/chercher", b'{"prepas": "tout"}', mise_a_jour, recherche)[0] == 400
+    code, reponse = serveur.traiter_api("GET", "/api/liens", b"", mise_a_jour, recherche)
+    assert code == 200 and reponse["base"]["lycees"] == {} and "recherche" in reponse
