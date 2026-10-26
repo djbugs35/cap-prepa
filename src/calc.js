@@ -214,9 +214,13 @@ export function lyceesFromData(data){
     return {uai:g("uai"),nom:g("nom"),commune:g("commune"),dep:g("dep"),academie:g("academie"),lat:g("lat"),lon:g("lon"),pub:g("public")===1,
       cle:norm(g("nom")+" "+g("commune"))};});
 }
+// Abréviations courantes dans les noms tapés (« st joseph ») : l'annuaire écrit toujours le mot entier.
+const ABREVIATIONS={st:"saint",ste:"sainte"};
+// Mots sans pouvoir de tri : « lycée » manque à certains noms (« Agricampus de Laval »), les autres sont partout.
+const MOTS_VIDES=new Set(["lycee","de","du","des","la","le","les","au","aux","en","et","sur"]);
 // Rend au plus max lycées dont le nom ou la commune contient tous les mots de q (sans accents ni casse).
 export function chercherLycees(lycees,q,max=8){
-  const mots=norm(q).split(" ").filter(m=>m.length>1);
+  const mots=norm(q).split(" ").map(m=>ABREVIATIONS[m]||m).filter(m=>m.length>1&&!MOTS_VIDES.has(m));
   if(!mots.length) return [];
   return lycees.filter(l=>mots.every(m=>l.cle.includes(m))).slice(0,max);
 }

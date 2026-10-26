@@ -52,7 +52,7 @@ async function setCity(name,quiet){
 }
 
 // ---------- lycée d'origine ----------
-let lycees=null,suggestionsLycee=[];
+let lycees=null;
 // lycees.json (≈ 220 Ko) n'est chargé qu'au premier usage du champ.
 async function chargerLycees(){
   if(lycees) return lycees;
@@ -67,6 +67,7 @@ function choisirLycee(l,quiet){
   st.home={name:l.nom+" ("+l.commune+")",lat:l.lat,lon:l.lon,dep:l.dep};
   $("lycee").value=libelleLycee(l);$("city").value=l.commune;
   $("lycee-msg").textContent=quiet?"":`Point de départ : ${l.nom}, ${l.commune}. Académie de ${l.academie}.`;
+  $("lycee-choix").innerHTML="";
   upd();
 }
 async function validerLycee(texte){
@@ -81,11 +82,11 @@ function initLycee(){
   if(st.lycee) $("lycee").value=st.lycee.nom+" — "+st.lycee.commune;
   $("lycee").onfocus=()=>chargerLycees();
   $("lycee").oninput=e=>{clearTimeout(t);t=setTimeout(async()=>{
-    suggestionsLycee=chercherLycees(await chargerLycees(),e.target.value);
-    $("lycee-list").innerHTML=suggestionsLycee.map(l=>`<option value="${esc(libelleLycee(l))}">${esc(l.academie||"")}</option>`).join("");
+    const trouves=chercherLycees(await chargerLycees(),e.target.value);
+    $("lycee-choix").innerHTML=trouves.map(l=>`<button type="button" data-uai="${esc(l.uai)}">${esc(l.nom)} — ${esc(l.commune)}<small>${l.pub?"public":"privé"} · ${esc(l.academie||"")}</small></button>`).join("");
   },200);};
+  $("lycee-choix").onclick=e=>{const b=e.target.closest("[data-uai]");if(b)choisirLycee(lycees.find(l=>l.uai===b.dataset.uai));};
   $("lycee-form").onsubmit=e=>{e.preventDefault();validerLycee($("lycee").value.trim());};
-  $("lycee").onchange=e=>{const v=e.target.value.trim();if(suggestionsLycee.some(l=>libelleLycee(l)===v))validerLycee(v);};
 }
 
 // ---------- adresse (paramètres) ----------
