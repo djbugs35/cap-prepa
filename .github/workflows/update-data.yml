@@ -1,0 +1,30 @@
+name: Mise a jour des donnees
+
+# Regenere data/formations.json depuis l'open data Parcoursup et propose le resultat en pull request :
+# on relit l'ecart avant de publier, une regression de donnees ne part jamais seule en ligne.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 1 1,2,10,11,12 *"  # le 1er du mois, d'octobre a fevrier (publication et cartographie)
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  donnees:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Regenerer les donnees
+        run: python3 scripts/update_data.py
+      - name: Ouvrir une pull request si les donnees ont change
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: donnees/mise-a-jour
+          commit-message: "chore: mise a jour des donnees Parcoursup"
+          title: "chore: mise a jour des donnees Parcoursup"
+          body: Donnees regenerees automatiquement par scripts/update_data.py. Verifier le nombre de formations et la session avant de fusionner.

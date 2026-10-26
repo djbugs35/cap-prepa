@@ -1,9 +1,9 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {score,position,chance,filterRows,sortRows,vowKey,balanceAdvice,norm,dist,rowFromArray,W} from "../src/calc.js";
+import {score,position,chance,filterRows,sortRows,vowKey,balanceAdvice,norm,dist,rowsFromData,tauxRef,internatInconnu,W} from "../src/calc.js";
 
 const EL={n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F"};
-const row=o=>Object.assign({id:1,etab:"Lycée Test",ville:"Rennes",det:"",fil:"MPSI",lat:48.111,lon:-1.68,pub:true,intern:true,
+const row=o=>Object.assign({id:1,etab:"Lycée Test",ville:"Rennes",det:"",fil:"MPSI",lat:48.111,lon:-1.68,pub:true,intern:true,internatCode:1,
   taux:50,admis:40,mp:[10,30,40,15,5]},o);
 
 test("score : moyenne pondérée bornée à 0-20",()=>{
@@ -50,7 +50,7 @@ test("filterRows : recherche insensible aux accents et à la casse",()=>{
   assert.deepEqual(filterRows(rows,{...f,q:"BREST"}).map(r=>r.id),[2]);
 });
 test("filterRows : rayon, filière, public et internat",()=>{
-  const rows=[row({id:1}),row({id:2,lat:43.6,lon:1.44}),row({id:3,fil:"PCSI"}),row({id:4,pub:false}),row({id:5,intern:false}),row({id:6,fil:"ING",intern:false})];
+  const rows=[row({id:1}),row({id:2,lat:43.6,lon:1.44}),row({id:3,fil:"PCSI"}),row({id:4,pub:false}),row({id:5,intern:false}),row({id:6,fil:"ING",intern:false,internatCode:null})];
   const f={home:{lat:48.111,lon:-1.68},radius:150,fils:["MPSI","ING"],pub:true,intern:true,q:""};
   assert.deepEqual(filterRows(rows,f).map(r=>r.id),[1,6]); // internat des écoles non renseigné : gardées
   assert.deepEqual(filterRows(rows,{...f,home:null}),[]);
@@ -78,7 +78,18 @@ test("balanceAdvice",()=>{
 test("utilitaires",()=>{
   assert.equal(norm("  Saint-Étienne "),"saint etienne");
   assert.ok(Math.abs(dist(48.111,-1.68,47.218,-1.554)-99.6)<1); // Rennes–Nantes
-  const r=rowFromArray([14,"Polytech Tours","Tours","37",47.365,0.685,"ING","x",1,150,10137,62,6310,6507,0,12,54,32,2,3,20,0,31,174,67]);
-  assert.equal(r.admis,174);assert.equal(r.t24,67);assert.deepEqual(r.mp,[0,12,54,32,2]);
   assert.equal(W.TSI,undefined); // bacs technologiques hors périmètre
+});
+
+test("rowsFromData : colonnes lues d'après meta.fields, dans n'importe quel ordre",()=>{
+  const data={meta:{fields:["admis","id","filiere","internat","taux","tauxGen","tauxGenHist","pTBF","pTB","pB","pAB","pSans"]},
+    rows:[[174,14,"ING",null,62,70,[60,65],0,12,54,32,2],[40,15,"MPSI",2,30,null,[null],5,20,40,30,5]]};
+  const [a,b]=rowsFromData(data);
+  assert.equal(a.id,14);assert.equal(a.admis,174);assert.deepEqual(a.mp,[0,12,54,32,2]);assert.deepEqual(a.tauxGenHist,[60,65]);
+  assert.ok(internatInconnu(a));assert.equal(b.filles,true);assert.equal(b.intern,true);assert.equal(b.ville,null);
+  assert.equal(tauxRef(a),70);assert.equal(tauxRef(b),30); // taux officiel quand l'estimation manque
+});
+test("chance : le taux des terminales générales remplace le taux officiel",()=>{
+  const base=row({taux:20,admis:40});
+  assert.ok(chance({...base,tauxGen:80},EL).c>chance(base,EL).c);
 });
