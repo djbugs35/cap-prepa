@@ -104,6 +104,15 @@ export function estInstable(r,ecart=REGLAGES.ecartTauxInstable){
   const v=tauxAnnuels(r).filter(x=>x!=null);
   return v.length>=2&&Math.max(...v)-Math.min(...v)>=ecart;
 }
+// Rend [{annee, taux}] des sessions connues, de la plus ancienne à la plus récente. annees : meta.sessionsHist.
+export function historiqueTaux(r,annees,session){
+  const ans=[...annees,session];
+  return tauxAnnuels(r).map((taux,i)=>({annee:ans[i],taux})).filter(h=>h.taux!=null&&h.annee!=null);
+}
+// Ajoute ou retire id de la comparaison ; au-delà de max formations, la plus ancienne sort.
+export function basculerComparaison(ids,id,max=4){
+  return ids.includes(id)?ids.filter(x=>x!==id):[...ids,id].slice(-max);
+}
 // Rend l'avertissement à afficher quand l'élève vise MPSI ou MP2I sans maths expertes, null sinon.
 export function avertissementMathsExpertes(el,fils){
   const f=fils.filter(x=>MX_INDISPENSABLE.includes(x));

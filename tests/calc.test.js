@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {score,position,chance,estimation,libelleFourchette,raisons,reglagesDepuis,REGLAGES,tauxLisse,estInstable,avertissementMathsExpertes,filterRows,sortRows,vowKey,balanceAdvice,norm,dist,rowsFromData,tauxRef,internatInconnu,W} from "../src/calc.js";
+import {score,position,chance,estimation,libelleFourchette,raisons,reglagesDepuis,REGLAGES,tauxLisse,estInstable,avertissementMathsExpertes,historiqueTaux,basculerComparaison,filterRows,sortRows,vowKey,balanceAdvice,norm,dist,rowsFromData,tauxRef,internatInconnu,W} from "../src/calc.js";
 
 const EL={n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F"};
 const row=o=>Object.assign({id:1,etab:"Lycée Test",ville:"Rennes",det:"",fil:"MPSI",lat:48.111,lon:-1.68,pub:true,intern:true,internatCode:1,
@@ -143,4 +143,14 @@ test("avertissementMathsExpertes : seulement sans l'option et si MPSI ou MP2I es
   assert.match(avertissementMathsExpertes({mxon:false},["MPSI","MP2I","PCSI"]),/MPSI et MP2I/);
   assert.equal(avertissementMathsExpertes({mxon:true},["MPSI"]),null);
   assert.equal(avertissementMathsExpertes({mxon:false},["PCSI"]),null);
+});
+
+test("historiqueTaux : années alignées sur les taux, années inconnues retirées",()=>{
+  assert.deepEqual(historiqueTaux(row({taux:50,tauxHist:[40,null]}),[2023,2024],2025),[{annee:2023,taux:40},{annee:2025,taux:50}]);
+  assert.deepEqual(historiqueTaux(row({taux:50,tauxHist:[]}),[],2025),[{annee:2025,taux:50}]);
+});
+test("basculerComparaison : ajoute, retire, et garde les 4 plus récentes",()=>{
+  assert.deepEqual(basculerComparaison([1,2],3),[1,2,3]);
+  assert.deepEqual(basculerComparaison([1,2,3],2),[1,3]);
+  assert.deepEqual(basculerComparaison([1,2,3,4],5),[2,3,4,5]);
 });
