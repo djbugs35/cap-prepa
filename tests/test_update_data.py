@@ -1,7 +1,10 @@
 """Tests de scripts/update_data.py (sans réseau)."""
 
+import gzip
 import importlib.util
 import io
+import json
+import typing
 import urllib.error
 from pathlib import Path
 
@@ -117,6 +120,8 @@ def test_reprise_apres_erreur_serveur(monkeypatch):
     appels = []
 
     class Reponse(io.BytesIO):
+        headers: typing.ClassVar[dict] = {}
+
         def __enter__(self):
             return self
 
@@ -163,3 +168,101 @@ def test_doublons_concours_communs_et_rayon():
 
 def test_dist_rennes_nantes():
     assert abs(ud.dist(48.111, -1.68, 47.218, -1.554) - 99.6) < 1
+
+
+def test_reponse_gzip_decompressee(monkeypatch):
+    """Le catalogue repondait en gzip sans qu'on le demande : json.load echouait sur l'octet 0x8b."""
+
+    class Reponse(io.BytesIO):
+        headers: typing.ClassVar[dict] = {"Content-Encoding": "gzip"}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+    monkeypatch.setattr(ud.urllib.request, "urlopen", lambda *_a, **_k: Reponse(gzip.compress(b'{"a": 1}')))
+    assert ud.telecharger_json("http://x") == {"a": 1}
+
+
+# ---------- sources locales (data/sources) ----------
+
+
+def faux_reseau(monkeypatch, absents=(), modifie="2026-03-09T16:54:47+00:00"):
+    """Remplacer exporter et version_distante ; rendre la liste des jeux telecharges, dans l'ordre."""
+    appels = []
+
+    def exporter(jeu, _filtre, _champs=None):
+        if jeu in absents:
+            raise urllib.error.HTTPError("u", 404, "absent", {}, None)
+        appels.append(jeu)
+        if jeu == ud.JEU_CARTOGRAPHIE:
+            return [{"gta": "0", "int": ["Internat filles"]}]
+        if jeu == ud.JEU_DOUBLETTES:
+            return []
+        return [rec(session="2025", cod_aff_form=str(i), g_ea_lib_vx=f"Lycee {i}") for i in range(3)]
+
+    monkeypatch.setattr(ud, "exporter", exporter)
+    monkeypatch.setattr(ud, "version_distante", lambda jeu: {"titre": jeu, "modifie": modifie, "lignesPubliees": 3})
+    return appels
+
+
+def test_mise_a_jour_commence_par_la_session_courante(monkeypatch, tmp_path):
+    appels = faux_reseau(monkeypatch)
+    assert ud.mettre_a_jour_sources(tmp_path, journal=lambda _m: None) == 2025
+    assert appels[:2] == [ud.JEU_COURANT, ud.JEU_COURANT]  # CPGE puis ecoles
+    assert "fr-esr-parcoursup_2023" in appels and ud.JEU_CARTOGRAPHIE in appels
+    assert sorted(p.stem for p in tmp_path.glob("*.json")) == [
+        "doublettes", "internats", "parcoursup", "parcoursup-n1", "parcoursup-n2"
+    ]  # fmt: skip
+
+
+def test_mise_a_jour_d_une_seule_source(monkeypatch, tmp_path):
+    faux_reseau(monkeypatch)
+    ud.mettre_a_jour_sources(tmp_path, journal=lambda _m: None)
+    appels = faux_reseau(monkeypatch)
+    ud.mettre_a_jour_sources(tmp_path, ["internats"], journal=lambda _m: None)
+    assert appels == [ud.JEU_CARTOGRAPHIE]
+
+
+def test_historique_absent_ignore_mais_source_indispensable_absente_remontee(monkeypatch, tmp_path):
+    faux_reseau(monkeypatch, absents={"fr-esr-parcoursup_2023"})
+    ud.mettre_a_jour_sources(tmp_path, journal=lambda _m: None)
+    assert not (tmp_path / "parcoursup-n2.json").exists()
+    faux_reseau(monkeypatch, absents={ud.JEU_CARTOGRAPHIE})
+    with pytest.raises(urllib.error.HTTPError):
+        ud.mettre_a_jour_sources(tmp_path, journal=lambda _m: None)
+
+
+def test_source_d_une_autre_session_ignoree(monkeypatch, tmp_path):
+    """Quand le jeu courant passe a la session suivante, l'ancien parcoursup-n1 vient d'un autre jeu : a retelecharger."""
+    faux_reseau(monkeypatch)
+    ud.mettre_a_jour_sources(tmp_path, journal=lambda _m: None)
+    source = next(s for s in ud.definir_sources(2026) if s["cle"] == "parcoursup-n1")
+    assert source["jeu"] == "fr-esr-parcoursup_2025"
+    assert ud.lire_source(tmp_path, source) is None
+
+
+def test_etat_compare_version_locale_et_publiee(monkeypatch, tmp_path):
+    faux_reseau(monkeypatch)
+    vide = ud.etat_sources(tmp_path)
+    assert vide["session"] is None and [s["present"] for s in vide["sources"]] == [False]
+    ud.mettre_a_jour_sources(tmp_path, journal=lambda _m: None)
+    etat = ud.etat_sources(tmp_path, verifier=True)
+    assert etat["session"] == 2025 and all(s["aJour"] for s in etat["sources"])
+    assert etat["sources"][0]["lignes"] == 6 and etat["sources"][0]["octets"] > 0
+    faux_reseau(monkeypatch, modifie="2026-11-01T00:00:00+00:00")
+    assert not any(s["aJour"] for s in ud.etat_sources(tmp_path, verifier=True)["sources"])
+
+
+def test_construction_depuis_les_sources_locales(monkeypatch, tmp_path):
+    with pytest.raises(ud.SourceAbsente):
+        ud.construire_formations(tmp_path)
+    faux_reseau(monkeypatch)
+    ud.mettre_a_jour_sources(tmp_path, journal=lambda _m: None)
+    monkeypatch.setattr(ud, "MIN_LIGNES_NATIONAL", 1)
+    texte, meta = ud.construire_formations(tmp_path)
+    assert meta["session"] == 2025 and meta["sessionsHist"] == [2023, 2024] and meta["formations"] == 3
+    rows = json.loads(texte)["rows"]
+    assert ligne(rows, 0)["internat"] == ud.INTERNAT_FILLES  # cartographie lue depuis internats.json

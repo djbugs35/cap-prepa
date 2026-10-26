@@ -4,10 +4,10 @@
    la politique d'usage d'OpenStreetMap interdit de stocker des tuiles pour un usage hors ligne. */
 
 // Changer ce nom à chaque modification de la liste ci-dessous : l'ancien cache est alors supprimé.
-const CACHE="cap-prepa-v1";
+const CACHE="cap-prepa-v2";
 // tests/sw.test.js vérifie que tout module de src/ figure ici : un oubli casserait l'outil hors ligne.
 const FICHIERS=["./","index.html","config.js","data/formations.json",
-  "src/main.js","src/calc.js","src/geo.js","src/carte.js","src/carte-osm.js","src/fiche.js","src/liste.js"];
+  "src/main.js","src/calc.js","src/geo.js","src/carte.js","src/carte-osm.js","src/fiche.js","src/liste.js","src/donnees.js"];
 const HOTES_VERSIONNES=["unpkg.com","fonts.googleapis.com","fonts.gstatic.com"];
 
 self.addEventListener("install",e=>{
@@ -25,6 +25,12 @@ async function cacheEtMiseAJour(req){
   if(enCache){reseau.catch(()=>{});return enCache;} // hors ligne : la copie en cache suffit
   return reseau;
 }
+// Données : le réseau d'abord, pour qu'une mise à jour depuis l'onglet « Données » se voie au premier rechargement.
+async function reseauDabord(req){
+  const c=await caches.open(CACHE);
+  try{const r=await fetch(req);if(r.ok)c.put(req,r.clone());return r;}
+  catch(e){const enCache=await c.match(req);if(enCache)return enCache;throw e;}
+}
 async function cacheDabord(req){
   const c=await caches.open(CACHE),enCache=await c.match(req);
   if(enCache) return enCache;
@@ -36,6 +42,8 @@ self.addEventListener("fetch",e=>{
   const req=e.request;
   if(req.method!=="GET") return;
   const url=new URL(req.url);
-  if(url.origin===self.location.origin) e.respondWith(cacheEtMiseAJour(req));
+  if(url.origin===self.location.origin&&url.pathname.startsWith("/api/")) return; // serveur local : toujours en direct
+  if(url.origin===self.location.origin&&url.pathname.endsWith("/data/formations.json")) e.respondWith(reseauDabord(req));
+  else if(url.origin===self.location.origin) e.respondWith(cacheEtMiseAJour(req));
   else if(HOTES_VERSIONNES.includes(url.hostname)) e.respondWith(cacheDabord(req));
 });
