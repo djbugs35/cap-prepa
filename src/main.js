@@ -172,7 +172,7 @@ function tauxCell(r,prevY){
 }
 function renderList(all){
   const shown=all.slice(0,limit),prevY=(META.sessionsHist||[]).slice(-1)[0]||META.previousSession||"";
-  let h=`<div class="item head" aria-hidden="true"><span>Chances</span><span>Formation</span><span title="Taux d'accès estimé pour les élèves de terminale générale">Accès term. G</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span title="Note de synthèse /20 des classements où figure la formation">Classements</span><span></span></div>`;
+  let h=`<div class="item head" aria-hidden="true"><span>Chances</span><span>Formation</span><span title="Note de synthèse /20 des classements où figure la formation">Classements</span><span title="Part des candidats de terminale générale qui ont reçu une proposition d'admission (estimation de Cap Prépa). En dessous : le taux officiel, tous candidats confondus.">Taux d'accès</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
   if(!all.length) h+=`<div class="empty" role="listitem">${st.home?"Aucune formation ne correspond. Élargissez le rayon ou ajoutez une filière.":"Indiquez une ville de résidence pour commencer."}</div>`;
   shown.forEach(r=>{
     const inB=st.basket.includes(r.id),inC=st.compare.includes(r.id);
@@ -181,10 +181,10 @@ function renderList(all){
       <span class="c-ch"><span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span>${r.ch.bas.k!==r.ch.haut.k?`<small title="Selon que les notes finales sont de ${fmt(R.ecartFourchette)} point plus basses ou plus hautes">${libelleFourchette(r.ch)}</small>`:""}</span>
       <span class="c-n name"><span class="badge${r.pub?"":" priv"}">${r.fil==="ING"?"École":r.fil}</span>${esc(r.etab)}<small>${esc(r.ville)} · ${Math.round(r.d)} km${r.det?" · "+esc(r.det):""}${r.pub?"":" · privé"}${intern}</small>
         <details class="why"><summary>Pourquoi ?</summary><ul>${r.ch.raisons.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></details></span>
+      <span class="c-s num">${r.synth?`<b class="synth">${fmt(r.synth.note)}</b><small>/20 · ${r.synth.n} classement${r.synth.n>1?"s":""}</small>`:`<small>non classée</small>`}</span>
       <span class="c-t num">${tauxCell(r,prevY)}</span>
       <span class="c-m">${mbar(r)}</span>
       <span class="c-d num">${r.aca} %<small>${r.capa} places · ${(r.voeux??0).toLocaleString("fr-FR")} vœux</small></span>
-      <span class="c-s num">${r.synth?`<b class="synth">${fmt(r.synth.note)}</b><small>/20 · ${r.synth.n} classement${r.synth.n>1?"s":""}</small>`:`<small>non classée</small>`}</span>
       <span class="c-a acts"><button type="button" class="btn${inB?" on":""}" data-add="${r.id}">${inB?"Dans la liste":"Ajouter"}</button><button type="button" class="btn ghost" data-fiche="${r.id}">Fiche</button><button type="button" class="btn ghost${inC?" on":""}" data-cmp="${r.id}" aria-pressed="${inC}">Comparer</button></span>
     </div>`;});
   if(all.length>limit) h+=`<div class="more" role="listitem"><button type="button" class="btn" id="more">Afficher ${Math.min(60,all.length-limit)} de plus (${all.length-limit} restantes)</button></div>`;
