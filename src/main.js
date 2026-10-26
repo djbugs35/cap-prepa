@@ -1,16 +1,16 @@
 /* Cap Prépa — aide aux vœux Parcoursup (CPGE scientifiques et écoles d'ingénieurs post-bac).
    Données : data/formations.json, produit par scripts/update_data.py à partir de l'open data Parcoursup.
    Paramètres d'adresse : ?ville=Rennes&rayon=150&filieres=MPSI,PCSI  (ou ?lat=48.11&lon=-1.68) */
-import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,chance,filterRows,sortRows,vowKey,balanceAdvice,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
+import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,estimation,libelleFourchette,reglagesDepuis,avertissementMathsExpertes,filterRows,sortRows,vowKey,balanceAdvice,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
 import {geocode,suggestions} from "./geo.js";
 import {renderSvgMap} from "./carte.js";
 
 const CFG=Object.assign({
   villeParDefaut:"Rennes",rayonParDefaut:150,
   filieresParDefaut:["MPSI","MP2I","PCSI","PTSI","ING"],
-  fichierDonnees:"data/formations.json",geoApi:"https://geo.api.gouv.fr/communes",
-  admisMinProfil:15
+  fichierDonnees:"data/formations.json",geoApi:"https://geo.api.gouv.fr/communes"
 },window.CAP_PREPA_CONFIG||{});
+const R=reglagesDepuis(CFG);
 
 const NOTES=[["m","Maths (spécialité)"],["pc","Physique-chimie (spécialité)"],["mx","Maths expertes"],["s3","Spécialité abandonnée en 1re"],["an","Anglais"],["fr","Français (épreuves anticipées)"],["au","Moyenne des autres matières"]];
 const MCOL=["var(--m1)","var(--m2)","var(--m3)","var(--m4)","var(--m5)"];
@@ -30,7 +30,7 @@ function save(){try{localStorage.setItem("capprepa",JSON.stringify(st));}catch(e
 
 let rows=[],META={};
 let limit=60,flashId=null;
-const chanceOf=r=>chance(r,st,CFG.admisMinProfil);
+const chanceOf=r=>estimation(r,st,R,META.sessionsHist||[]);
 
 // ---------- ville ----------
 async function setCity(name,quiet){
@@ -69,11 +69,12 @@ function filtered(){
 // ---------- rendu ----------
 function renderScores(){
   const fs=FILS.map(f=>f[0]).filter(f=>st.fils.includes(f));
-  $("scores").innerHTML=fs.length?fs.map(f=>{const s=score(f,st);
+  $("scores").innerHTML=fs.length?fs.map(f=>{const s=score(f,st,R.poids);
     return `<span>${f==="ING"?"Écoles":f}</span><span class="bar"><i style="width:${Math.max(0,(s-6)/14*100)}%"></i></span><span class="mono">${fmt(s)}</span>`;}).join("")
     :`<span class="hint" style="grid-column:1/-1">Choisissez au moins une filière.</span>`;
   NOTES.forEach(([k])=>{$("o-"+k).textContent=fmt(st.n[k]);});
   $("n-mx").disabled=!st.mxon;
+  const mx=avertissementMathsExpertes(st,st.fils);$("mx-warn").hidden=!mx;$("mx-warn").textContent=mx||"";
   $("radius-o").textContent=st.radius+" km";
   $("h-city").textContent=st.home?st.home.name:"";
   document.title="Cap Prépa"+(st.home?" · "+st.home.name:"");
@@ -102,7 +103,8 @@ function trend(r,prevY){
 }
 function tauxCell(r,prevY){
   const off=r.tauxGen!=null&&r.tauxGen!==r.taux?`<small title="Taux officiel, tous candidats confondus (réorientations comprises)">officiel ${r.taux} %</small>`:"";
-  return `${tauxRef(r)} %${off}${trend(r,prevY)}`;
+  const inst=r.ch.instable?`<small class="trend-down" title="Le taux d'accès a varié d'au moins ${R.ecartTauxInstable} points sur 3 sessions">instable</small>`:"";
+  return `${tauxRef(r)} %${off}${trend(r,prevY)}${inst}`;
 }
 function renderList(all){
   const shown=all.slice(0,limit),prevY=(META.sessionsHist||[]).slice(-1)[0]||META.previousSession||"";
@@ -112,8 +114,9 @@ function renderList(all){
     const inB=st.basket.includes(r.id);
     const intern=r.filles?" · internat filles":r.intern?" · internat":internatInconnu(r)?" · internat non renseigné":"";
     h+=`<div class="item${flashId===r.id?" flash":""}" id="it-${r.id}">
-      <span class="c-ch"><span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span></span>
-      <span class="c-n name"><span class="badge${r.pub?"":" priv"}">${r.fil==="ING"?"École":r.fil}</span>${esc(r.etab)}<small>${esc(r.ville)} · ${Math.round(r.d)} km${r.det?" · "+esc(r.det):""}${r.pub?"":" · privé"}${intern}</small></span>
+      <span class="c-ch"><span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span>${r.ch.bas.k!==r.ch.haut.k?`<small title="Selon que les notes finales sont de ${fmt(R.ecartFourchette)} point plus basses ou plus hautes">${libelleFourchette(r.ch)}</small>`:""}</span>
+      <span class="c-n name"><span class="badge${r.pub?"":" priv"}">${r.fil==="ING"?"École":r.fil}</span>${esc(r.etab)}<small>${esc(r.ville)} · ${Math.round(r.d)} km${r.det?" · "+esc(r.det):""}${r.pub?"":" · privé"}${intern}</small>
+        <details class="why"><summary>Pourquoi ?</summary><ul>${r.ch.raisons.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></details></span>
       <span class="c-t num">${tauxCell(r,prevY)}</span>
       <span class="c-m">${mbar(r)}</span>
       <span class="c-d num">${r.aca} %<small>${r.capa} places · ${(r.voeux??0).toLocaleString("fr-FR")} vœux</small></span>
