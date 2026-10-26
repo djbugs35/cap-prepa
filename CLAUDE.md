@@ -35,6 +35,9 @@ autres doublettes de spécialités.
 - Frugalité en tokens : filtrer les sorties avant de les lire, ne pas relire un fichier qu'on vient d'éditer.
 - Lancer seulement les tests des fichiers touchés.
 - Ne pas modifier README ni docs sans demande : l'utilisateur les reprend avant chaque version.
+- **Avant toute pose de tag de version, rappeler à l'utilisateur de mettre à jour le README.**
+  Écarts connus (octobre 2026) : il cite encore `app.js` (désormais `src/`), annonce une couverture
+  Grand Ouest + Île-de-France (désormais nationale) et ignore le taux des terminales générales.
 - Ne jamais tuer un processus qu'on n'a pas lancé soi-même.
 
 ## Vérifications avant commit
