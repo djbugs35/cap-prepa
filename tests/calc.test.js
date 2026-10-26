@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {score,position,chance,filterRows,sortRows,vowKey,balanceAdvice,norm,dist,rowsFromData,tauxRef,internatInconnu,W} from "../src/calc.js";
+import {score,position,chance,estimation,libelleFourchette,raisons,reglagesDepuis,REGLAGES,tauxLisse,estInstable,avertissementMathsExpertes,filterRows,sortRows,vowKey,balanceAdvice,norm,dist,rowsFromData,tauxRef,internatInconnu,W} from "../src/calc.js";
 
 const EL={n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F"};
 const row=o=>Object.assign({id:1,etab:"Lycée Test",ville:"Rennes",det:"",fil:"MPSI",lat:48.111,lon:-1.68,pub:true,intern:true,internatCode:1,
@@ -33,9 +33,9 @@ test("position : 19 devant presque tous, 11 derrière presque tous",()=>{
 });
 
 test("chance : moins d'admis que le seuil → non estimable",()=>{
-  const c=chance(row({admis:3}),EL,15);
+  const c=chance(row({admis:3}),EL);
   assert.equal(c.cat.k,0);assert.equal(c.c,null);assert.equal(c.p,null);
-  assert.ok(chance(row({admis:15}),EL,15).cat.k>0);
+  assert.ok(chance(row({admis:15}),EL).cat.k>0);
 });
 test("chance : un dossier fort dans une formation peu sélective est en sécurité",()=>{
   const fort={...EL,n:Object.fromEntries(Object.keys(EL.n).map(k=>[k,18.5]))};
@@ -92,4 +92,55 @@ test("rowsFromData : colonnes lues d'après meta.fields, dans n'importe quel ord
 test("chance : le taux des terminales générales remplace le taux officiel",()=>{
   const base=row({taux:20,admis:40});
   assert.ok(chance({...base,tauxGen:80},EL).c>chance(base,EL).c);
+});
+
+test("tauxLisse : la dernière session pèse le plus, une année atypique ne décide pas seule",()=>{
+  assert.equal(tauxLisse(row({taux:60,tauxHist:[30,60]})),(30+2*60+3*60)/6);
+  assert.equal(tauxLisse(row({taux:50,tauxHist:[]})),50);
+  assert.equal(tauxLisse(row({taux:40,tauxGen:50,tauxGenHist:[null,44],tauxHist:[10,10]})),(2*44+3*50)/5); // même indicateur que tauxRef
+});
+test("estInstable : écart d'au moins 20 points entre sessions",()=>{
+  assert.equal(estInstable(row({taux:55,tauxHist:[60,30]})),true);
+  assert.equal(estInstable(row({taux:55,tauxHist:[50,52]})),false);
+  assert.equal(estInstable(row({taux:55,tauxHist:[]})),false);
+});
+test("chance : utilise le taux lissé, pas la seule dernière session",()=>{
+  const chute=row({taux:20,tauxHist:[80,80]}),stable=row({taux:20,tauxHist:[20,20]});
+  assert.ok(chance(chute,EL).c>chance(stable,EL).c);
+});
+test("estimation : fourchette quand ±0,5 point change l'étiquette",()=>{
+  const e=estimation(row(),EL);
+  assert.ok(e.bas.k>=e.cat.k&&e.haut.k<=e.cat.k);
+  const large=estimation(row(),EL,{...REGLAGES,ecartFourchette:3});
+  assert.notEqual(large.bas.k,large.haut.k);
+  assert.match(libelleFourchette(large),/^.+ à [a-zé ]+$/);
+  assert.equal(libelleFourchette(estimation(row(),EL,{...REGLAGES,ecartFourchette:0})),e.cat.l);
+});
+test("raisons : position, instabilité, recrutement académique, au plus trois",()=>{
+  const r=row({taux:55,tauxHist:[60,30],aca:85});
+  const t=raisons(r,EL,estimation(r,EL),[2023,2024]);
+  assert.equal(t.length,3);
+  assert.match(t[0],/au-dessus d'environ \d+ % des admis/);
+  assert.match(t[1],/instable \(de 30 % à 60 %/);
+  assert.match(t[2],/85 % des admis/);
+});
+test("raisons : tendance depuis la plus ancienne session, maths expertes en tête",()=>{
+  const r=row({taux:30,tauxHist:[45,38]});
+  const sans={...EL,mxon:false};
+  const t=raisons(r,sans,estimation(r,sans),[2023,2024]);
+  assert.match(t[0],/maths expertes/);
+  assert.match(t[2],/baisse depuis 2023 \(45 % puis 30 %\)/);
+  assert.match(raisons(row({admis:3}),EL,estimation(row({admis:3}),EL))[0],/Trop peu d'admis \(3\)/);
+});
+test("reglagesDepuis : config.js remplace les réglages, ignore les valeurs invalides",()=>{
+  const R=reglagesDepuis({partPosition:.5,seuilsChances:[.8,.6,.4,.2],poidsMatieres:{PCSI:{pc:6}}});
+  assert.equal(R.partPosition,.5);assert.deepEqual(R.seuils,[.8,.6,.4,.2]);
+  assert.equal(R.poids.PCSI.pc,6);assert.equal(R.poids.PCSI.m,W.PCSI.m);assert.equal(W.PCSI.pc,4);
+  assert.deepEqual(reglagesDepuis({seuilsChances:[.2,.4,.6,.8]}).seuils,REGLAGES.seuils); // seuils non décroissants
+  assert.ok(score("PCSI",EL,R.poids)!==score("PCSI",EL));
+});
+test("avertissementMathsExpertes : seulement sans l'option et si MPSI ou MP2I est visée",()=>{
+  assert.match(avertissementMathsExpertes({mxon:false},["MPSI","MP2I","PCSI"]),/MPSI et MP2I/);
+  assert.equal(avertissementMathsExpertes({mxon:true},["MPSI"]),null);
+  assert.equal(avertissementMathsExpertes({mxon:false},["PCSI"]),null);
 });
