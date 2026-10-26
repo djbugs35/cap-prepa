@@ -19,6 +19,9 @@ window.CAP_PREPA_CONFIG = {
   rayonParDefaut: 150,
   // Filières cochées au premier lancement.
   filieresParDefaut: ["MPSI", "MP2I", "PCSI", "PTSI", "ING"],
+  // Poids de chaque classement dans la note de synthèse /20 (0 : ignoré). « perso » : classements importés
+  // depuis l'onglet « Données ». La note ne compte que les classements où la formation figure.
+  poidsClassements: { niveau: 1, selectivite: 1, attractivite: 0.5, emploi: 1, salaire: 1, perso: 1 },
   // Lycées d'origine proposés (annuaire de l'éducation), produit par scripts/update_data.py.
   fichierLycees: "data/lycees.json",
   // Fichier de données produit par scripts/update_data.py

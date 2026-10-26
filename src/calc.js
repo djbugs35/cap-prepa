@@ -140,7 +140,8 @@ export function filterRows(rows,f){
 // Les « non estimables » passent toujours après les autres dans le tri par chances.
 export function sortRows(a,by){
   const cmpC=(x,y)=>(x.ch.c==null)-(y.ch.c==null)||(y.ch.c||0)-(x.ch.c||0)||x.d-y.d;
-  const f={chance:cmpC,dist:(x,y)=>x.d-y.d,sel:(x,y)=>tauxRef(x)-tauxRef(y),level:(x,y)=>(y.mp[0]+y.mp[1])-(x.mp[0]+x.mp[1])};
+  // synthese : formations sans aucun classement en dernier (r.synth calculé par main.js, voir classements.js).
+  const f={chance:cmpC,synthese:(x,y)=>(y.synth?.note??-1)-(x.synth?.note??-1)||x.d-y.d,dist:(x,y)=>x.d-y.d,sel:(x,y)=>tauxRef(x)-tauxRef(y),level:(x,y)=>(y.mp[0]+y.mp[1])-(x.mp[0]+x.mp[1])};
   return a.sort(f[by]||cmpC);
 }
 // Concours communs et réseaux d'écoles où chaque école est un sous-vœu d'un même vœu.
@@ -198,7 +199,8 @@ export function rowsFromData(data){
     taux:g(r,"taux"),tauxGen:g(r,"tauxGen"),rang:g(r,"rangDernier"),cla:g(r,"classes"),
     mp:["pTBF","pTB","pB","pAB","pSans"].map(f=>g(r,f)),bours:g(r,"pBours"),fem:g(r,"pF"),
     internatCode:g(r,"internat"),intern:g(r,"internat")===1||g(r,"internat")===2,filles:g(r,"internat")===2,
-    aca:g(r,"pAcaOrig"),admis:g(r,"admis"),tauxHist:g(r,"tauxHist")||[],tauxGenHist:g(r,"tauxGenHist")||[],lien:g(r,"lien"),academie:g(r,"academie")}));
+    aca:g(r,"pAcaOrig"),admis:g(r,"admis"),tauxHist:g(r,"tauxHist")||[],tauxGenHist:g(r,"tauxGenHist")||[],lien:g(r,"lien"),academie:g(r,"academie"),
+    insEmploi:g(r,"insEmploi"),insSalaire:g(r,"insSalaire"),insPromo:g(r,"insPromo")}));
 }
 // Paris, Créteil et Versailles : Parcoursup traite souvent l'Île-de-France comme un seul secteur de recrutement.
 const ILE_DE_FRANCE=["paris","creteil","versailles"];

@@ -1,5 +1,6 @@
 /* Onglet « Données » : sources open data téléchargées en local, leur version et leur mise à jour.
    La gestion passe par le serveur local (scripts/serveur.py) ; servi autrement, l'onglet n'affiche que le fichier en cours. */
+import {lireCsvClassements,csvModele} from "./classements.js";
 
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const date=iso=>iso?new Date(iso).toLocaleString("fr-FR",{dateStyle:"medium",timeStyle:"short"}):"—";
@@ -7,6 +8,11 @@ const jour=iso=>iso?new Date(iso).toLocaleDateString("fr-FR",{dateStyle:"medium"
 const taille=o=>o==null?"—":(o/1e6).toLocaleString("fr-FR",{maximumFractionDigits:1})+" Mo";
 const nb=x=>x==null?"—":Number(x).toLocaleString("fr-FR");
 const INTERVALLE_SUIVI_MS=1000;
+// Fichier produit dans le navigateur : rien ne passe par un serveur.
+function telecharger(nom,texte){
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([texte],{type:"text/csv;charset=utf-8"}));a.download=nom;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
 
 // Rend [libellé, classe de couleur] de l'état d'une source.
 export function etiquetteSource(s){
@@ -41,14 +47,40 @@ export function htmlSources(etat){
     ${!occupe&&m.fin&&!m.erreur?`<p><button type="button" class="btn" id="donnees-recharger">Recharger l'outil avec les nouvelles données</button></p>`:""}`;
 }
 
+/* Rend le HTML du panneau des classements importés. persos : [{nom, rangs}] ; poids : config.js, poidsClassements. */
+export function htmlClassementsPerso(persos,poids){
+  const liste=persos.length?`<ul class="perso-liste">${persos.map(c=>`<li><b>${esc(c.nom)}</b> · ${nb(Object.keys(c.rangs).length)} formations classées <button type="button" class="btn ghost" data-suppr="${esc(c.nom)}">Supprimer</button></li>`).join("")}</ul>`
+    :`<p class="hint">Aucun classement importé.</p>`;
+  return `<p class="hint">Ajoutez vos propres classements (palmarès de presse, avis de professeurs…) : ils restent dans ce navigateur et comptent dans la note de synthèse.</p>
+    <ol class="hint"><li>Téléchargez le modèle : une ligne par formation actuellement affichée.</li><li>Dans un tableur, renommez la colonne « Mon classement » et ajoutez-en d'autres si besoin, puis saisissez les rangs (1 = meilleur).</li><li>Enregistrez en CSV et importez-le.</li></ol>
+    <div class="compare-bar"><button type="button" class="btn ghost" id="perso-modele">Télécharger le modèle (CSV)</button>
+      <label class="btn">Importer un CSV<input type="file" id="perso-fichier" accept=".csv,text/csv" class="sr-only"></label></div>
+    <p class="hint" id="perso-msg" role="status"></p>${liste}
+    <p class="hint">Poids dans la note de synthèse (modifiables dans <code>config.js</code>) : ${Object.entries(poids).map(([k,v])=>esc(k)+" "+String(v).replace(".",",")).join(" · ")}.</p>`;
+}
+
 const SANS_SERVEUR=`<p class="hint">La gestion des données demande le serveur local. Lancez <code>./lancer.command</code> (ou <code>python3 scripts/serveur.py</code>) depuis le dossier de Cap Prépa, puis rouvrez cet onglet.</p>`;
 
-/* Remplit conteneur et le tient à jour. meta, nbFormations : fichier chargé par l'outil. */
-export function creerOngletDonnees(conteneur,meta,nbFormations){
+/* Remplit conteneur et le tient à jour. meta, nbFormations : fichier chargé par l'outil.
+   perso : {lister, formations, poids, enregistrer} pour les classements importés (fournis par main.js). */
+export function creerOngletDonnees(conteneur,meta,nbFormations,perso){
   let suivi=null;
   const zone=()=>conteneur.querySelector("#donnees-sources");
   conteneur.innerHTML=`<section class="panel" aria-labelledby="h-fichier"><h2 id="h-fichier">Fichier utilisé par l'outil</h2>${htmlFichierCourant(meta,nbFormations)}</section>
+    <section class="panel" aria-labelledby="h-perso"><h2 id="h-perso">Classements personnels</h2><div id="perso"></div></section>
     <section class="panel" aria-labelledby="h-sources"><h2 id="h-sources">Sources open data téléchargées</h2><div id="donnees-sources"><p class="hint">Chargement…</p></div></section>`;
+  const dessinerPerso=msg=>{conteneur.querySelector("#perso").innerHTML=htmlClassementsPerso(perso.lister(),perso.poids);if(msg)conteneur.querySelector("#perso-msg").textContent=msg;};
+  dessinerPerso();
+  conteneur.addEventListener("change",async e=>{
+    if(e.target.id!=="perso-fichier"||!e.target.files[0]) return;
+    try{
+      const lus=lireCsvClassements(await e.target.files[0].text());
+      if(!lus.length) throw new Error("aucun rang trouvé : vérifiez que la colonne id et les rangs sont remplis");
+      const noms=new Set(lus.map(c=>c.nom));
+      perso.enregistrer([...perso.lister().filter(c=>!noms.has(c.nom)),...lus]); // même nom : remplacé
+      dessinerPerso(`Importé : ${lus.map(c=>c.nom).join(", ")}.`);
+    }catch(err){dessinerPerso("Import impossible : "+err.message);}
+  });
   async function charger(verifier){
     let etat;
     try{
@@ -70,6 +102,9 @@ export function creerOngletDonnees(conteneur,meta,nbFormations){
     if(b){mettreAJour(b.dataset.maj);return;}
     if(e.target.id==="donnees-verifier"){zone().querySelector("[role=status]").textContent="Vérification auprès du catalogue…";charger(true);}
     if(e.target.id==="donnees-recharger") location.reload();
+    if(e.target.id==="perso-modele") telecharger("cap-prepa-classements.csv",csvModele(perso.formations()));
+    const s=e.target.closest("[data-suppr]");
+    if(s){perso.enregistrer(perso.lister().filter(c=>c.nom!==s.dataset.suppr));dessinerPerso(`Classement « ${s.dataset.suppr} » supprimé.`);}
   });
   return {charger};
 }

@@ -206,6 +206,15 @@ def faux_reseau(monkeypatch, absents=(), modifie="2026-03-09T16:54:47+00:00"):
             return [{"gta": "0", "int": ["Internat filles"]}]
         if jeu == ud.JEU_DOUBLETTES:
             return []
+        if jeu == ud.JEU_INSERSUP:
+            return [
+                {
+                    "etablissement": "0350097R",
+                    "promo": ["2024"],
+                    "tx_sortants_en_emploi_sal_fr_18": "80.5",
+                    "salaire_q2_18": "2500",
+                }
+            ]
         if jeu == ud.JEU_LYCEES:
             return [lycee("0350029B", "Lycée Chateaubriand", 48.12), lycee("0350030C", "Lycée Sans Position", None)]
         return [rec(session="2025", cod_aff_form=str(i), g_ea_lib_vx=f"Lycee {i}") for i in range(3)]
@@ -223,7 +232,7 @@ def test_mise_a_jour_commence_par_la_session_courante(monkeypatch, tmp_path):
     assert appels[:2] == [ud.JEU_COURANT, ud.JEU_COURANT]  # CPGE puis ecoles
     assert "fr-esr-parcoursup_2023" in appels and ud.JEU_CARTOGRAPHIE in appels
     assert sorted(p.stem for p in tmp_path.glob("*.json")) == [
-        "doublettes", "internats", "lycees", "parcoursup", "parcoursup-n1", "parcoursup-n2"
+        "doublettes", "insersup", "internats", "lycees", "parcoursup", "parcoursup-n1", "parcoursup-n2"
     ]  # fmt: skip
 
 
@@ -291,3 +300,29 @@ def test_lycees_construits_depuis_l_annuaire(monkeypatch, tmp_path):
 
 def test_academie_de_la_formation_dans_la_ligne():
     assert ligne(ud.build_rows([rec(acad_mies="Rennes")]))["academie"] == "Rennes"
+
+
+def test_insertion_derniere_promotion_diffusee_par_indicateur():
+    lignes = [
+        {"etablissement": "A", "promo": ["2022"], "tx_sortants_en_emploi_sal_fr_18": "70.4", "salaire_q2_18": "2400"},
+        {"etablissement": "A", "promo": ["2024"], "tx_sortants_en_emploi_sal_fr_18": "81.6", "salaire_q2_18": "nd"},
+        {
+            "etablissement": "B",
+            "promo": ["2019", "2020"],
+            "tx_sortants_en_emploi_sal_fr_18": "nd",
+            "salaire_q2_18": "nd",
+        },
+    ]
+    # Le salaire de 2024 n'est pas diffuse : on garde celui de 2022 plutot que rien.
+    assert ud.indicateurs_insertion(lignes) == {"A": {"emploi": 82, "salaire": 2400, "promo": "2024"}}
+
+
+def test_insertion_par_uai_strict_et_ecoles_seulement():
+    insertion = {"0350097R": {"emploi": 80, "salaire": 2500, "promo": "2024"}}
+    ecole = rec(fili="Ecole d'Ingénieur", fil_lib_voe_acc="Formation d'ingénieur Bac + 5", cod_uai="0350097R")
+    assert ligne(ud.build_rows([ecole], insertion=insertion))["insSalaire"] == 2500
+    autre_campus = rec(fili="Ecole d'Ingénieur", fil_lib_voe_acc="Formation d'ingénieur Bac + 5", cod_uai="0359999Z")
+    assert ligne(ud.build_rows([autre_campus], insertion=insertion))["insEmploi"] is None
+    assert (
+        ligne(ud.build_rows([rec(cod_uai="0350097R")], insertion=insertion))["insEmploi"] is None
+    )  # CPGE : sans objet
