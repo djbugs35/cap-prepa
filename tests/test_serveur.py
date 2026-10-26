@@ -79,3 +79,27 @@ def test_seules_les_requetes_de_la_page_locale_passent():
     assert serveur.est_requete_locale({"Host": f"localhost:{PORT}", "Origin": f"http://localhost:{PORT}"}, PORT)
     assert not serveur.est_requete_locale({"Host": f"127.0.0.1:{PORT}", "Origin": "https://autre-site.example"}, PORT)
     assert not serveur.est_requete_locale({"Host": f"piege.example:{PORT}"}, PORT)  # DNS rebinding
+
+
+def test_extraction_des_debouches(monkeypatch, mise_a_jour):
+    trouve = {
+        "ecoles": [{"ecole": "ENSC", "integres": 7}],
+        "source": "https://l.example/r.pdf",
+        "annee": 2025,
+        "consultees": [],
+    }
+    monkeypatch.setattr(serveur.deb, "extraire_depuis_adresse", lambda *_a, **_k: trouve)
+    corps = b'{"url": "https://l.example/", "filiere": "PCSI"}'
+    assert serveur.traiter_api("POST", "/api/debouches/extraire", corps, mise_a_jour) == (200, trouve)
+    assert serveur.traiter_api("POST", "/api/debouches/extraire", b'{"url": "x"}', mise_a_jour)[0] == 400
+
+
+def test_extraction_impossible_expliquee(monkeypatch, mise_a_jour):
+    def introuvable(*_a, **_k):
+        raise serveur.deb.Introuvable("aucune ecole reconnue")
+
+    monkeypatch.setattr(serveur.deb, "extraire_depuis_adresse", introuvable)
+    code, reponse = serveur.traiter_api(
+        "POST", "/api/debouches/extraire", b'{"url": "u", "filiere": "MPSI"}', mise_a_jour
+    )
+    assert code == 422 and "aucune ecole" in reponse["erreur"]
