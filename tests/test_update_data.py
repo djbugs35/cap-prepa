@@ -189,11 +189,16 @@ def test_reponse_gzip_decompressee(monkeypatch):
 # ---------- sources locales (data/sources) ----------
 
 
+def lycee(uai, nom, lat):
+    return {"identifiant_de_l_etablissement": uai, "nom_etablissement": nom, "nom_commune": "Rennes", "code_departement": "035",
+            "libelle_academie": "Rennes", "latitude": lat, "longitude": -1.67, "statut_public_prive": "Public"}  # fmt: skip
+
+
 def faux_reseau(monkeypatch, absents=(), modifie="2026-03-09T16:54:47+00:00"):
     """Remplacer exporter et version_distante ; rendre la liste des jeux telecharges, dans l'ordre."""
     appels = []
 
-    def exporter(jeu, _filtre, _champs=None):
+    def exporter(jeu, _filtre, _champs=None, _api=None):
         if jeu in absents:
             raise urllib.error.HTTPError("u", 404, "absent", {}, None)
         appels.append(jeu)
@@ -201,10 +206,14 @@ def faux_reseau(monkeypatch, absents=(), modifie="2026-03-09T16:54:47+00:00"):
             return [{"gta": "0", "int": ["Internat filles"]}]
         if jeu == ud.JEU_DOUBLETTES:
             return []
+        if jeu == ud.JEU_LYCEES:
+            return [lycee("0350029B", "Lycée Chateaubriand", 48.12), lycee("0350030C", "Lycée Sans Position", None)]
         return [rec(session="2025", cod_aff_form=str(i), g_ea_lib_vx=f"Lycee {i}") for i in range(3)]
 
     monkeypatch.setattr(ud, "exporter", exporter)
-    monkeypatch.setattr(ud, "version_distante", lambda jeu: {"titre": jeu, "modifie": modifie, "lignesPubliees": 3})
+    monkeypatch.setattr(
+        ud, "version_distante", lambda jeu, _api=None: {"titre": jeu, "modifie": modifie, "lignesPubliees": 3}
+    )
     return appels
 
 
@@ -214,7 +223,7 @@ def test_mise_a_jour_commence_par_la_session_courante(monkeypatch, tmp_path):
     assert appels[:2] == [ud.JEU_COURANT, ud.JEU_COURANT]  # CPGE puis ecoles
     assert "fr-esr-parcoursup_2023" in appels and ud.JEU_CARTOGRAPHIE in appels
     assert sorted(p.stem for p in tmp_path.glob("*.json")) == [
-        "doublettes", "internats", "parcoursup", "parcoursup-n1", "parcoursup-n2"
+        "doublettes", "internats", "lycees", "parcoursup", "parcoursup-n1", "parcoursup-n2"
     ]  # fmt: skip
 
 
@@ -266,3 +275,19 @@ def test_construction_depuis_les_sources_locales(monkeypatch, tmp_path):
     assert meta["session"] == 2025 and meta["sessionsHist"] == [2023, 2024] and meta["formations"] == 3
     rows = json.loads(texte)["rows"]
     assert ligne(rows, 0)["internat"] == ud.INTERNAT_FILLES  # cartographie lue depuis internats.json
+
+
+def test_lycees_construits_depuis_l_annuaire(monkeypatch, tmp_path):
+    assert ud.ecrire_lycees(tmp_path, tmp_path / "lycees.json") is False  # rien de telecharge : rien d'ecrit
+    faux_reseau(monkeypatch)
+    ud.mettre_a_jour_sources(tmp_path, journal=lambda _m: None)
+    assert ud.ecrire_lycees(tmp_path, tmp_path / "lycees.json")
+    donnees = json.loads((tmp_path / "lycees.json").read_text())
+    assert donnees["meta"]["fields"] == ud.FIELDS_LYCEES
+    assert donnees["rows"] == [
+        ["0350029B", "Lycée Chateaubriand", "Rennes", "035", "Rennes", 48.12, -1.67, 1]
+    ]  # sans position : ecarte
+
+
+def test_academie_de_la_formation_dans_la_ligne():
+    assert ligne(ud.build_rows([rec(acad_mies="Rennes")]))["academie"] == "Rennes"
