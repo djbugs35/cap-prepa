@@ -3,6 +3,18 @@
 window.CAP_PREPA_CONFIG = {
   // Ville de résidence utilisée quand l'adresse n'en précise pas.
   villeParDefaut: "Rennes",
+  // Fond de carte OpenStreetMap. Sans connexion, la carte schématique (SVG) le remplace automatiquement.
+  carteOsm: {
+    tuiles: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">contributeurs OpenStreetMap</a>"
+  },
+  // Bibliothèque Leaflet (version figée, empreintes vérifiées par le navigateur).
+  carteLeaflet: {
+    js: "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+    css: "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+    integriteJs: "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=",
+    integriteCss: "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  },
   // Rayon de recherche initial, en km (25 à 600).
   rayonParDefaut: 150,
   // Filières cochées au premier lancement.
