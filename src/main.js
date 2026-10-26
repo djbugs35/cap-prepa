@@ -125,7 +125,14 @@ function enregistrerPersos(liste){
   persos=liste;try{localStorage.setItem(CLE_CLASSEMENTS,JSON.stringify(persos));}catch(e){}
   recalculerClassements();upd(true);
 }
-const avecClassements=r=>{const cl=centiles.get(r.id)||{};return Object.assign(r,{cl,synth:noteSynthese(cl,CFG.poidsClassements),clDetail:detailClassements(cl,tousClassements())});};
+const avecClassements=r=>{const cl=centiles.get(r.id)||{};return Object.assign(r,{cl,synth:noteSynthese(cl,CFG.poidsClassements),clDetail:detailClassements(cl,tousClassements(),CFG.poidsClassements)});};
+// Infobulle de la note de synthèse : note /20 de chaque classement, valeur, rang et poids, puis la moyenne.
+function infobulleClassements(r){
+  const lignes=r.clDetail.map(c=>`<span class="tip-l"><span>${esc(c.nom)}</span><b>${c.note==null?"—":fmt(c.note)+"/20"}</b></span>
+    <small>${esc(c.texte)}${c.note==null?" · pas de rang (trop peu de formations)":c.poids===0?" · ignoré dans la note":c.poids!==1?` · poids ${fmt(c.poids).replace(",0","")}`:""}</small>`).join("");
+  return `<span class="tip" role="tooltip" id="tip-${r.id}">${lignes}<span class="tip-l tip-total"><span>Note de synthèse (moyenne pondérée)</span><b>${fmt(r.synth.note)}/20</b></span>
+    <small>Rang parmi les ${r.fil==="ING"?"écoles post-bac":"CPGE"} de France : 20 = la meilleure, 0 = la moins bien placée.</small></span>`;
+}
 
 function filtered(){
   return filterRows(rows,st).map(r=>avecClassements(Object.assign(r,{ch:chanceOf(r)})));
@@ -181,7 +188,7 @@ function renderList(all){
       <span class="c-ch"><span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span>${r.ch.bas.k!==r.ch.haut.k?`<small title="Selon que les notes finales sont de ${fmt(R.ecartFourchette)} point plus basses ou plus hautes">${libelleFourchette(r.ch)}</small>`:""}</span>
       <span class="c-n name"><span class="badge${r.pub?"":" priv"}">${r.fil==="ING"?"École":r.fil}</span>${esc(r.etab)}<small>${esc(r.ville)} · ${Math.round(r.d)} km${r.det?" · "+esc(r.det):""}${r.pub?"":" · privé"}${intern}</small>
         <details class="why"><summary>Pourquoi ?</summary><ul>${r.ch.raisons.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></details></span>
-      <span class="c-s num">${r.synth?`<b class="synth">${fmt(r.synth.note)}</b><small>/20 · ${r.synth.n} classement${r.synth.n>1?"s":""}</small>`:`<small>non classée</small>`}</span>
+      <span class="c-s num">${r.synth?`<button type="button" class="synth-btn" aria-describedby="tip-${r.id}"><b class="synth">${fmt(r.synth.note)}/20</b><small>sur ${r.synth.n} classement${r.synth.n>1?"s":""} ⓘ</small></button>${infobulleClassements(r)}`:`<small>non classée</small>`}</span>
       <span class="c-t num">${tauxCell(r,prevY)}</span>
       <span class="c-m">${mbar(r)}</span>
       <span class="c-d num">${r.aca} %<small>${r.capa} places · ${(r.voeux??0).toLocaleString("fr-FR")} vœux</small></span>
@@ -269,6 +276,8 @@ function initControls(){
   $("q").value=st.q;$("q").oninput=e=>{st.q=e.target.value;upd();};
   $("legend").innerHTML=[...CH,NON_ESTIMABLE].map(c=>`<span><i class="dot" style="background:var(--c${c.k})"></i>${c.l}</span>`).join("");
   $("map").addEventListener("click",e=>{const c=e.target.closest("circle[data-id]");if(c)selectionner(+c.dataset.id);});
+  // Échap referme l'infobulle des classements (ouverte au clavier) sans quitter la ligne.
+  $("list").addEventListener("keydown",e=>{if(e.key==="Escape"&&e.target.classList.contains("synth-btn"))e.target.blur();});
   $("list").addEventListener("click",e=>{
     const f=e.target.closest("[data-fiche]");
     if(f){ouvrirDialogue(htmlFiche(formationsParId([+f.dataset.fiche])[0],META.sessionsHist||[],META.session,{modele:CFG.sceiStatistiques,annee:CFG.sceiAnnee}));return;}
