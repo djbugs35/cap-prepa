@@ -47,11 +47,13 @@ export function chance(r,el,admisMin=15){
   if(!(r.admis>=admisMin)) return {s,p:null,c:null,cat:NON_ESTIMABLE};
   const p=position(s,r.mp);
   if(!p) return {s,p:null,c:null,cat:NON_ESTIMABLE};
-  const c=0.65*p.pos+0.35*r.taux/100;
+  const c=0.65*p.pos+0.35*tauxRef(r)/100;
   return {s,p,c,cat:CH.find(z=>c>=z.min)};
 }
 // L'open data ne renseigne pas l'internat des écoles d'ingénieurs : on ne peut ni les garder ni les exclure à coup sûr.
-export const internatInconnu=r=>r.fil==="ING";
+export const internatInconnu=r=>r.internatCode==null;
+// Taux d'accès des terminales générales (estimé par scripts/update_data.py), le taux officiel à défaut.
+export const tauxRef=r=>r.tauxGen??r.taux;
 // Formations dans le rayon et les filtres. f : {home, radius, fils, pub, intern, q}
 export function filterRows(rows,f){
   if(!f.home) return [];
@@ -64,7 +66,7 @@ export function filterRows(rows,f){
 // Les « non estimables » passent toujours après les autres dans le tri par chances.
 export function sortRows(a,by){
   const cmpC=(x,y)=>(x.ch.c==null)-(y.ch.c==null)||(y.ch.c||0)-(x.ch.c||0)||x.d-y.d;
-  const f={chance:cmpC,dist:(x,y)=>x.d-y.d,sel:(x,y)=>x.taux-y.taux,level:(x,y)=>(y.mp[0]+y.mp[1])-(x.mp[0]+x.mp[1])};
+  const f={chance:cmpC,dist:(x,y)=>x.d-y.d,sel:(x,y)=>tauxRef(x)-tauxRef(y),level:(x,y)=>(y.mp[0]+y.mp[1])-(x.mp[0]+x.mp[1])};
   return a.sort(f[by]||cmpC);
 }
 // Un vœu Parcoursup = une CPGE, ou un concours / réseau d'écoles
@@ -83,7 +85,14 @@ export function balanceAdvice(cnt,vows){
   if(vows>10) adv+=" Attention : plus de 10 vœux, le maximum Parcoursup.";
   return adv;
 }
-// Ligne compacte de data/formations.json -> objet
-export function rowFromArray(r){
-  return {id:r[0],etab:r[1],ville:r[2],dep:r[3],lat:r[4],lon:r[5],fil:r[6],det:r[7]||"",pub:r[8]===1,capa:r[9],voeux:r[10],taux:r[11],rang:r[12],cla:r[13],mp:[r[14],r[15],r[16],r[17],r[18]],bours:r[19],fem:r[20],intern:r[21]===1,aca:r[22],admis:r[23],t24:r[24]};
+// Lignes compactes de data/formations.json -> objets, d'après meta.fields : l'ordre des colonnes peut changer.
+export function rowsFromData(data){
+  const F=data.meta.fields,ix=Object.fromEntries(F.map((f,i)=>[f,i]));
+  const g=(r,f)=>ix[f]==null?null:r[ix[f]];
+  return data.rows.map(r=>({id:g(r,"id"),etab:g(r,"etab"),ville:g(r,"ville"),dep:g(r,"dep"),lat:g(r,"lat"),lon:g(r,"lon"),
+    fil:g(r,"filiere"),det:g(r,"detail")||"",pub:g(r,"public")===1,capa:g(r,"capa"),voeux:g(r,"voeux"),
+    taux:g(r,"taux"),tauxGen:g(r,"tauxGen"),rang:g(r,"rangDernier"),cla:g(r,"classes"),
+    mp:["pTBF","pTB","pB","pAB","pSans"].map(f=>g(r,f)),bours:g(r,"pBours"),fem:g(r,"pF"),
+    internatCode:g(r,"internat"),intern:g(r,"internat")===1||g(r,"internat")===2,filles:g(r,"internat")===2,
+    aca:g(r,"pAcaOrig"),admis:g(r,"admis"),tauxHist:g(r,"tauxHist")||[],tauxGenHist:g(r,"tauxGenHist")||[],lien:g(r,"lien")}));
 }

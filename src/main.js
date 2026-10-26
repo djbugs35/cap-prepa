@@ -1,7 +1,7 @@
 /* Cap Prépa — aide aux vœux Parcoursup (CPGE scientifiques et écoles d'ingénieurs post-bac).
    Données : data/formations.json, produit par scripts/update_data.py à partir de l'open data Parcoursup.
    Paramètres d'adresse : ?ville=Rennes&rayon=150&filieres=MPSI,PCSI  (ou ?lat=48.11&lon=-1.68) */
-import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,chance,filterRows,sortRows,vowKey,balanceAdvice,rowFromArray,internatInconnu} from "./calc.js";
+import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,chance,filterRows,sortRows,vowKey,balanceAdvice,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
 import {geocode,suggestions} from "./geo.js";
 import {renderSvgMap} from "./carte.js";
 
@@ -92,22 +92,32 @@ function mbar(r){
   const segs=r.mp.map((v,i)=>v>0?`<i style="width:${v/tot*100}%;background:${MCOL[i]}" title="${MLAB[i]} : ${v} %"></i>`:"").join("");
   return `<div class="mbar">${segs}<span class="me" style="left:${r.ch.p.x}%" title="Position estimée de l'élève"></span></div><div class="msub">${r.mp[0]+r.mp[1]} % TB · ${r.mp[2]} % B · ${r.mp[3]+r.mp[4]} % AB ou moins</div>`;
 }
-const linkFor=id=>"https://dossierappel.parcoursup.fr/Candidats/public/fiches/afficherFicheFormation?g_ta_cod="+id+"&typeBac=0&originePc=0";
+const linkFor=r=>r.lien||"https://dossierappel.parcoursup.fr/Candidats/public/fiches/afficherFicheFormation?g_ta_cod="+r.id+"&typeBac=0&originePc=0";
+// Tendance comparée à la session précédente, sur le même indicateur que celui affiché.
+function trend(r,prevY){
+  const hist=r.tauxGen!=null?r.tauxGenHist:r.tauxHist,prev=hist.length?hist[hist.length-1]:null;
+  if(prev==null) return "";
+  const d=tauxRef(r)-prev,cls=d<=-5?"trend-down":d>=5?"trend-up":"",fl=d<=-5?"↓ ":d>=5?"↑ ":"";
+  return `<small class="${cls}">${fl}${prev} % en ${prevY}</small>`;
+}
+function tauxCell(r,prevY){
+  const off=r.tauxGen!=null&&r.tauxGen!==r.taux?`<small title="Taux officiel, tous candidats confondus (réorientations comprises)">officiel ${r.taux} %</small>`:"";
+  return `${tauxRef(r)} %${off}${trend(r,prevY)}`;
+}
 function renderList(all){
-  const shown=all.slice(0,limit),prevY=META.previousSession||"";
-  let h=`<div class="item head"><span>Chances</span><span>Formation</span><span>Taux d'accès</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
+  const shown=all.slice(0,limit),prevY=(META.sessionsHist||[]).slice(-1)[0]||META.previousSession||"";
+  let h=`<div class="item head"><span>Chances</span><span>Formation</span><span title="Taux d'accès estimé pour les élèves de terminale générale">Accès term. G</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
   if(!all.length) h+=`<div class="empty">${st.home?"Aucune formation ne correspond. Élargissez le rayon ou ajoutez une filière.":"Indiquez une ville de résidence pour commencer."}</div>`;
   shown.forEach(r=>{
-    const tr=r.t24==null?"":r.taux-r.t24<=-5?`<small class="trend-down">↓ ${r.t24} % en ${prevY}</small>`:r.taux-r.t24>=5?`<small class="trend-up">↑ ${r.t24} % en ${prevY}</small>`:`<small>${r.t24} % en ${prevY}</small>`;
     const inB=st.basket.includes(r.id);
-    const intern=r.intern?" · internat":internatInconnu(r)?" · internat non renseigné":"";
+    const intern=r.filles?" · internat filles":r.intern?" · internat":internatInconnu(r)?" · internat non renseigné":"";
     h+=`<div class="item${flashId===r.id?" flash":""}" id="it-${r.id}">
       <span class="c-ch"><span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span></span>
       <span class="c-n name"><span class="badge${r.pub?"":" priv"}">${r.fil==="ING"?"École":r.fil}</span>${esc(r.etab)}<small>${esc(r.ville)} · ${Math.round(r.d)} km${r.det?" · "+esc(r.det):""}${r.pub?"":" · privé"}${intern}</small></span>
-      <span class="c-t num">${r.taux} %${tr}</span>
+      <span class="c-t num">${tauxCell(r,prevY)}</span>
       <span class="c-m">${mbar(r)}</span>
       <span class="c-d num">${r.aca} %<small>${r.capa} places · ${(r.voeux??0).toLocaleString("fr-FR")} vœux</small></span>
-      <span class="c-a acts"><button type="button" class="btn${inB?" on":""}" data-add="${r.id}">${inB?"Dans la liste":"Ajouter"}</button><a class="btn ghost" href="${linkFor(r.id)}" target="_blank" rel="noopener">Fiche</a></span>
+      <span class="c-a acts"><button type="button" class="btn${inB?" on":""}" data-add="${r.id}">${inB?"Dans la liste":"Ajouter"}</button><a class="btn ghost" href="${esc(linkFor(r))}" target="_blank" rel="noopener">Fiche</a></span>
     </div>`;});
   if(all.length>limit) h+=`<div class="more"><button type="button" class="btn" id="more">Afficher ${Math.min(60,all.length-limit)} de plus (${all.length-limit} restantes)</button></div>`;
   $("list").innerHTML=h;
@@ -172,7 +182,7 @@ async function start(){
     const res=await fetch(CFG.fichierDonnees);
     if(!res.ok) throw new Error("HTTP "+res.status);
     const data=await res.json();META=data.meta||{};
-    rows=data.rows.map(rowFromArray).filter(r=>W[r.fil]);
+    rows=rowsFromData(data).filter(r=>W[r.fil]);
     if(META.session) $("h-session").textContent=META.session;
   }catch(e){
     $("list").innerHTML=`<div class="empty">Impossible de lire ${esc(CFG.fichierDonnees)} (${esc(e.message)}). Ouvrez l'outil via un petit serveur web, par exemple <code>python3 -m http.server</code>, pas en double-cliquant sur le fichier.</div>`;

@@ -1,6 +1,11 @@
 """Tests de scripts/update_data.py (sans réseau)."""
+
 import importlib.util
+import io
+import urllib.error
 from pathlib import Path
+
+import pytest
 
 _SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "update_data.py"
 _spec = importlib.util.spec_from_file_location("update_data", _SCRIPT)
@@ -9,38 +14,150 @@ _spec.loader.exec_module(ud)
 
 
 def rec(**kw):
-    base = {"cod_aff_form": "100", "fili": "CPGE", "fil_lib_voe_acc": "MPSI", "g_ea_lib_vx": "Lycée Chateaubriand",
-            "ville_etab": "Rennes", "dep": "35", "detail_forma": "", "contrat_etab": "Public", "capa_fin": 48,
-            "voe_tot": 2000, "taux_acces_ens": 40, "acc_tot": 48, "nb_voe_pp_internat": 10,
-            "g_olocalisation_des_formations": {"lat": 48.1, "lon": -1.68}}
+    base = {
+        "cod_aff_form": "100",
+        "fili": "CPGE",
+        "fil_lib_voe_acc": "MPSI",
+        "g_ea_lib_vx": "Lycée Chateaubriand",
+        "ville_etab": "Rennes",
+        "dep": "35",
+        "detail_forma": "",
+        "contrat_etab": "Public",
+        "capa_fin": 48,
+        "voe_tot": 2000,
+        "taux_acces_ens": 40,
+        "acc_tot": 48,
+        "nb_cla_pp_internat": 10,
+        "nb_voe_pp": 2000,
+        "nb_voe_pp_bg": 1000,
+        "prop_tot": 400,
+        "prop_tot_bg": 300,
+        "g_olocalisation_des_formations": {"lat": 48.1, "lon": -1.68},
+    }
     base.update(kw)
     return base
 
 
-def test_ligne_complete_et_ordre_des_champs():
-    rows = ud.build_rows([rec()], [{"cod_aff_form": "100", "taux_acces_ens": 35}])
-    assert len(rows) == 1
-    r = dict(zip(ud.FIELDS, rows[0], strict=True))
-    assert r["id"] == 100 and r["filiere"] == "MPSI" and r["public"] == 1 and r["internat"] == 1
-    assert r["tauxPrev"] == 35 and r["admis"] == 48
+def ligne(rows, i=0):
+    return dict(zip(ud.FIELDS, rows[i], strict=True))
+
+
+def test_ligne_complete_avec_historique():
+    passee = rec(taux_acces_ens=35)
+    r = ligne(ud.build_rows([rec()], [{}, {"100": passee}]))
+    assert r["id"] == 100 and r["filiere"] == "MPSI" and r["public"] == 1 and r["admis"] == 48
+    assert r["tauxHist"] == [None, 35]
+    assert r["tauxGenHist"][1] == ud.taux_acces_generaux(passee)
+
+
+def test_taux_generaux_corrige_le_taux_de_tous_les_candidats():
+    """Le taux officiel compte reorientations et reprises d'etudes : en MPSI, il sous-estimait
+    de moitie les chances d'un eleve de terminale generale (Malherbe 2025 : 28 % affiche, ~49 % reel)."""
+    malherbe = rec(taux_acces_ens=28, nb_voe_pp=2329, nb_voe_pp_bg=1307, prop_tot=533, prop_tot_bg=519)
+    assert ud.taux_acces_generaux(malherbe) == 49
+    assert ud.taux_acces_generaux(rec(prop_tot_bg=None)) is None
+    assert ud.taux_acces_generaux(rec(taux_acces_ens=90, prop_tot_bg=400, prop_tot=400)) == 100
+
+
+def test_taux_officiel_texte_ou_reel():
+    """La session 2024 publie le taux en texte ("19"), la 2023 en reel (53.0) : le calcul plantait."""
+    assert ud.taux_officiel(rec(taux_acces_ens="19")) == 19
+    assert ud.taux_officiel(rec(taux_acces_ens=53.0)) == 53
+    assert ud.taux_officiel(rec(taux_acces_ens=None)) is None
+    assert ud.taux_acces_generaux(rec(taux_acces_ens="40")) == ud.taux_acces_generaux(rec(taux_acces_ens=40))
+
+
+def test_internat_selon_cartographie_puis_statistiques():
+    filles = {"100": "Etablissements avec internat pour filles"}
+    mixte = {"100": "Etablissements avec internat pour filles et garçons"}
+    assert ud.code_internat(rec(), filles) == ud.INTERNAT_FILLES
+    assert ud.code_internat(rec(), mixte) == ud.INTERNAT_MIXTE
+    assert ud.code_internat(rec(), {}) == ud.INTERNAT_MIXTE  # candidats classes en internat
+    assert ud.code_internat(rec(nb_cla_pp_internat=0), {}) == ud.INTERNAT_SANS
+    assert ud.code_internat(rec(fili="Ecole d'Ingénieur"), {}) is None  # non publie pour les ecoles
+
+
+def test_statistiques_doublettes_maths_pc():
+    mpc = ["Mathématiques Spécialité", "Physique-Chimie Spécialité"]
+    lignes = [
+        {
+            "formation": "MPSI",
+            "niveau_d_agregation": "2",
+            "doublette": mpc,
+            "voeux": 90,
+            "propositions_d_admissions": 54,
+        },
+        {
+            "formation": "MPSI",
+            "niveau_d_agregation": "2",
+            "doublette": ["x", "y"],
+            "voeux": 10,
+            "propositions_d_admissions": 2,
+        },
+    ]
+    assert ud.statistiques_doublettes(lignes) == {"MPSI": {"tauxMathsPC": 60, "tauxTous": 56, "partMathsPC": 90}}
+
+
+def test_validation_refuse_un_fichier_tronque_ou_incomplet():
+    rows = ud.build_rows([rec()])
+    with pytest.raises(ValueError, match="minimum"):
+        ud.valider(rows, 2)
+    rows[0][ud.FIELDS.index("taux")] = None
+    with pytest.raises(ValueError, match="taux"):
+        ud.valider(rows, 1)
+
+
+def test_ecriture_atomique(tmp_path):
+    cible = tmp_path / "f.json"
+    ud.ecrire_atomique(cible, "{}")
+    assert cible.read_text() == "{}" and not list(tmp_path.glob("*.tmp"))
+
+
+def test_reprise_apres_erreur_serveur(monkeypatch):
+    appels = []
+
+    class Reponse(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+    def urlopen(_requete, timeout):
+        appels.append(timeout)
+        if len(appels) < 3:
+            raise urllib.error.HTTPError("u", 503, "indisponible", {}, None)
+        return Reponse(b"[1]")
+
+    monkeypatch.setattr(ud.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(ud.time, "sleep", lambda _s: None)
+    assert ud.telecharger_json("http://x") == [1]
+    assert len(appels) == 3
+    monkeypatch.setattr(
+        ud.urllib.request,
+        "urlopen",
+        lambda *_a, **_k: (_ for _ in ()).throw(urllib.error.HTTPError("u", 404, "absent", {}, None)),
+    )
+    with pytest.raises(urllib.error.HTTPError):
+        ud.telecharger_json("http://x")
 
 
 def test_exclusions():
     cur = [
-        rec(cod_aff_form="1", g_olocalisation_des_formations={}),                       # sans coordonnées
+        rec(cod_aff_form="1", g_olocalisation_des_formations={}),  # sans coordonnées
         rec(cod_aff_form="2", voe_tot=900, g_olocalisation_des_formations={"lat": -21.1, "lon": 55.5}),  # outre-mer
-        rec(cod_aff_form="3", fili="Ecole d'Ingénieur", detail_forma="Bac STI2D"),      # bac techno
+        rec(cod_aff_form="3", fili="Ecole d'Ingénieur", detail_forma="Bac STI2D"),  # bac techno
         rec(cod_aff_form="4"),
     ]
-    assert [r[0] for r in ud.build_rows(cur, [])] == [4]
-    assert {r[0] for r in ud.build_rows(cur, [], metropole=False)} == {2, 4}
+    assert [r[0] for r in ud.build_rows(cur)] == [4]
+    assert {r[0] for r in ud.build_rows(cur, metropole=False)} == {2, 4}
 
 
 def test_doublons_concours_communs_et_rayon():
     a = rec(cod_aff_form="5", fili="Ecole d'Ingénieur", g_ea_lib_vx="Polytech", detail_forma="Geipi")
     b = dict(a, cod_aff_form="6")
     loin = rec(cod_aff_form="7", g_olocalisation_des_formations={"lat": 43.6, "lon": 1.44})
-    rows = ud.build_rows([a, b, loin], [], centre=(48.1, -1.68), rayon=200)
+    rows = ud.build_rows([a, b, loin], centre=(48.1, -1.68), rayon=200)
     assert [r[0] for r in rows] == [5]
 
 
