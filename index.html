@@ -151,7 +151,6 @@ details.method p{margin:8px 0}
   <section class="panel" aria-labelledby="h-fil">
     <h2 id="h-fil">Filières visées</h2>
     <div class="chips" id="fils"></div>
-    <p class="hint">TSI, TB et TPC sont réservées aux bacs technologiques (STI2D, STL, STAV).</p>
     <label class="check"><input type="checkbox" id="pub"> Établissements publics uniquement</label>
     <label class="check"><input type="checkbox" id="intern"> Avec internat</label>
   </section>
@@ -209,11 +208,11 @@ details.method p{margin:8px 0}
   <details class="method">
     <summary>Méthode, sources et limites</summary>
     <div>
-      <p><b>Source.</b> Jeu de données « Parcoursup » de la dernière session publiée du ministère de l'Enseignement supérieur (data.enseignementsup-recherche.gouv.fr, licence ouverte), avec le taux d'accès de l'année précédente pour la tendance. Sont retenues les CPGE MPSI, MP2I, PCSI, PTSI, BCPST, TSI, TB, TPC et les formations d'ingénieur Bac+5 accessibles après un bac général, dans la zone couverte par le fichier de données (voir le README pour le régénérer sur toute la France).</p>
+      <p><b>Source.</b> Jeu de données « Parcoursup » de la dernière session publiée du ministère de l'Enseignement supérieur (data.enseignementsup-recherche.gouv.fr, licence ouverte), avec le taux d'accès de l'année précédente pour la tendance. Sont retenues les CPGE MPSI, MP2I, PCSI, PTSI, BCPST et les formations d'ingénieur Bac+5 accessibles après un bac général, dans la zone couverte par le fichier de données (voir le README pour le régénérer sur toute la France).</p>
       <p><b>Taux d'accès.</b> Part des candidats classés qui ont reçu une proposition. Ce n'est pas un taux de réussite. Pour les concours communs (Geipi Polytech, Puissance Alpha, Avenir, Advance), les chiffres concernent souvent l'ensemble du concours et apparaissent sur chaque école du réseau.</p>
       <p><b>Profil des admis.</b> Répartition des néo-bacheliers admis par mention au bac (TB félicitations, TB, B, AB, sans mention). Le trait rouge situe le score de dossier de l'élève dans cette répartition, en assimilant 18+ à TB félicitations, 16–18 à TB, 14–16 à B et 12–14 à AB.</p>
       <p><b>Score de dossier.</b> Les formations ne publient pas de barème chiffré. Les pondérations utilisées ici sont des hypothèses inspirées des critères affichés sur les fiches Parcoursup (maths très lourdes en MPSI, physique-chimie en PCSI, SVT en BCPST, profil plus global en école post-bac). L'avis du lycée décale le score de quelques dixièmes. Lisez toujours la rubrique « Critères généraux d'examen des vœux » de la fiche officielle.</p>
-      <p><b>Chances estimées.</b> Indice qui combine la position de l'élève parmi les admis (65 %) et le taux d'accès (35 %). C'est une aide au tri, pas une prédiction : le niveau du lycée d'origine, les appréciations et le rang dans la classe pèsent beaucoup et ne sont pas publics.</p>
+      <p><b>Chances estimées.</b> Indice qui combine la position de l'élève parmi les admis (65 %) et le taux d'accès (35 %). Quand une formation a moins de 15 admis, sa répartition par mention est trop fragile : elle est marquée « Non estimable ». C'est une aide au tri, pas une prédiction : le niveau du lycée d'origine, les appréciations et le rang dans la classe pèsent beaucoup et ne sont pas publics.</p>
       <p><b>Ce qui manque.</b> Les destinations des anciens élèves par lycée et les taux d'intégration en école après la prépa (publiés par le SCEI, à consulter à part).</p>
     </div>
   </details>
@@ -222,6 +221,6 @@ details.method p{margin:8px 0}
 </div>
 
 <script src="config.js"></script>
-<script src="app.js"></script>
+<script type="module" src="src/main.js"></script>
 </body>
 </html>
