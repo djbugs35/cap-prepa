@@ -1,10 +1,11 @@
 /* Cap Prépa — aide aux vœux Parcoursup (CPGE scientifiques et écoles d'ingénieurs post-bac).
    Données : data/formations.json, produit par scripts/update_data.py à partir de l'open data Parcoursup.
    Paramètres d'adresse : ?ville=Rennes&rayon=150&filieres=MPSI,PCSI  (ou ?lat=48.11&lon=-1.68) */
-import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,estimation,libelleFourchette,reglagesDepuis,avertissementMathsExpertes,filterRows,sortRows,vowKey,balanceAdvice,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
+import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,estimation,basculerComparaison,libelleFourchette,reglagesDepuis,avertissementMathsExpertes,filterRows,sortRows,vowKey,balanceAdvice,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
 import {geocode,suggestions} from "./geo.js";
 import {renderSvgMap} from "./carte.js";
 import {chargerLeaflet,creerCarteOsm} from "./carte-osm.js";
+import {htmlFiche,htmlComparaison} from "./fiche.js";
 
 const CFG=Object.assign({
   villeParDefaut:"Rennes",rayonParDefaut:150,
@@ -27,7 +28,7 @@ const fmt=x=>(Math.round(x*10)/10).toFixed(1).replace(".",",");
 
 // ---------- état ----------
 const DEF={home:null,radius:CFG.rayonParDefaut,fils:CFG.filieresParDefaut.filter(f=>W[f]),pub:false,intern:false,
-  n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F",sort:"chance",q:"",basket:[]};
+  n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F",sort:"chance",q:"",basket:[],compare:[]};
 let st=JSON.parse(JSON.stringify(DEF));
 try{const s=localStorage.getItem("capprepa");if(s){const o=JSON.parse(s);st=Object.assign(st,o);st.n=Object.assign({},DEF.n,o.n||{});}}catch(e){}
 st.fils=st.fils.filter(f=>W[f]); // filières retirées depuis la dernière visite
@@ -98,7 +99,6 @@ function mbar(r){
   const segs=r.mp.map((v,i)=>v>0?`<i style="width:${v/tot*100}%;background:${MCOL[i]}" title="${MLAB[i]} : ${v} %"></i>`:"").join("");
   return `<div class="mbar">${segs}<span class="me" style="left:${r.ch.p.x}%" title="Position estimée de l'élève"></span></div><div class="msub">${r.mp[0]+r.mp[1]} % TB · ${r.mp[2]} % B · ${r.mp[3]+r.mp[4]} % AB ou moins</div>`;
 }
-const linkFor=r=>r.lien||"https://dossierappel.parcoursup.fr/Candidats/public/fiches/afficherFicheFormation?g_ta_cod="+r.id+"&typeBac=0&originePc=0";
 // Tendance comparée à la session précédente, sur le même indicateur que celui affiché.
 function trend(r,prevY){
   const hist=r.tauxGen!=null?r.tauxGenHist:r.tauxHist,prev=hist.length?hist[hist.length-1]:null;
@@ -116,7 +116,7 @@ function renderList(all){
   let h=`<div class="item head"><span>Chances</span><span>Formation</span><span title="Taux d'accès estimé pour les élèves de terminale générale">Accès term. G</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
   if(!all.length) h+=`<div class="empty">${st.home?"Aucune formation ne correspond. Élargissez le rayon ou ajoutez une filière.":"Indiquez une ville de résidence pour commencer."}</div>`;
   shown.forEach(r=>{
-    const inB=st.basket.includes(r.id);
+    const inB=st.basket.includes(r.id),inC=st.compare.includes(r.id);
     const intern=r.filles?" · internat filles":r.intern?" · internat":internatInconnu(r)?" · internat non renseigné":"";
     h+=`<div class="item${flashId===r.id?" flash":""}" id="it-${r.id}">
       <span class="c-ch"><span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span>${r.ch.bas.k!==r.ch.haut.k?`<small title="Selon que les notes finales sont de ${fmt(R.ecartFourchette)} point plus basses ou plus hautes">${libelleFourchette(r.ch)}</small>`:""}</span>
@@ -125,15 +125,23 @@ function renderList(all){
       <span class="c-t num">${tauxCell(r,prevY)}</span>
       <span class="c-m">${mbar(r)}</span>
       <span class="c-d num">${r.aca} %<small>${r.capa} places · ${(r.voeux??0).toLocaleString("fr-FR")} vœux</small></span>
-      <span class="c-a acts"><button type="button" class="btn${inB?" on":""}" data-add="${r.id}">${inB?"Dans la liste":"Ajouter"}</button><a class="btn ghost" href="${esc(linkFor(r))}" target="_blank" rel="noopener">Fiche</a></span>
+      <span class="c-a acts"><button type="button" class="btn${inB?" on":""}" data-add="${r.id}">${inB?"Dans la liste":"Ajouter"}</button><button type="button" class="btn ghost" data-fiche="${r.id}">Fiche</button><button type="button" class="btn ghost${inC?" on":""}" data-cmp="${r.id}" aria-pressed="${inC}">Comparer</button></span>
     </div>`;});
   if(all.length>limit) h+=`<div class="more"><button type="button" class="btn" id="more">Afficher ${Math.min(60,all.length-limit)} de plus (${all.length-limit} restantes)</button></div>`;
   $("list").innerHTML=h;
   const m=$("more");if(m)m.onclick=()=>{limit+=60;renderList(all);};
 }
+// Formations choisies par identifiant, avec distance et estimation (hors des filtres de la liste).
+const formationsParId=ids=>ids.map(id=>rows.find(r=>r.id===id)).filter(Boolean)
+  .map(r=>Object.assign({d:st.home?dist(st.home.lat,st.home.lon,r.lat,r.lon):0},r)).map(r=>Object.assign(r,{ch:chanceOf(r)}));
+function ouvrirDialogue(html){$("fiche-corps").innerHTML=html;const d=$("fiche");if(!d.open)d.showModal();}
+function renderCompareBar(){
+  const n=st.compare.length,el=$("compare-bar");
+  el.hidden=!n;if(!n)return;
+  el.innerHTML=`<span>${n} formation${n>1?"s":""} à comparer (4 au plus).</span><button type="button" class="btn" id="cmp-go"${n<2?" disabled":""}>Comparer</button><button type="button" class="btn ghost" id="cmp-clear">Vider</button>`;
+}
 function renderBasket(){
-  const items=st.basket.map(id=>rows.find(r=>r.id===id)).filter(Boolean)
-    .map(r=>Object.assign({d:st.home?dist(st.home.lat,st.home.lon,r.lat,r.lon):0},r)).map(r=>Object.assign(r,{ch:chanceOf(r)}))
+  const items=formationsParId(st.basket)
     .sort((a,b)=>(b.ch.c??-1)-(a.ch.c??-1));
   if(!items.length){$("basket").innerHTML=`<p class="hint">Cliquez sur « Ajouter » pour construire une liste et vérifier qu'elle est équilibrée.</p>`;return;}
   const cnt=[0,0,0,0,0,0];items.forEach(r=>cnt[r.ch.cat.k]++);
@@ -170,7 +178,7 @@ function upd(keepLimit){
   const all=sortRows(filtered(),st.sort);
   $("count").textContent=all.length+" formation"+(all.length>1?"s":"");
   affichees=all;dessinerCarte();
-  renderList(all);renderBasket();
+  renderList(all);renderBasket();renderCompareBar();
 }
 
 // ---------- contrôles ----------
@@ -197,8 +205,16 @@ function initControls(){
   $("q").value=st.q;$("q").oninput=e=>{st.q=e.target.value;upd();};
   $("legend").innerHTML=[...CH,NON_ESTIMABLE].map(c=>`<span><i class="dot" style="background:var(--c${c.k})"></i>${c.l}</span>`).join("");
   $("map").addEventListener("click",e=>{const c=e.target.closest("circle[data-id]");if(c)selectionner(+c.dataset.id);});
-  $("list").addEventListener("click",e=>{const b=e.target.closest("[data-add]");if(!b)return;const id=+b.dataset.add;
+  $("list").addEventListener("click",e=>{
+    const f=e.target.closest("[data-fiche]");
+    if(f){ouvrirDialogue(htmlFiche(formationsParId([+f.dataset.fiche])[0],META.sessionsHist||[],META.session));return;}
+    const c=e.target.closest("[data-cmp]");
+    if(c){st.compare=basculerComparaison(st.compare,+c.dataset.cmp);upd(true);return;}
+    const b=e.target.closest("[data-add]");if(!b)return;const id=+b.dataset.add;
     st.basket=st.basket.includes(id)?st.basket.filter(x=>x!==id):[...st.basket,id];upd(true);});
+  $("compare-bar").addEventListener("click",e=>{
+    if(e.target.id==="cmp-go") ouvrirDialogue(htmlComparaison(formationsParId(st.compare)));
+    if(e.target.id==="cmp-clear"){st.compare=[];upd(true);}});
   $("basket").addEventListener("click",e=>{const b=e.target.closest("[data-rm]");if(!b)return;st.basket=st.basket.filter(x=>x!==+b.dataset.rm);upd(true);});
 }
 
