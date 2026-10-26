@@ -104,6 +104,15 @@ export function estInstable(r,ecart=REGLAGES.ecartTauxInstable){
   const v=tauxAnnuels(r).filter(x=>x!=null);
   return v.length>=2&&Math.max(...v)-Math.min(...v)>=ecart;
 }
+// Rend [{annee, taux}] des sessions connues, de la plus ancienne à la plus récente. annees : meta.sessionsHist.
+export function historiqueTaux(r,annees,session){
+  const ans=[...annees,session];
+  return tauxAnnuels(r).map((taux,i)=>({annee:ans[i],taux})).filter(h=>h.taux!=null&&h.annee!=null);
+}
+// Ajoute ou retire id de la comparaison ; au-delà de max formations, la plus ancienne sort.
+export function basculerComparaison(ids,id,max=4){
+  return ids.includes(id)?ids.filter(x=>x!==id):[...ids,id].slice(-max);
+}
 // Rend l'avertissement à afficher quand l'élève vise MPSI ou MP2I sans maths expertes, null sinon.
 export function avertissementMathsExpertes(el,fils){
   const f=fils.filter(x=>MX_INDISPENSABLE.includes(x));
@@ -124,11 +133,41 @@ export function sortRows(a,by){
   const f={chance:cmpC,dist:(x,y)=>x.d-y.d,sel:(x,y)=>tauxRef(x)-tauxRef(y),level:(x,y)=>(y.mp[0]+y.mp[1])-(x.mp[0]+x.mp[1])};
   return a.sort(f[by]||cmpC);
 }
+// Concours communs et réseaux d'écoles où chaque école est un sous-vœu d'un même vœu.
+const RESEAUX=/^(Concours [^·]+|Groupe INSA|Groupe ICAM|CESI|ECAM-ECAM LaSalle|UniLaSalle|La Prépa des INP)/;
+export const reseauDe=r=>{if(r.fil!=="ING")return null;const m=r.det.match(RESEAUX);return m?m[1].trim():null;};
 // Un vœu Parcoursup = une CPGE, ou un concours / réseau d'écoles
 export function vowKey(r){
   if(r.fil!=="ING") return "c"+r.id;
-  const m=r.det.match(/^(Concours [^·]+|Groupe INSA|Groupe ICAM|CESI|ECAM-ECAM LaSalle|UniLaSalle|La Prépa des INP)/);
-  return m?m[1].trim():"e"+r.etab;
+  return reseauDe(r)??"e"+r.etab;
+}
+// Rend les vœux de la liste dans l'ordre reçu : {cle, reseau (null hors concours ou réseau), formations}.
+export function regrouperVoeux(items){
+  const g=new Map();
+  for(const r of items){const k=vowKey(r);if(!g.has(k))g.set(k,{cle:k,reseau:reseauDe(r),formations:[]});g.get(k).formations.push(r);}
+  return [...g.values()];
+}
+const CLES_NOTES=["m","pc","mx","s3","an","fr","au"],AVIS=["TF","F","AF"],INTERNATS=["avec","sans","deux"];
+/* Rend le fragment d'adresse (#…) qui décrit la liste, les notes et les choix d'internat.
+   Un fragment n'est jamais envoyé au serveur : les notes de l'élève restent entre ceux qui ont le lien. */
+export function encoderPartage({basket,n,mxon,s3type,avis,internats={}}){
+  const p=new URLSearchParams({liste:basket.join(","),notes:CLES_NOTES.map(k=>n[k]).join(","),mx:mxon?"1":"0",s3:s3type,avis});
+  const i=Object.entries(internats).filter(([id])=>basket.includes(+id)).map(([id,v])=>id+":"+v).join(",");
+  if(i) p.set("internat",i);
+  return "#"+p.toString();
+}
+// Rend l'état décrit par un fragment d'encoderPartage, sans les valeurs invalides ; null si le fragment n'en vient pas.
+export function decoderPartage(hash){
+  const p=new URLSearchParams(String(hash||"").replace(/^#/,""));
+  if(!p.has("liste")) return null;
+  const out={basket:p.get("liste").split(",").map(Number).filter(x=>Number.isInteger(x)&&x>0)};
+  const notes=(p.get("notes")||"").split(",").map(Number);
+  if(notes.length===CLES_NOTES.length&&notes.every(x=>x>=0&&x<=20)) out.n=Object.fromEntries(CLES_NOTES.map((k,i)=>[k,notes[i]]));
+  if(p.has("mx")) out.mxon=p.get("mx")==="1";
+  if(p.get("s3")) out.s3type=p.get("s3");
+  if(AVIS.includes(p.get("avis"))) out.avis=p.get("avis");
+  out.internats=Object.fromEntries((p.get("internat")||"").split(",").map(x=>x.split(":")).filter(([id,v])=>+id>0&&INTERNATS.includes(v)));
+  return out;
 }
 export function balanceAdvice(cnt,vows){
   const safe=cnt[1]+cnt[2],amb=cnt[4]+cnt[5];

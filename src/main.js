@@ -1,14 +1,21 @@
 /* Cap Prépa — aide aux vœux Parcoursup (CPGE scientifiques et écoles d'ingénieurs post-bac).
    Données : data/formations.json, produit par scripts/update_data.py à partir de l'open data Parcoursup.
    Paramètres d'adresse : ?ville=Rennes&rayon=150&filieres=MPSI,PCSI  (ou ?lat=48.11&lon=-1.68) */
-import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,estimation,libelleFourchette,reglagesDepuis,avertissementMathsExpertes,filterRows,sortRows,vowKey,balanceAdvice,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
+import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,estimation,basculerComparaison,encoderPartage,decoderPartage,libelleFourchette,reglagesDepuis,avertissementMathsExpertes,filterRows,sortRows,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
 import {geocode,suggestions} from "./geo.js";
 import {renderSvgMap} from "./carte.js";
+import {chargerLeaflet,creerCarteOsm} from "./carte-osm.js";
+import {htmlFiche,htmlComparaison} from "./fiche.js";
+import {htmlListe,htmlImpression} from "./liste.js";
 
 const CFG=Object.assign({
   villeParDefaut:"Rennes",rayonParDefaut:150,
   filieresParDefaut:["MPSI","MP2I","PCSI","PTSI","ING"],
-  fichierDonnees:"data/formations.json",geoApi:"https://geo.api.gouv.fr/communes"
+  fichierDonnees:"data/formations.json",geoApi:"https://geo.api.gouv.fr/communes",
+  carteOsm:{tuiles:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",attribution:"&copy; contributeurs OpenStreetMap"},
+  carteLeaflet:{
+    js:"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",css:"https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+    integriteJs:"sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=",integriteCss:"sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="}
 },window.CAP_PREPA_CONFIG||{});
 const R=reglagesDepuis(CFG);
 
@@ -22,14 +29,14 @@ const fmt=x=>(Math.round(x*10)/10).toFixed(1).replace(".",",");
 
 // ---------- état ----------
 const DEF={home:null,radius:CFG.rayonParDefaut,fils:CFG.filieresParDefaut.filter(f=>W[f]),pub:false,intern:false,
-  n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F",sort:"chance",q:"",basket:[]};
+  n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F",sort:"chance",q:"",basket:[],compare:[],internats:{}};
 let st=JSON.parse(JSON.stringify(DEF));
 try{const s=localStorage.getItem("capprepa");if(s){const o=JSON.parse(s);st=Object.assign(st,o);st.n=Object.assign({},DEF.n,o.n||{});}}catch(e){}
 st.fils=st.fils.filter(f=>W[f]); // filières retirées depuis la dernière visite
 function save(){try{localStorage.setItem("capprepa",JSON.stringify(st));}catch(e){}}
 
 let rows=[],META={};
-let limit=60,flashId=null;
+let limit=60,flashId=null,osm=null,affichees=[];
 const chanceOf=r=>estimation(r,st,R,META.sessionsHist||[]);
 
 // ---------- ville ----------
@@ -93,7 +100,6 @@ function mbar(r){
   const segs=r.mp.map((v,i)=>v>0?`<i style="width:${v/tot*100}%;background:${MCOL[i]}" title="${MLAB[i]} : ${v} %"></i>`:"").join("");
   return `<div class="mbar">${segs}<span class="me" style="left:${r.ch.p.x}%" title="Position estimée de l'élève"></span></div><div class="msub">${r.mp[0]+r.mp[1]} % TB · ${r.mp[2]} % B · ${r.mp[3]+r.mp[4]} % AB ou moins</div>`;
 }
-const linkFor=r=>r.lien||"https://dossierappel.parcoursup.fr/Candidats/public/fiches/afficherFicheFormation?g_ta_cod="+r.id+"&typeBac=0&originePc=0";
 // Tendance comparée à la session précédente, sur le même indicateur que celui affiché.
 function trend(r,prevY){
   const hist=r.tauxGen!=null?r.tauxGenHist:r.tauxHist,prev=hist.length?hist[hist.length-1]:null;
@@ -111,7 +117,7 @@ function renderList(all){
   let h=`<div class="item head"><span>Chances</span><span>Formation</span><span title="Taux d'accès estimé pour les élèves de terminale générale">Accès term. G</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
   if(!all.length) h+=`<div class="empty">${st.home?"Aucune formation ne correspond. Élargissez le rayon ou ajoutez une filière.":"Indiquez une ville de résidence pour commencer."}</div>`;
   shown.forEach(r=>{
-    const inB=st.basket.includes(r.id);
+    const inB=st.basket.includes(r.id),inC=st.compare.includes(r.id);
     const intern=r.filles?" · internat filles":r.intern?" · internat":internatInconnu(r)?" · internat non renseigné":"";
     h+=`<div class="item${flashId===r.id?" flash":""}" id="it-${r.id}">
       <span class="c-ch"><span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span>${r.ch.bas.k!==r.ch.haut.k?`<small title="Selon que les notes finales sont de ${fmt(R.ecartFourchette)} point plus basses ou plus hautes">${libelleFourchette(r.ch)}</small>`:""}</span>
@@ -120,32 +126,53 @@ function renderList(all){
       <span class="c-t num">${tauxCell(r,prevY)}</span>
       <span class="c-m">${mbar(r)}</span>
       <span class="c-d num">${r.aca} %<small>${r.capa} places · ${(r.voeux??0).toLocaleString("fr-FR")} vœux</small></span>
-      <span class="c-a acts"><button type="button" class="btn${inB?" on":""}" data-add="${r.id}">${inB?"Dans la liste":"Ajouter"}</button><a class="btn ghost" href="${esc(linkFor(r))}" target="_blank" rel="noopener">Fiche</a></span>
+      <span class="c-a acts"><button type="button" class="btn${inB?" on":""}" data-add="${r.id}">${inB?"Dans la liste":"Ajouter"}</button><button type="button" class="btn ghost" data-fiche="${r.id}">Fiche</button><button type="button" class="btn ghost${inC?" on":""}" data-cmp="${r.id}" aria-pressed="${inC}">Comparer</button></span>
     </div>`;});
   if(all.length>limit) h+=`<div class="more"><button type="button" class="btn" id="more">Afficher ${Math.min(60,all.length-limit)} de plus (${all.length-limit} restantes)</button></div>`;
   $("list").innerHTML=h;
   const m=$("more");if(m)m.onclick=()=>{limit+=60;renderList(all);};
 }
+// Formations choisies par identifiant, avec distance et estimation (hors des filtres de la liste).
+const formationsParId=ids=>ids.map(id=>rows.find(r=>r.id===id)).filter(Boolean)
+  .map(r=>Object.assign({d:st.home?dist(st.home.lat,st.home.lon,r.lat,r.lon):0},r)).map(r=>Object.assign(r,{ch:chanceOf(r)}));
+function ouvrirDialogue(html){$("fiche-corps").innerHTML=html;const d=$("fiche");if(!d.open)d.showModal();}
+function renderCompareBar(){
+  const n=st.compare.length,el=$("compare-bar");
+  el.hidden=!n;if(!n)return;
+  el.innerHTML=`<span>${n} formation${n>1?"s":""} à comparer (4 au plus).</span><button type="button" class="btn" id="cmp-go"${n<2?" disabled":""}>Comparer</button><button type="button" class="btn ghost" id="cmp-clear">Vider</button>`;
+}
 function renderBasket(){
-  const items=st.basket.map(id=>rows.find(r=>r.id===id)).filter(Boolean)
-    .map(r=>Object.assign({d:st.home?dist(st.home.lat,st.home.lon,r.lat,r.lon):0},r)).map(r=>Object.assign(r,{ch:chanceOf(r)}))
-    .sort((a,b)=>(b.ch.c??-1)-(a.ch.c??-1));
-  if(!items.length){$("basket").innerHTML=`<p class="hint">Cliquez sur « Ajouter » pour construire une liste et vérifier qu'elle est équilibrée.</p>`;return;}
-  const cnt=[0,0,0,0,0,0];items.forEach(r=>cnt[r.ch.cat.k]++);
-  const vows=new Set(items.map(vowKey)).size;
-  const cats=[...CH,NON_ESTIMABLE];
-  $("basket").innerHTML=`<div class="balance">${cats.map(c=>cnt[c.k]?`<i style="width:${cnt[c.k]/items.length*100}%;background:var(--c${c.k})" title="${c.l} : ${cnt[c.k]}"></i>`:"").join("")}</div>
-   <p class="advice"><b class="mono">${vows}/10</b> vœux estimés. ${balanceAdvice(cnt,vows)}</p>`+
-   items.map(r=>`<div class="bk-row"><i class="dot" style="background:var(--c${r.ch.cat.k})" title="${r.ch.cat.l}"></i><span>${r.fil==="ING"?"":`<b>${r.fil}</b> `}${esc(r.etab)} <span class="hint" style="display:inline">${Math.round(r.d)} km</span></span><button type="button" class="x" data-rm="${r.id}" aria-label="Retirer ${esc(r.etab)}">×</button></div>`).join("")+
-   `<p class="hint">Un concours commun (Geipi Polytech, Puissance Alpha, Avenir…) compte pour un seul vœu, ses écoles sont des sous-vœux. Règles à vérifier sur Parcoursup.</p>`;
+  const items=formationsParId(st.basket).sort((a,b)=>(b.ch.c??-1)-(a.ch.c??-1));
+  $("basket").innerHTML=htmlListe(items,st.internats);
+  $("impression").innerHTML=items.length?htmlImpression(items,st,st.internats,META.session):"";
+}
+// OpenStreetMap si Leaflet est chargé et les tuiles arrivent, carte schématique sinon.
+function dessinerCarte(){
+  if(!st.home){$("map").innerHTML="";return;}
+  if(osm) osm.afficher(st.home,st.radius,affichees,st.basket);
+  else renderSvgMap($("map"),st.home,st.radius,affichees,st.basket);
+}
+function basculerCarte(L){
+  // toggleAttribute : un élément SVG n'a pas de propriété hidden, seulement l'attribut.
+  const montrerOsm=oui=>{$("map-osm").hidden=!oui;$("map").toggleAttribute("hidden",oui);};
+  const surEchec=()=>{osm=null;montrerOsm(false);dessinerCarte();};
+  montrerOsm(true);
+  osm=creerCarteOsm(L,$("map-osm"),CFG.carteOsm,selectionner,surEchec);
+  dessinerCarte();
+}
+// Met en avant la formation choisie sur la carte et fait défiler la liste jusqu'à elle.
+function selectionner(id){
+  flashId=id;
+  const all=sortRows(filtered(),st.sort);const idx=all.findIndex(r=>r.id===id);if(idx>=limit)limit=idx+10;renderList(all);
+  const el=document.getElementById("it-"+id);if(el)el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});
 }
 function upd(keepLimit){
   if(!keepLimit){limit=60;flashId=null;}
   save();writeParams();renderScores();renderCoverage();
   const all=sortRows(filtered(),st.sort);
   $("count").textContent=all.length+" formation"+(all.length>1?"s":"");
-  if(st.home) renderSvgMap($("map"),st.home,st.radius,all,st.basket); else $("map").innerHTML="";
-  renderList(all);renderBasket();
+  affichees=all;dessinerCarte();
+  renderList(all);renderBasket();renderCompareBar();
 }
 
 // ---------- contrôles ----------
@@ -171,12 +198,27 @@ function initControls(){
   $("sort").value=st.sort;$("sort").onchange=e=>{st.sort=e.target.value;upd();};
   $("q").value=st.q;$("q").oninput=e=>{st.q=e.target.value;upd();};
   $("legend").innerHTML=[...CH,NON_ESTIMABLE].map(c=>`<span><i class="dot" style="background:var(--c${c.k})"></i>${c.l}</span>`).join("");
-  $("map").addEventListener("click",e=>{const c=e.target.closest("circle[data-id]");if(!c)return;const id=+c.dataset.id;flashId=id;
-    const all=sortRows(filtered(),st.sort);const idx=all.findIndex(r=>r.id===id);if(idx>=limit)limit=idx+10;renderList(all);
-    const el=document.getElementById("it-"+id);if(el)el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});});
-  $("list").addEventListener("click",e=>{const b=e.target.closest("[data-add]");if(!b)return;const id=+b.dataset.add;
+  $("map").addEventListener("click",e=>{const c=e.target.closest("circle[data-id]");if(c)selectionner(+c.dataset.id);});
+  $("list").addEventListener("click",e=>{
+    const f=e.target.closest("[data-fiche]");
+    if(f){ouvrirDialogue(htmlFiche(formationsParId([+f.dataset.fiche])[0],META.sessionsHist||[],META.session));return;}
+    const c=e.target.closest("[data-cmp]");
+    if(c){st.compare=basculerComparaison(st.compare,+c.dataset.cmp);upd(true);return;}
+    const b=e.target.closest("[data-add]");if(!b)return;const id=+b.dataset.add;
     st.basket=st.basket.includes(id)?st.basket.filter(x=>x!==id):[...st.basket,id];upd(true);});
-  $("basket").addEventListener("click",e=>{const b=e.target.closest("[data-rm]");if(!b)return;st.basket=st.basket.filter(x=>x!==+b.dataset.rm);upd(true);});
+  $("compare-bar").addEventListener("click",e=>{
+    if(e.target.id==="cmp-go") ouvrirDialogue(htmlComparaison(formationsParId(st.compare)));
+    if(e.target.id==="cmp-clear"){st.compare=[];upd(true);}});
+  $("basket").addEventListener("click",async e=>{
+    if(e.target.id==="bk-print"){window.print();return;}
+    if(e.target.id==="bk-share"){
+      const u=shareUrl()+encoderPartage(st);
+      try{await navigator.clipboard.writeText(u);$("bk-msg").textContent="Lien copié. Il contient les notes saisies : ne le partagez qu'avec des personnes de confiance.";}
+      catch(err){$("bk-msg").textContent=u;}
+      return;}
+    const b=e.target.closest("[data-rm]");if(!b)return;st.basket=st.basket.filter(x=>x!==+b.dataset.rm);upd(true);});
+  $("basket").addEventListener("change",e=>{const s=e.target.closest("[data-internat]");if(!s)return;
+    st.internats={...st.internats,[s.dataset.internat]:s.value};save();renderBasket();});
 }
 
 // ---------- démarrage ----------
@@ -191,7 +233,9 @@ async function start(){
     $("list").innerHTML=`<div class="empty">Impossible de lire ${esc(CFG.fichierDonnees)} (${esc(e.message)}). Ouvrez l'outil via un petit serveur web, par exemple <code>python3 -m http.server</code>, pas en double-cliquant sur le fichier.</div>`;
     return;
   }
-  const p=readParams();
+  const p=readParams(),partage=decoderPartage(location.hash);
+  // Liste reçue par lien : elle remplace la liste et les notes enregistrées dans ce navigateur.
+  if(partage){Object.assign(st,partage);st.n=Object.assign({},DEF.n,st.n);}
   if(p.rayon) st.radius=p.rayon;
   if(p.fils) st.fils=p.fils;
   initControls();
@@ -199,5 +243,7 @@ async function start(){
   else if(p.ville) await setCity(p.ville,true);
   else if(st.home){$("city").value=st.home.name;upd();}
   else await setCity(CFG.villeParDefaut,true);
+  const L=await chargerLeaflet(CFG.carteLeaflet);
+  if(L) basculerCarte(L);
 }
 start();
