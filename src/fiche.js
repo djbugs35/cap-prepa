@@ -1,6 +1,7 @@
 /* Fiche détaillée d'une formation et comparaison côte à côte (2 à 4 formations), rendues en HTML.
    Les formations reçues portent déjà leur estimation (r.ch, voir estimation() dans calc.js) et leur distance (r.d). */
 import {libelleFourchette,historiqueTaux,internatInconnu,tauxRef,liensApresPrepa} from "./calc.js";
+import {ordinal} from "./classements.js";
 
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const MENTIONS=["TB félicitations","TB","B","AB","Sans mention"];
@@ -23,9 +24,10 @@ function barresMentions(mp){
 
 function sectionClassements(r){
   if(!r.clDetail||!r.clDetail.length) return "";
-  const synth=r.synth?`<p><b class="mono">${String(r.synth.note).replace(".",",")}/20</b> <span class="hint" style="display:inline">note de synthèse sur ${r.synth.n} classement${r.synth.n>1?"s":""}</span></p>`:"";
+  const famille=r.fil==="ING"?"écoles post-bac":"CPGE";
+  const synth=r.synth?`<p><b class="mono">${ordinal(r.synthRang.rang)}</b> sur ${r.synthRang.total} ${famille} de France <span class="hint" style="display:inline">(note de synthèse ${String(r.synth.note).replace(".",",")}/20, sur ${r.synth.n} classement${r.synth.n>1?"s":""})</span></p>`:"";
   return `<section><h3>Classements</h3>${synth}<dl class="chiffres">${r.clDetail.map(c=>`<dt>${esc(c.nom)}</dt><dd>${esc(c.texte)}</dd>`).join("")}</dl>
-    <p class="hint">Rangs parmi les ${r.fil==="ING"?"écoles post-bac":"CPGE"} de France ; « mieux que 88 % » : la formation fait mieux que 88 % de celles de sa famille.</p></section>`;
+    <p class="hint">Rangs parmi les ${famille} de France ; « mieux que 88 % » : la formation fait mieux que 88 % de celles de sa famille.</p></section>`;
 }
 
 function apresPrepa(r,scei){
@@ -93,7 +95,7 @@ export function htmlFiche(r,annees,session,scei){
 export function htmlComparaison(rs){
   const lignes=[
     ["Chances",r=>`<span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span>${r.ch.bas.k!==r.ch.haut.k?`<br><small>${libelleFourchette(r.ch)}</small>`:""}`],
-    ["Note de synthèse",r=>r.synth?`${String(r.synth.note).replace(".",",")}/20<small>${r.synth.n} classement${r.synth.n>1?"s":""}</small>`:"—"],
+    ["Classement",r=>r.synth?`${ordinal(r.synthRang.rang)}/${r.synthRang.total}<small>${String(r.synth.note).replace(".",",")}/20 · ${r.synth.n} classement${r.synth.n>1?"s":""}</small>`:"—"],
     ["Distance",r=>Math.round(r.d)+" km"],
     ["Taux d'accès",r=>pct(tauxRef(r))+(r.ch.instable?" <small>instable</small>":"")],
     ["Admis TB ou TB fél.",r=>pct((r.mp[0]||0)+(r.mp[1]||0))],

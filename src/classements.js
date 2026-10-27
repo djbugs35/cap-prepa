@@ -14,11 +14,13 @@ export const CLASSEMENTS_INTEGRES=[
   {id:"salaire",nom:"Salaire net médian à 18 mois (InserSup)",court:"Salaire",valeur:r=>r.insSalaire??null,sens:1,format:v=>nbFr(v)+" €/mois"},
 ];
 export const PREFIXE_PERSO="perso:";
+// « 1er », « 2e »… : accord masculin par défaut, suffisant pour un rang de formation isolé ("rang 1er").
+export const ordinal=n=>n+(n===1?"er":"e");
 // Classement importé {nom, rangs: {id formation: rang}} : un rang plus petit est meilleur.
-export const classementPerso=c=>({id:PREFIXE_PERSO+c.nom,nom:c.nom,court:c.nom,perso:true,valeur:r=>c.rangs[r.id]??null,sens:-1,format:v=>v+(v===1?"er":"e")});
+export const classementPerso=c=>({id:PREFIXE_PERSO+c.nom,nom:c.nom,court:c.nom,perso:true,valeur:r=>c.rangs[r.id]??null,sens:-1,format:ordinal});
 
 // Une CPGE et une école post-bac ne se comparent pas : rangs calculés dans chaque famille.
-const famille=r=>r.fil==="ING"?"ING":"CPGE";
+export const famille=r=>r.fil==="ING"?"ING":"CPGE";
 /* Rend id formation -> {id classement: {valeur, centile}}. centile : 1 pour la meilleure formation de sa famille,
    0 pour la moins bonne, ex aequo au milieu ; null quand moins de deux formations de la famille ont une valeur. */
 export function calculerCentiles(rows,classements){
@@ -46,6 +48,23 @@ export function noteSynthese(scores,poids={}){
 }
 // « mieux que 88 % » : se lit dans les deux sens, là où « top 85 % » semblait flatteur pour une formation mal placée.
 export const libelleRang=centile=>"mieux que "+Math.round(centile*100)+" %";
+/* Rend id formation -> {rang, total} : la place de la note de synthèse parmi celles de sa famille (CPGE ou écoles
+   post-bac), 1 = la meilleure. Un vrai rang (« 23e sur 85 »), plus lisible qu'une note /20 seule. Formations sans
+   note (aucun classement) absentes. */
+export function classerSynthese(rows,centiles,poids={}){
+  const parFamille={};
+  for(const r of rows){
+    const s=noteSynthese(centiles.get(r.id),poids);
+    if(!s) continue;
+    (parFamille[famille(r)]??=[]).push([r.id,s.note]);
+  }
+  const out=new Map();
+  for(const fam of Object.values(parFamille)){
+    fam.sort((a,b)=>b[1]-a[1]);
+    fam.forEach(([id],i)=>out.set(id,{rang:i+1,total:fam.length}));
+  }
+  return out;
+}
 
 // Découpe une ligne CSV, guillemets doubles et "" échappés compris.
 function cellules(ligne,sep){
