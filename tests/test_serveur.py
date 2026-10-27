@@ -119,3 +119,30 @@ def test_recherche_de_liens(monkeypatch, tmp_path, mise_a_jour):
     assert serveur.traiter_api("POST", "/api/liens/chercher", b'{"prepas": "tout"}', mise_a_jour, recherche)[0] == 400
     code, reponse = serveur.traiter_api("GET", "/api/liens", b"", mise_a_jour, recherche)
     assert code == 200 and reponse["base"]["lycees"] == {} and "recherche" in reponse
+
+
+def test_lister_csv_locaux(monkeypatch, tmp_path):
+    (tmp_path / "data" / "2026" / "etudiant" / "MP").mkdir(parents=True)
+    (tmp_path / "data" / "2026" / "etudiant" / "MP" / "panier-large.csv").write_text(
+        "id;etablissement\n1;X\n", encoding="utf-8"
+    )
+    (tmp_path / "data" / "sources").mkdir(parents=True)
+    (tmp_path / "data" / "sources" / "brut.csv").write_text("jamais un classement", encoding="utf-8")
+    monkeypatch.setattr(serveur, "RACINE", tmp_path)
+    fichiers = serveur.lister_csv_locaux()
+    assert [f["chemin"] for f in fichiers] == ["data/2026/etudiant/MP/panier-large.csv"]  # data/sources/ exclu
+    assert fichiers[0]["contenu"] == "id;etablissement\n1;X\n"
+
+
+def test_lister_csv_locaux_fichier_trop_gros(monkeypatch, tmp_path):
+    (tmp_path / "data").mkdir()
+    (tmp_path / "data" / "gros.csv").write_text("x" * 10, encoding="utf-8")
+    monkeypatch.setattr(serveur, "RACINE", tmp_path)
+    monkeypatch.setattr(serveur, "TAILLE_CSV_MAX", 5)
+    assert serveur.lister_csv_locaux() == [{"chemin": "data/gros.csv", "erreur": "fichier trop gros"}]
+
+
+def test_route_classements_locaux(monkeypatch, mise_a_jour):
+    monkeypatch.setattr(serveur, "lister_csv_locaux", lambda: [{"chemin": "data/x.csv", "contenu": "a"}])
+    code, reponse = serveur.traiter_api("GET", "/api/classements-locaux", b"", mise_a_jour)
+    assert code == 200 and reponse == {"fichiers": [{"chemin": "data/x.csv", "contenu": "a"}]}

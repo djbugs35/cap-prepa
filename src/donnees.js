@@ -55,7 +55,8 @@ export function htmlClassementsPerso(persos,poids){
   return `<p class="hint">Ajoutez vos propres classements (palmarès de presse, avis de professeurs…) : ils restent dans ce navigateur et comptent dans la note de synthèse.</p>
     <ol class="hint"><li>Téléchargez le modèle : une ligne par formation actuellement affichée.</li><li>Dans un tableur, renommez la colonne « Mon classement » et ajoutez-en d'autres si besoin, puis saisissez les rangs (1 = meilleur).</li><li>Enregistrez en CSV et importez-le.</li></ol>
     <div class="compare-bar"><button type="button" class="btn ghost" id="perso-modele">Télécharger le modèle (CSV)</button>
-      <label class="btn">Importer un CSV<input type="file" id="perso-fichier" accept=".csv,text/csv" class="sr-only"></label></div>
+      <label class="btn">Importer un CSV<input type="file" id="perso-fichier" accept=".csv,text/csv" class="sr-only"></label>
+      <button type="button" class="btn ghost" id="perso-auto">Charger les CSV de data/</button></div>
     <p class="hint" id="perso-msg" role="status"></p>${liste}
     <p class="hint">Poids dans la note de synthèse (modifiables dans <code>config.js</code>) : ${Object.entries(poids).map(([k,v])=>esc(k)+" "+String(v).replace(".",",")).join(" · ")}.</p>`;
 }
@@ -148,6 +149,31 @@ export function creerOngletDonnees(conteneur,meta,nbFormations,perso){
       dessinerPerso(`Importé : ${lus.map(c=>c.nom).join(", ")}.`);
     }catch(err){dessinerPerso("Import impossible : "+err.message);}
   });
+  /* Charge en une fois tous les CSV de classements rangés sous data/ (hors data/sources/), sans passer par le
+     sélecteur de fichier. Un fichier illisible ou sans rang est ignoré, listé dans le résumé plutôt que d'arrêter
+     les autres. Même nom de classement entre deux fichiers : celui lu en dernier gagne, comme un import manuel. */
+  async function chargerCsvLocaux(){
+    let fichiers;
+    try{
+      const r=await fetch("api/classements-locaux",{cache:"no-store"});
+      if(!r.ok||!(r.headers.get("Content-Type")||"").includes("json")) throw new Error("HTTP "+r.status);
+      ({fichiers}=await r.json());
+    }catch(e){dessinerPerso("Chargement automatique impossible : le serveur local doit tourner (./lancer.command).");return;}
+    if(!fichiers.length){dessinerPerso("Aucun fichier CSV trouvé sous data/.");return;}
+    const lus=[],echecs=[];
+    for(const f of fichiers){
+      if(f.erreur){echecs.push(`${f.chemin} (${f.erreur})`);continue;}
+      try{
+        const c=lireCsvClassements(f.contenu);
+        if(c.length) lus.push(...c); else echecs.push(`${f.chemin} (aucun rang)`);
+      }catch(err){echecs.push(`${f.chemin} (${err.message})`);}
+    }
+    const dernierParNom=[...new Map(lus.map(c=>[c.nom,c])).values()]; // deux fichiers, meme nom : le dernier gagne
+    const noms=new Set(dernierParNom.map(c=>c.nom));
+    perso.enregistrer([...perso.lister().filter(c=>!noms.has(c.nom)),...dernierParNom]);
+    const resume=`${dernierParNom.length} classement${dernierParNom.length>1?"s":""} chargé${dernierParNom.length>1?"s":""} depuis ${fichiers.length-echecs.length}/${fichiers.length} fichier${fichiers.length>1?"s":""}.`;
+    dessinerPerso(echecs.length?`${resume} Ignorés : ${echecs.join(", ")}.`:resume);
+  }
   async function charger(verifier){
     let etat;
     try{
@@ -170,6 +196,7 @@ export function creerOngletDonnees(conteneur,meta,nbFormations,perso){
     if(e.target.id==="donnees-verifier"){zone().querySelector("[role=status]").textContent="Vérification auprès du catalogue…";charger(true);}
     if(e.target.id==="donnees-recharger") location.reload();
     if(e.target.id==="perso-modele") telecharger("cap-prepa-classements.csv",csvModele(perso.formations()));
+    if(e.target.id==="perso-auto") chargerCsvLocaux();
     if(e.target.id==="liens-chercher"){
       const z=conteneur.querySelector("#liens"),tout=z.querySelector("#liens-tout").checked;
       fetch("api/liens/chercher",{method:"POST",headers:{"Content-Type":"application/json"},
