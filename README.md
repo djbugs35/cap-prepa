@@ -1,75 +1,156 @@
 # Cap Prépa
 
-Outil d'aide aux vœux Parcoursup pour les **prépas scientifiques** (MPSI, MP2I, PCSI, PTSI, BCPST, TSI, TB, TPC) et les **écoles d'ingénieurs post-bac** (prépa intégrée). Il s'appuie uniquement sur les données ouvertes Parcoursup publiées par le ministère de l'Enseignement supérieur.
+Outil d'aide aux vœux Parcoursup pour un élève de **terminale générale** avec les spécialités **maths et
+physique-chimie** (et l'option **maths expertes**), qui vise une **CPGE scientifique** (MPSI, MP2I, PCSI, PTSI,
+BCPST) ou une **école d'ingénieurs post-bac** (prépa intégrée). Il s'appuie sur l'open data (Parcoursup, InserSup,
+effectifs en CPGE, annuaire de l'éducation) et tourne en local, dans le navigateur : aucune donnée personnelle
+(ville, notes, liste de vœux) n'en sort.
 
-Ce qu'il permet :
+Hors périmètre pour l'instant : bacs technologiques (TSI, TB, TPC), prépas économiques et littéraires, autres
+doublettes de spécialités.
 
-- partir de **sa ville de résidence** et choisir un rayon de recherche ;
+## Ce qu'il permet
+
+- partir de **sa ville de résidence ou de son lycée d'origine** (qui donne aussi l'académie de l'élève) et choisir
+  un rayon de recherche ;
 - filtrer par filière, public/privé, internat ;
-- régler les notes de l'élève (maths, physique-chimie, maths expertes, anglais, français…) et voir un **score de dossier** par filière ;
-- situer l'élève dans le **profil des admis** de chaque formation et obtenir une estimation de chances (de « Sécurité » à « Très ambitieux ») ;
-- composer une **liste de vœux** et vérifier qu'elle est équilibrée.
+- régler les notes de l'élève et voir un **score de dossier** par filière ;
+- situer l'élève dans le **profil des admis** de chaque formation et obtenir une **estimation de chances** (de
+  « Sécurité » à « Très ambitieux »), avec une fourchette quand un demi-point suffit à changer de catégorie, et les
+  raisons de l'estimation ;
+- une **carte** (OpenStreetMap, avec repli automatique sur une carte schématique sans connexion) et une **fiche
+  détaillée** par formation (taux d'accès sur 3 sessions, profil des admis, internat, débouchés) ;
+- **comparer** 2 à 4 formations côte à côte ;
+- un **classement** de chaque formation parmi celles de sa famille (CPGE ou écoles), et une **note de synthèse**
+  combinant plusieurs critères, dont les classements de presse qu'on y ajoute soi-même ;
+- pour une prépa, les **écoles où ses élèves sont intégrés** après le concours, saisies à la main ou extraites
+  automatiquement de la page de résultats du lycée ;
+- composer une **liste de vœux**, avec les sous-vœux des concours communs et le choix de l'internat, vérifier
+  qu'elle est équilibrée, l'imprimer ou la partager ;
+- une utilisation **au clavier** et **hors connexion** après une première visite.
 
-C'est une aide au tri, pas une prédiction d'admission : la méthode et ses limites sont détaillées en bas de la page.
+C'est une aide au tri, pas une prédiction d'admission : la méthode et ses limites sont détaillées en bas de la
+page (rubrique « Méthode, sources et limites »).
 
-## Choisir la ville de résidence
-
-Trois façons, de la plus prioritaire à la moins prioritaire :
-
-1. **Dans l'adresse** : `index.html?ville=Rennes`
-   Autres paramètres possibles : `rayon=200` (km, 25 à 600) et `filieres=MPSI,PCSI,ING`.
-   Avec des coordonnées précises : `index.html?ville=Chez%20nous&lat=48.05&lon=-1.75`.
-2. **Dans la page** : champ « Ville de résidence ». Toutes les communes françaises sont reconnues grâce à l'API publique `geo.api.gouv.fr`. Le bouton « Copier le lien de cette recherche » donne une adresse à partager.
-3. **Par défaut** : `villeParDefaut` dans `config.js` (actuellement Rennes).
-
-La dernière ville choisie est retenue dans le navigateur.
-
-## Lancer l'outil
-
-C'est un site statique, sans compilation. Il faut juste le servir en HTTP (un double-clic sur `index.html` ne permet pas de lire le fichier de données) :
+## Installer et lancer l'outil
 
 ```bash
-python3 -m http.server 8000
-# puis ouvrir http://localhost:8000/?ville=Rennes
+./installer.sh   # une seule fois : vérifie Python 3.11+, télécharge les données
+./lancer.command # ensuite : lance le serveur local et ouvre le navigateur
 ```
 
-### Publier avec GitHub Pages
+`lancer.command` peut aussi s'ouvrir d'un double-clic dans le Finder. Il démarre `scripts/serveur.py`
+(bibliothèque standard, n'écoute que sur `127.0.0.1`) sur `http://127.0.0.1:8765`, qui sert le site **et**
+l'onglet « Données » : mise à jour des sources, import des classements personnels, extraction des débouchés,
+recherche des liens vers les résultats des lycées. Sans ce serveur, en servant les fichiers autrement
+(`python3 -m http.server`, GitHub Pages…), l'outil fonctionne pour chercher des formations mais l'onglet
+« Données » explique qu'il manque le serveur local pour ses propres fonctions.
 
-Dans le dépôt GitHub : *Settings → Pages → Build and deployment → Deploy from a branch*, branche `main`, dossier `/ (root)`. L'outil sera ensuite accessible à l'adresse `https://djbugs35.github.io/cap-prepa/?ville=Rennes`.
+## Choisir la ville ou le lycée de résidence
+
+Plusieurs façons, de la plus prioritaire à la moins prioritaire :
+
+1. **Dans l'adresse** : `index.html?ville=Rennes` ou `index.html?lycee=<UAI>` (l'identifiant d'un lycée, visible
+   dans l'adresse donnée par le bouton « Copier le lien de cette recherche » une fois le lycée choisi).
+   Autres paramètres : `rayon=200` (km, 25 à 600) et `filieres=MPSI,PCSI,ING`. Avec des coordonnées précises :
+   `index.html?ville=Chez%20nous&lat=48.05&lon=-1.75`.
+2. **Dans la page** : champ « Ville de résidence » (communes reconnues via `geo.api.gouv.fr`) ou « Lycée d'origine »
+   (facultatif ; fixe aussi l'académie de l'élève, utilisée dans les raisons de l'estimation).
+3. **Par défaut** : `villeParDefaut` dans `config.js`.
+
+Le dernier choix est retenu dans le navigateur.
 
 ## Données
 
-`data/formations.json` contient une ligne par formation (session Parcoursup la plus récente, avec le taux d'accès de l'année précédente pour la tendance).
+| Fichier | Rôle |
+|---|---|
+| `data/formations.json` | Une ligne par formation (CPGE et écoles post-bac), session Parcoursup la plus récente avec l'historique de 2 sessions, toute la France |
+| `data/lycees.json` | Lycées proposés dans le champ « Lycée d'origine » (annuaire de l'éducation) |
+| `data/liens-resultats.json` | Adresse de la page de résultats aux concours de chaque lycée à prépa, quand elle a été trouvée |
+| `data/sources/` | Exports bruts des jeux de données (hors dépôt, régénérables) |
+| `data/2026/` | Classements de presse transcrits à la main (voir plus bas) |
 
-**Le fichier livré ne couvre que le Grand Ouest et l'Île-de-France** (environ 400 km autour de Rennes). Pour une autre région, ou pour mettre à jour après la publication d'une nouvelle session, régénérez-le :
+Pour régénérer `data/formations.json` et `data/lycees.json` :
 
 ```bash
-python3 scripts/update_data.py                                       # toute la France métropolitaine
-python3 scripts/update_data.py --ville-centre 48.111,-1.68 --rayon 400   # une zone seulement
+python3 scripts/update_data.py            # télécharge puis reconstruit
+python3 scripts/update_data.py --hors-ligne  # reconstruit depuis data/sources/, sans réseau
 ```
 
-Le script n'utilise que la bibliothèque standard de Python 3. Si le fichier ne couvre pas la zone choisie, la page l'indique.
+Le script ne dépend que de la bibliothèque standard de Python 3.11+. Depuis l'outil, l'onglet « Données » fait la
+même chose formation par formation, avec la version locale et la version publiée de chaque source, et un bouton
+pour mettre à jour. Le workflow `.github/workflows/update-data.yml` régénère aussi les données sur GitHub (lancement
+manuel depuis l'onglet *Actions*, puis le 1ᵉʳ de chaque mois d'octobre à février) et propose le résultat en pull
+request.
 
-Le workflow `.github/workflows/update-data.yml` fait la même chose automatiquement sur GitHub (lancement manuel depuis l'onglet *Actions*, puis le 1er de chaque mois d'octobre à février). Lancez-le une première fois pour passer à la couverture nationale.
+Sources, toutes en Licence Ouverte / Open Licence (Etalab) : [Parcoursup](https://data.enseignementsup-recherche.gouv.fr/explore/dataset/fr-esr-parcoursup/),
+cartographie des formations (internat), propositions par doublette de spécialités, [InserSup](https://data.enseignementsup-recherche.gouv.fr/explore/dataset/fr-esr-insersup/)
+(insertion des diplômés ingénieurs), effectifs en CPGE, [annuaire de l'éducation](https://data.education.gouv.fr/explore/dataset/fr-en-annuaire-education/)
+(lycées et leur site).
 
-Source : [jeu de données Parcoursup](https://data.enseignementsup-recherche.gouv.fr/explore/dataset/fr-esr-parcoursup/), Licence Ouverte / Open Licence (Etalab).
+## Classements, débouchés et liste de vœux
+
+- **Classements** : chaque formation est rangée parmi celles de sa famille (CPGE ou écoles post-bac) selon le
+  niveau des admis, la sélectivité, l'attractivité et, pour les écoles, l'emploi et le salaire des diplômés
+  (InserSup). On peut y ajouter ses propres classements (palmarès de presse, par exemple) en important un CSV
+  depuis l'onglet « Données » ; `data/2026/` contient des classements de L'Étudiant déjà transcrits (voir
+  `data/2026/etudiant/SOURCES.md` pour leur origine et leurs limites), chargeables en un clic avec le bouton
+  « Charger les CSV de data/ ».
+- **Débouchés d'une prépa** : les écoles où ses élèves sont intégrés, saisies à la main (onglet « Données ») ou
+  extraites automatiquement de la page de résultats du lycée (bouton dans la fiche de la prépa ; l'extraction
+  est à vérifier avant d'enregistrer). `scripts/liens.py` explore les sites des lycées pour trouver cette page
+  sans passer par un moteur de recherche (qui refuserait des requêtes automatiques).
+- **Liste de vœux** : les écoles d'un même concours commun comptent pour un seul vœu avec leurs sous-vœux, une
+  CPGE demandée avec et sans internat aussi ; impression ou export PDF, et un lien de partage qui garde les notes
+  hors du serveur (dans la partie `#` de l'adresse, jamais envoyée).
 
 ## Organisation des fichiers
 
 | Fichier | Rôle |
 |---|---|
 | `index.html` | Page et styles |
-| `app.js` | Logique : filtres, score de dossier, chances, carte, liste de vœux |
-| `config.js` | Ville et filières par défaut, chemin des données |
-| `data/formations.json` | Données Parcoursup préparées |
-| `scripts/update_data.py` | Régénération des données depuis l'API officielle |
+| `src/main.js` | Démarrage, état, rendu de la liste et des contrôles |
+| `src/calc.js` | Calculs purs : score, chances, filtres, tri, liste de vœux (testé par `tests/calc.test.js`) |
+| `src/classements.js` | Classements, centiles, note de synthèse, lecture des CSV |
+| `src/debouches.js` | Résumé des débouchés saisis |
+| `src/fiche.js`, `src/liste.js` | Fiche d'une formation, comparaison, liste de vœux et version imprimable |
+| `src/carte.js`, `src/carte-osm.js` | Carte schématique (SVG) et carte OpenStreetMap |
+| `src/geo.js` | Géocodage des villes |
+| `src/donnees.js` | Onglet « Données » |
+| `config.js` | Tous les réglages modifiables (ville, filières, poids, seuils…), chacun commenté |
+| `scripts/update_data.py` | Téléchargement et construction de `data/formations.json` et `data/lycees.json` |
+| `scripts/serveur.py` | Serveur local (`./lancer.command`) : sert le site et l'API de l'onglet « Données » |
+| `scripts/debouches.py` | Extraction des écoles intégrées depuis une page de résultats |
+| `scripts/liens.py` | Recherche des pages de résultats des lycées, sans moteur de recherche |
+| `installer.sh`, `lancer.command` | Installation et lancement en local |
 
-### Ajuster les pondérations
+### Ajuster les réglages
 
-Les poids des matières par filière sont dans la constante `W` de `app.js`. Ce sont des hypothèses : aucune formation ne publie de barème chiffré. Les fiches Parcoursup (rubrique « Critères généraux d'examen des vœux ») donnent les priorités de chaque formation.
+Toutes les clés lues par le code sont dans `config.js`, avec une phrase expliquant chacune : poids des critères de
+classement, seuils des catégories de chances, poids des matières par filière, etc. Les poids par défaut (constante
+`W` de `src/calc.js`) sont des hypothèses inspirées des critères affichés sur les fiches Parcoursup : aucune
+formation ne publie de barème chiffré. Lisez toujours la rubrique « Critères généraux d'examen des vœux » de la
+fiche officielle.
+
+## Vérifications avant de contribuer
+
+```bash
+npm test             # node --test, logique JavaScript (src/*.js)
+pytest -q tests       # scripts Python (scripts/*.py)
+ruff check scripts tests
+ruff format scripts tests
+```
 
 ## Limites
 
-- Parcoursup ne publie pas les admissions par lycée d'origine. La colonne « Académie » (part d'admis venant de la même académie) est le seul indicateur de recrutement local disponible.
-- Les taux d'intégration en écoles après la prépa (statistiques SCEI) ne sont pas encore intégrés.
-- Pour les concours communs (Geipi Polytech, Puissance Alpha, Avenir, Advance), les chiffres valent souvent pour l'ensemble du concours.
+- Parcoursup ne publie pas les admissions par lycée d'origine. L'académie de l'élève (via le lycée choisi) et la
+  part d'admis de la même académie restent les seuls indicateurs de recrutement local.
+- InserSup (emploi, salaire) ne couvre qu'environ un quart des écoles référencées : beaucoup sont trop récentes,
+  trop petites, ou leurs diplômés sont comptés sous un autre établissement du même réseau.
+- La base des liens vers les résultats des lycées (`data/liens-resultats.json`) reste partielle : un lien n'y est
+  gardé que si l'extraction y reconnaît vraiment des écoles d'ingénieurs, ce qui écarte beaucoup de lycées qui
+  publient leurs résultats sous une forme que l'outil ne sait pas lire, ou ne les publient pas du tout.
+- Les classements de presse ne sont pas des données ouvertes : l'outil ne les récupère pas lui-même, on les
+  importe à la main (voir `data/2026/etudiant/SOURCES.md` pour les limites propres aux fichiers déjà fournis).
+- Pour les concours communs (Geipi Polytech, Puissance Alpha, Avenir, Advance), les chiffres valent souvent pour
+  l'ensemble du concours, affichés sur chaque école du réseau.
