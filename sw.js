@@ -4,7 +4,7 @@
    la politique d'usage d'OpenStreetMap interdit de stocker des tuiles pour un usage hors ligne. */
 
 // Changer ce nom à chaque modification de la liste ci-dessous : l'ancien cache est alors supprimé.
-const CACHE="cap-prepa-v7";
+const CACHE="cap-prepa-v8";
 // tests/sw.test.js vérifie que tout module de src/ figure ici : un oubli casserait l'outil hors ligne.
 const FICHIERS=["./","index.html","config.js","data/formations.json","data/lycees.json","data/liens-resultats.json",
   "src/main.js","src/calc.js","src/geo.js","src/carte.js","src/carte-osm.js","src/fiche.js","src/liste.js","src/donnees.js","src/classements.js","src/debouches.js"];

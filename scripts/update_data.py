@@ -56,6 +56,18 @@ HTTP_ABSENT = 404
 
 # Public vise : terminale generale maths + physique-chimie. TSI, TB, TPC (bacs technologiques) sont hors perimetre.
 FILIERES_CPGE = ["MPSI", "MP2I", "PCSI", "PTSI", "BCPST"]
+# Effectifs reels en CPGE (data.education.gouv.fr, Licence Ouverte) : taille des promos de 1re annee et classes etoilees.
+JEU_EFFECTIFS_CPGE = "fr-esr-effectifs-d-etudiants-inscrits-en-classes-preparatoires-aux-grandes-ecole"
+# Filiere -> debut du libelle de specialite de 1re annee dans ce jeu (« MPSI (MATH…) », « MP2I S1 (…) »).
+SPECIALITE_1RE = {"MPSI": "MPSI", "MP2I": "MP2I", "PCSI": "PCSI", "PTSI": "PTSI", "BCPST": "BCPST"}
+# Filiere -> bases des classes etoilees de 2e annee qui la prolongent (« MP * » -> base « MP »). BCPST n'a pas d'etoilee.
+ETOILEES_SUITE = {
+    "MPSI": {"MP", "MPI", "PSI"},
+    "MP2I": {"MPI", "MP"},
+    "PCSI": {"PC", "PSI"},
+    "PTSI": {"PT", "PSI"},
+    "BCPST": set(),
+}
 FILTRE_CPGE = 'fili="CPGE" and fil_lib_voe_acc in (' + ",".join(f'"{x}"' for x in FILIERES_CPGE) + ")"
 FILTRE_ING = 'fili="Ecole d\'Ingénieur" and fil_lib_voe_acc="Formation d\'ingénieur Bac + 5"'
 FORMATION_ING_DOUBLETTES = "Formation d'ingénieur Bac + 5"
@@ -74,7 +86,7 @@ FIELDS = [
     "id", "etab", "ville", "dep", "lat", "lon", "filiere", "detail", "public", "capa", "voeux",
     "taux", "tauxGen", "rangDernier", "classes", "pTBF", "pTB", "pB", "pAB", "pSans", "pBours", "pF",
     "internat", "pAcaOrig", "admis", "tauxHist", "tauxGenHist", "lien", "academie",
-    "insEmploi", "insSalaire", "insPromo", "uai",
+    "insEmploi", "insSalaire", "insPromo", "uai", "effectif", "pFcpge", "etoilee",
 ]  # fmt: skip
 CHAMPS_OBLIGATOIRES = ["id", "etab", "lat", "lon", "filiere", "taux", "admis"]
 INTERNAT_SANS, INTERNAT_MIXTE, INTERNAT_FILLES = 0, 1, 2
@@ -177,12 +189,14 @@ def code_internat(r: dict, internats: dict) -> int | None:
     return INTERNAT_MIXTE if (r.get("nb_cla_pp_internat") or 0) > 0 else INTERNAT_SANS
 
 
-def construire_ligne(r: dict, historique: list[dict], internats: dict, insertion: dict | None = None) -> list:
+def construire_ligne(r: dict, historique: list[dict], internats: dict, insertion=None, effectifs=None) -> list:
     """Rendre la ligne compacte d'une formation, dans l'ordre de FIELDS."""
     cle = str(r.get("cod_aff_form"))
     passees = [h.get(cle) for h in historique]
     # Ecoles seulement, et par UAI strict : un campus rattache ailleurs reste sans chiffre plutot qu'avec celui d'un autre.
     ins = (insertion or {}).get(r.get("cod_uai"), {}) if r.get("fili") != "CPGE" else {}
+    # Effectifs reels d'une CPGE, par UAI et filiere ; rien pour les ecoles d'ingenieurs.
+    eff = (effectifs or {}).get((r.get("cod_uai"), r.get("fil_lib_voe_acc")), {}) if r.get("fili") == "CPGE" else {}
     valeurs = {
         "id": int(r["cod_aff_form"]), "etab": clean(r.get("g_ea_lib_vx")), "ville": clean(r.get("ville_etab")),
         "dep": r.get("dep"), "lat": round(r["g_olocalisation_des_formations"]["lat"], 3),
@@ -198,6 +212,7 @@ def construire_ligne(r: dict, historique: list[dict], internats: dict, insertion
         "lien": r.get("lien_form_psup"), "academie": r.get("acad_mies"),
         "insEmploi": ins.get("emploi"), "insSalaire": ins.get("salaire"), "insPromo": ins.get("promo"),
         "uai": r.get("cod_uai"),
+        "effectif": eff.get("eleves"), "pFcpge": eff.get("partF"), "etoilee": eff.get("etoilee"),
     }  # fmt: skip
     return [valeurs[f] for f in FIELDS]
 
@@ -215,7 +230,9 @@ def est_retenue(r: dict, metropole: bool, centre: tuple | None, rayon: float | N
     return r.get("fili") == "CPGE" or not EXCLURE.search(detail_formation(r))
 
 
-def build_rows(cur, historique=(), internats=None, metropole=True, centre=None, rayon=None, *, insertion=None):  # noqa: PLR0913 (sources et filtres distincts, tous facultatifs)
+def build_rows(  # noqa: PLR0913 (sources et filtres distincts, tous facultatifs)
+    cur, historique=(), internats=None, metropole=True, centre=None, rayon=None, *, insertion=None, effectifs=None
+):
     """Rendre les lignes triees par identifiant, une par formation retenue.
 
     Args:
@@ -223,6 +240,7 @@ def build_rows(cur, historique=(), internats=None, metropole=True, centre=None, 
         historique: pour chaque session passee, un dict cod_aff_form -> ligne brute.
         internats: dict cod_aff_form -> libelle d'internat de la cartographie.
         insertion: dict UAI -> indicateurs InserSup (voir indicateurs_insertion).
+        effectifs: dict (UAI, filiere) -> effectifs reels en CPGE (voir indicateurs_effectifs).
         metropole: exclure les DROM et l'etranger.
         centre: (lat, lon) du centre de la zone a garder, avec rayon.
         rayon: rayon en km autour de centre.
@@ -236,7 +254,7 @@ def build_rows(cur, historique=(), internats=None, metropole=True, centre=None, 
         if key in seen:
             continue
         seen.add(key)
-        rows.append(construire_ligne(r, list(historique), internats or {}, insertion))
+        rows.append(construire_ligne(r, list(historique), internats or {}, insertion, effectifs))
     rows.sort(key=lambda x: x[0])
     return rows
 
@@ -257,6 +275,40 @@ def _plus_recent(lignes: list, champ: str) -> dict:
         if valeur is not None and promo > retenues.get(x["etablissement"], ("", None))[0]:
             retenues[x["etablissement"]] = (promo, round(valeur))
     return retenues
+
+
+def indicateurs_effectifs(lignes: list) -> dict:
+    """Rendre (UAI, filiere) -> {eleves, partF, etoilee} des effectifs reels en CPGE.
+
+    eleves : nombre d'etudiants de 1re annee ; partF : part de filles (%) ; etoilee : une classe etoilee (2e annee)
+    prolonge cette filiere dans ce lycee. filiere est le libelle Parcoursup (MPSI, MP2I, PCSI, PTSI, BCPST).
+    """
+    promos: dict = {}
+    etoilees: dict[str, set] = {}
+    for x in lignes:
+        uai, spec, n = x.get("uai"), (x.get("specialite") or "").strip(), _nombre(x.get("nombre_d_eleves")) or 0
+        if not uai or not n:
+            continue
+        if x.get("degre_d_etudes") == "2" and "*" in spec:
+            etoilees.setdefault(uai, set()).add(spec.split("*")[0].strip())  # « MP * (…) » -> base « MP »
+        if x.get("degre_d_etudes") != "1":
+            continue
+        for fil, debut in SPECIALITE_1RE.items():
+            if spec.startswith(debut):
+                cle = promos.setdefault((uai, fil), {"eleves": 0, "filles": 0})
+                cle["eleves"] += n
+                if x.get("sexe") == "F":
+                    cle["filles"] += n
+                break
+    out = {}
+    for (uai, fil), v in promos.items():
+        etoilee = bool(etoilees.get(uai, set()) & ETOILEES_SUITE[fil])
+        out[(uai, fil)] = {
+            "eleves": round(v["eleves"]),
+            "partF": round(100 * v["filles"] / v["eleves"]),
+            "etoilee": etoilee,
+        }
+    return out
 
 
 def indicateurs_insertion(lignes: list) -> dict:
@@ -338,6 +390,11 @@ def definir_sources(session: int | None) -> list[dict]:
                     "requetes": [(FILTRE_LYCEES, CHAMPS_LYCEES)]})  # fmt: skip
     sources.append({"cle": "insersup", "jeu": JEU_INSERSUP, "role": "Insertion des diplômés ingénieurs (InserSup)",
                     "requetes": [(FILTRE_INSERSUP, CHAMPS_INSERSUP)]})  # fmt: skip
+    annee_scolaire = f"{session}-{session + 1}"  # rentree qui suit la session Parcoursup : CPGE 2025-2026 pour 2025
+    sources.append({"cle": "effectifs-cpge", "jeu": JEU_EFFECTIFS_CPGE,
+                    "role": f"Effectifs réels en CPGE, {annee_scolaire}",
+                    "requetes": [(f'filiere="scientifique" and annee_scolaire="{annee_scolaire}"',
+                                  "uai,specialite,degre_d_etudes,sexe,nombre_d_eleves")]})  # fmt: skip
     sources.append({"cle": "doublettes", "jeu": JEU_DOUBLETTES, "role": f"Propositions par doublette de spécialités, {session}",
                     "requetes": [(f'annee_du_bac="{session}" and niveau_d_agregation="2"', None)]})  # fmt: skip
     return sources
@@ -460,7 +517,10 @@ def construire_formations(dossier: Path, centre=None, rayon=None, metropole=True
     }
     doublettes = statistiques_doublettes((lire_source(dossier, sources["doublettes"]) or {}).get("lignes", []))
     insertion = indicateurs_insertion((lire_source(dossier, sources["insersup"]) or {}).get("lignes", []))
-    rows = build_rows(courante["lignes"], historique, internats, metropole, centre, rayon, insertion=insertion)
+    effectifs = indicateurs_effectifs((lire_source(dossier, sources["effectifs-cpge"]) or {}).get("lignes", []))
+    rows = build_rows(
+        courante["lignes"], historique, internats, metropole, centre, rayon, insertion=insertion, effectifs=effectifs
+    )
     zone = bool(centre and rayon)
     valider(rows, MIN_LIGNES_ZONE if zone else MIN_LIGNES_NATIONAL)
     meta = {
