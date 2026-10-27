@@ -92,3 +92,12 @@ def test_rien_de_lisible(monkeypatch):
         db.extraire_depuis_adresse("https://lycee.example/r.pdf", "MPSI")
     with pytest.raises(ValueError, match="adresse refusee"):
         db.extraire_depuis_adresse("https://www.letudiant.fr/palmares", "MPSI")
+
+
+def test_liste_nominative_un_eleve_par_ligne():
+    """Format du lycee La Fayette (Clermont) : prenom puis ecole, sans effectif ; on compte les eleves par ecole."""
+    texte = "Résultats PSI 2024\nPrénom ECOLE\nMatteo Arts et Métiers\nMaxime Arts et Métiers\nWilliam INSA Lyon\nRobin Aucune école demandée\nYousra Démission en janvier\n"
+    assert db.extraire_integrations(texte, "MPSI") == [
+        {"ecole": "Arts et Métiers", "integres": 2}, {"ecole": "INSA Lyon", "integres": 1}
+    ]  # fmt: skip
+    assert db.extraire_integrations(texte, "BCPST") == []  # section PSI : ne suit pas une BCPST

@@ -227,7 +227,16 @@ function renderList(all){
 // Formations choisies par identifiant, avec distance et estimation (hors des filtres de la liste).
 const formationsParId=ids=>ids.map(id=>rows.find(r=>r.id===id)).filter(Boolean)
   .map(r=>Object.assign({d:st.home?dist(st.home.lat,st.home.lon,r.lat,r.lon):0},r)).map(r=>avecClassements(Object.assign(r,{ch:chanceOf(r)})));
-const ficheDe=id=>htmlFiche(formationsParId([id])[0],META.sessionsHist||[],META.session,{modele:CFG.sceiStatistiques,annee:CFG.sceiAnnee,palmares:CFG.lienPalmaresPrepas,recherche:CFG.rechercheResultats});
+// Base des liens vers les résultats des lycées (scripts/liens.py) : pré-remplit l'adresse dans la fiche d'une prépa.
+let baseLiens=null;
+const chargerBaseLiens=()=>baseLiens?Promise.resolve(baseLiens):fetch("data/liens-resultats.json").then(r=>r.ok?r.json():{lycees:{}}).catch(()=>({lycees:{}})).then(b=>baseLiens=b);
+const avecLien=r=>Object.assign(r,{lienResultats:baseLiens?.lycees?.[r.uai]?.lien||null});
+// Prépas du rayon choisi (toutes filières de CPGE), pour chercher les liens de leurs lycées.
+function perimetreLiens(){
+  const p=st.home?rows.filter(r=>r.fil!=="ING"&&dist(st.home.lat,st.home.lon,r.lat,r.lon)<=st.radius):[];
+  return {prepas:p.map(r=>r.id),uais:[...new Set(p.map(r=>r.uai).filter(Boolean))],libelle:st.home?`${st.radius} km autour de ${st.home.name}`:"Rayon (choisissez une ville)"};
+}
+const ficheDe=id=>htmlFiche(avecLien(formationsParId([id])[0]),META.sessionsHist||[],META.session,{modele:CFG.sceiStatistiques,annee:CFG.sceiAnnee,palmares:CFG.lienPalmaresPrepas,recherche:CFG.rechercheResultats});
 // Extraction des débouchés depuis la fiche : le serveur local lit la page collée, l'utilisateur valide.
 async function extraireDebouches(zone){
   const url=zone.querySelector("#deb-url").value.trim(),etat=zone.querySelector("#deb-etat");
@@ -329,7 +338,7 @@ function initControls(){
   $("list").addEventListener("keydown",e=>{if(e.key==="Escape"&&e.target.classList.contains("tip-btn"))e.target.blur();});
   $("list").addEventListener("click",e=>{
     const f=e.target.closest("[data-fiche]");
-    if(f){ouvrirDialogue(ficheDe(+f.dataset.fiche));return;}
+    if(f){chargerBaseLiens().then(()=>ouvrirDialogue(ficheDe(+f.dataset.fiche)));return;}
     const c=e.target.closest("[data-cmp]");
     if(c){st.compare=basculerComparaison(st.compare,+c.dataset.cmp);garderFocus(()=>upd(true));return;}
     const b=e.target.closest("[data-add]");if(!b)return;const id=+b.dataset.add;
@@ -364,7 +373,8 @@ function initOnglets(){
     onglets.forEach(x=>{const oui=x===o;x.setAttribute("aria-selected",oui);x.tabIndex=oui?0:-1;$(x.getAttribute("aria-controls")).hidden=!oui;});
     if(o.id==="tab-donnees"){donnees??=creerOngletDonnees($("vue-donnees"),META,rows.length,{
       lister:()=>persos,formations:()=>affichees,poids:CFG.poidsClassements,enregistrer:enregistrerPersos,
-      debouches:{lire:()=>debouches,enregistrer:enregistrerDebouches}});donnees.charger(false);}
+      debouches:{lire:()=>debouches,enregistrer:enregistrerDebouches},
+      liens:{base:null,perimetre:perimetreLiens,surMaj:b=>{baseLiens=b;}}});donnees.charger(false);}
   };
   onglets.forEach((o,i)=>{
     o.onclick=()=>activer(o);

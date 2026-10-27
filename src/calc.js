@@ -200,7 +200,7 @@ export function rowsFromData(data){
     mp:["pTBF","pTB","pB","pAB","pSans"].map(f=>g(r,f)),bours:g(r,"pBours"),fem:g(r,"pF"),
     internatCode:g(r,"internat"),intern:g(r,"internat")===1||g(r,"internat")===2,filles:g(r,"internat")===2,
     aca:g(r,"pAcaOrig"),admis:g(r,"admis"),tauxHist:g(r,"tauxHist")||[],tauxGenHist:g(r,"tauxGenHist")||[],lien:g(r,"lien"),academie:g(r,"academie"),
-    insEmploi:g(r,"insEmploi"),insSalaire:g(r,"insSalaire"),insPromo:g(r,"insPromo")}));
+    insEmploi:g(r,"insEmploi"),insSalaire:g(r,"insSalaire"),insPromo:g(r,"insPromo"),uai:g(r,"uai")}));
 }
 // Paris, Créteil et Versailles : Parcoursup traite souvent l'Île-de-France comme un seul secteur de recrutement.
 const ILE_DE_FRANCE=["paris","creteil","versailles"];

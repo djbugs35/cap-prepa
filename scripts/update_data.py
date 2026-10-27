@@ -42,7 +42,8 @@ SORTIE_LYCEES = Path(__file__).resolve().parent.parent / "data" / "lycees.json"
 API_EDUCATION = "https://data.education.gouv.fr/api/explore/v2.1/catalog/datasets/"
 JEU_LYCEES = "fr-en-annuaire-education"
 FILTRE_LYCEES = 'type_etablissement="Lycée" and voie_generale="1" and etat="OUVERT"'
-CHAMPS_LYCEES = "identifiant_de_l_etablissement,nom_etablissement,nom_commune,code_departement,libelle_academie,latitude,longitude,statut_public_prive"
+# web : site du lycee, point de depart de scripts/liens.py pour trouver sa page de resultats aux concours.
+CHAMPS_LYCEES = "identifiant_de_l_etablissement,nom_etablissement,nom_commune,code_departement,libelle_academie,latitude,longitude,statut_public_prive,web"
 # InserSup (Licence Ouverte) : insertion des diplomes ingenieurs, une ligne « tout diplome » par etablissement.
 JEU_INSERSUP = "fr-esr-insersup"
 FILTRE_INSERSUP = (
@@ -73,7 +74,7 @@ FIELDS = [
     "id", "etab", "ville", "dep", "lat", "lon", "filiere", "detail", "public", "capa", "voeux",
     "taux", "tauxGen", "rangDernier", "classes", "pTBF", "pTB", "pB", "pAB", "pSans", "pBours", "pF",
     "internat", "pAcaOrig", "admis", "tauxHist", "tauxGenHist", "lien", "academie",
-    "insEmploi", "insSalaire", "insPromo",
+    "insEmploi", "insSalaire", "insPromo", "uai",
 ]  # fmt: skip
 CHAMPS_OBLIGATOIRES = ["id", "etab", "lat", "lon", "filiere", "taux", "admis"]
 INTERNAT_SANS, INTERNAT_MIXTE, INTERNAT_FILLES = 0, 1, 2
@@ -196,6 +197,7 @@ def construire_ligne(r: dict, historique: list[dict], internats: dict, insertion
         "tauxGenHist": [p and taux_acces_generaux(p) for p in passees],
         "lien": r.get("lien_form_psup"), "academie": r.get("acad_mies"),
         "insEmploi": ins.get("emploi"), "insSalaire": ins.get("salaire"), "insPromo": ins.get("promo"),
+        "uai": r.get("cod_uai"),
     }  # fmt: skip
     return [valeurs[f] for f in FIELDS]
 
