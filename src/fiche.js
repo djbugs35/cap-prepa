@@ -82,7 +82,9 @@ export function htmlFiche(r,annees,session,scei){
     <dt>Places</dt><dd>${nb(r.capa)}</dd><dt>Vœux reçus</dt><dd>${nb(r.voeux)}</dd>
     <dt>Dernier appelé</dt><dd>${rang}</dd><dt>Admis</dt><dd>${nb(r.admis)}</dd>
     <dt>Boursiers</dt><dd>${pct(r.bours)}</dd><dt>Filles</dt><dd>${pct(r.fem)}</dd>
-    <dt>Même académie</dt><dd>${pct(r.aca)}</dd><dt>Internat</dt><dd>${internat(r)}</dd></dl></section>
+    <dt>Même académie</dt><dd>${pct(r.aca)}</dd><dt>Internat</dt><dd>${internat(r)}</dd>
+    ${r.effectif!=null?`<dt>Effectif réel 1<sup>re</sup> année</dt><dd>${nb(r.effectif)} élèves · ${pct(r.pFcpge)} de filles</dd><dt>Classe étoilée (2<sup>e</sup> année)</dt><dd>${r.etoilee?"oui":"non"}</dd>`:""}</dl>
+    ${r.effectif!=null?`<p class="hint">Effectifs réels de la rentrée, source : effectifs d'étudiants en CPGE (ministère). Une classe étoilée vise les concours les plus sélectifs.</p>`:""}</section>
   ${scei?apresPrepa(r,scei):""}
   <p><a class="btn" href="${esc(lienParcoursup(r))}" target="_blank" rel="noopener">Fiche officielle sur Parcoursup</a></p>`;
 }

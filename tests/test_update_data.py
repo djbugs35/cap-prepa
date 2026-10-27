@@ -206,6 +206,30 @@ def faux_reseau(monkeypatch, absents=(), modifie="2026-03-09T16:54:47+00:00"):
             return [{"gta": "0", "int": ["Internat filles"]}]
         if jeu == ud.JEU_DOUBLETTES:
             return []
+        if jeu == ud.JEU_EFFECTIFS_CPGE:
+            return [
+                {
+                    "uai": "0350029B",
+                    "specialite": "MPSI (MATH…)",
+                    "degre_d_etudes": "1",
+                    "sexe": "H",
+                    "nombre_d_eleves": 36.0,
+                },
+                {
+                    "uai": "0350029B",
+                    "specialite": "MPSI (MATH…)",
+                    "degre_d_etudes": "1",
+                    "sexe": "F",
+                    "nombre_d_eleves": 12.0,
+                },
+                {
+                    "uai": "0350029B",
+                    "specialite": "MP * (MATHEMATIQUE ET PHYSIQUE)",
+                    "degre_d_etudes": "2",
+                    "sexe": "H",
+                    "nombre_d_eleves": 30.0,
+                },
+            ]
         if jeu == ud.JEU_INSERSUP:
             return [
                 {
@@ -232,7 +256,7 @@ def test_mise_a_jour_commence_par_la_session_courante(monkeypatch, tmp_path):
     assert appels[:2] == [ud.JEU_COURANT, ud.JEU_COURANT]  # CPGE puis ecoles
     assert "fr-esr-parcoursup_2023" in appels and ud.JEU_CARTOGRAPHIE in appels
     assert sorted(p.stem for p in tmp_path.glob("*.json")) == [
-        "doublettes", "insersup", "internats", "lycees", "parcoursup", "parcoursup-n1", "parcoursup-n2"
+        "doublettes", "effectifs-cpge", "insersup", "internats", "lycees", "parcoursup", "parcoursup-n1", "parcoursup-n2"
     ]  # fmt: skip
 
 
@@ -326,3 +350,32 @@ def test_insertion_par_uai_strict_et_ecoles_seulement():
     assert (
         ligne(ud.build_rows([rec(cod_uai="0350097R")], insertion=insertion))["insEmploi"] is None
     )  # CPGE : sans objet
+
+
+def test_effectifs_reels_par_uai_et_filiere():
+    lignes = [
+        {"uai": "A", "specialite": "MPSI (…)", "degre_d_etudes": "1", "sexe": "H", "nombre_d_eleves": 36.0},
+        {"uai": "A", "specialite": "MPSI (…)", "degre_d_etudes": "1", "sexe": "F", "nombre_d_eleves": 12.0},
+        {"uai": "A", "specialite": "MP * (…)", "degre_d_etudes": "2", "sexe": "H", "nombre_d_eleves": 30.0},
+        {"uai": "A", "specialite": "BCPST (…)", "degre_d_etudes": "1", "sexe": "F", "nombre_d_eleves": 40.0},
+    ]
+    eff = ud.indicateurs_effectifs(lignes)
+    assert eff[("A", "MPSI")] == {"eleves": 48, "partF": 25, "etoilee": True}  # MP* prolonge MPSI
+    assert eff[("A", "BCPST")] == {"eleves": 40, "partF": 100, "etoilee": False}  # BCPST sans etoilee
+
+
+def test_mp2i_reconnue_et_effectif_dans_la_ligne():
+    lignes = [
+        {
+            "uai": "B",
+            "specialite": "MP2I S1 (MATH. PHYS. ING. INFOR.)",
+            "degre_d_etudes": "1",
+            "sexe": "H",
+            "nombre_d_eleves": 24.0,
+        }
+    ]
+    eff = ud.indicateurs_effectifs(lignes)
+    ecole = rec(cod_uai="B", fil_lib_voe_acc="MP2I")
+    ligne_mp2i = ligne(ud.build_rows([ecole], effectifs=eff))
+    assert ligne_mp2i["effectif"] == 24 and ligne_mp2i["etoilee"] is False
+    assert ligne(ud.build_rows([rec(cod_uai="Z")], effectifs=eff))["effectif"] is None  # UAI absent : pas d'effectif
