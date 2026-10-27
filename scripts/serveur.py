@@ -9,6 +9,7 @@ API :
     POST /api/debouches/extraire    {"url": ..., "filiere": "MPSI"} : ecoles integrees lues dans une page de resultats
     GET  /api/liens                 base des liens vers les resultats des lycees, et recherche en cours
     POST /api/liens/chercher        {"prepas": [...] ou null, "refaire": false} : explore les sites des lycees
+    GET  /api/classements-locaux    CSV de classements personnels ranges sous data/ (hors data/sources/)
 
 Exemple :
     python3 scripts/serveur.py                 # ouvre http://127.0.0.1:8765 dans le navigateur
@@ -34,6 +35,28 @@ RACINE = Path(__file__).resolve().parent.parent
 PORT_PAR_DEFAUT = 8765
 HOTE = "127.0.0.1"
 LIGNES_JOURNAL_MAX = 200
+# Un classement personnel tient sur quelques centaines de lignes ; au-dela, ce n'est probablement pas le bon fichier.
+TAILLE_CSV_MAX = 2_000_000
+
+
+def lister_csv_locaux() -> list[dict]:
+    """Rendre {chemin, contenu} de chaque .csv sous data/ (hors data/sources/, exports bruts non lisibles en CSV).
+
+    Un fichier illisible ou trop gros rend {chemin, erreur} plutot que d'interrompre les autres.
+    """
+    fichiers = []
+    for chemin in sorted((RACINE / "data").rglob("*.csv")):
+        relatif = chemin.relative_to(RACINE).as_posix()
+        if relatif.startswith("data/sources/"):
+            continue
+        if chemin.stat().st_size > TAILLE_CSV_MAX:
+            fichiers.append({"chemin": relatif, "erreur": "fichier trop gros"})
+            continue
+        try:
+            fichiers.append({"chemin": relatif, "contenu": chemin.read_text(encoding="utf-8")})
+        except (OSError, UnicodeDecodeError) as exc:
+            fichiers.append({"chemin": relatif, "erreur": str(exc)})
+    return fichiers
 
 
 class TacheDeFond:
@@ -174,6 +197,8 @@ def traiter_api(  # noqa: PLR0911 (une sortie par route)
         return HTTPStatus.OK, {"base": liens.charger_base(recherche.chemin), "recherche": recherche.etat()}
     if recherche and methode == "POST" and url.path == "/api/liens/chercher":
         return chercher_liens(corps, recherche)
+    if methode == "GET" and url.path == "/api/classements-locaux":
+        return HTTPStatus.OK, {"fichiers": lister_csv_locaux()}
     return HTTPStatus.NOT_FOUND, {"erreur": "route inconnue"}
 
 
