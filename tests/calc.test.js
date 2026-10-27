@@ -216,3 +216,11 @@ test("chercherLycees : « lycée st joseph à bruz » trouve le lycée Saint-Jos
   assert.deepEqual(chercherLycees(L,"lycée agricampus laval").map(l=>l.uai),["9"]); // nom sans « lycée »
   assert.deepEqual(chercherLycees(L,"lycée"),[]); // aucun mot discriminant
 });
+
+test("filtrerCategories : seules les catégories cochées dans la légende restent",async()=>{
+  const {filtrerCategories,TOUTES_CATEGORIES,DEFINITIONS_FILIERES,FILS}=await import("../src/calc.js");
+  const r=k=>({ch:{cat:{k}}});
+  assert.deepEqual(filtrerCategories([r(1),r(3),r(0)],[1,0]).map(x=>x.ch.cat.k),[1,0]);
+  assert.equal(filtrerCategories([r(1),r(5)],TOUTES_CATEGORIES).length,2);
+  assert.ok(FILS.every(([k])=>DEFINITIONS_FILIERES[k])); // chaque bouton de filière a sa définition
+});
