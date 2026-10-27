@@ -68,8 +68,13 @@ select,input[type=text]{font:inherit;color:var(--ink);background:var(--soft);bor
 main{display:flex;flex-direction:column;gap:18px;min-width:0}
 .summary{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
 .summary .big{font-family:var(--font-display);font-size:26px}
-.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted)}
-.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend{border:0;margin:0 0 8px;padding:0}
+#legend-cases{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}
+#legend-cases label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+#legend-cases small{font-family:var(--font-data)}
+.chip-w{position:relative;display:inline-block}
+.chip-w .tip{width:max-content;max-width:260px}
+.chip-w:hover .tip,.chip:focus-visible+.tip{display:block}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
 .mapbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;overflow:hidden}
 .mapbox>svg{width:100%;height:auto;display:block}
@@ -279,7 +284,6 @@ details.method p{margin:8px 0}
   <div class="note" id="coverage" hidden></div>
   <div class="summary">
     <span class="big" id="count"></span>
-    <span class="legend" id="legend"></span>
   </div>
   <p class="sr-only" id="map-aide">Carte d'appoint : la liste qui suit contient les mêmes formations, utilisable au clavier.</p>
   <div class="mapbox"><div id="map-osm" hidden role="region" aria-label="Carte OpenStreetMap des formations autour du point de départ" aria-describedby="map-aide"></div><svg id="map" viewBox="0 0 640 400" role="img" aria-label="Carte schématique des formations autour du point de départ"></svg></div>
@@ -295,6 +299,7 @@ details.method p{margin:8px 0}
     </div>
     <div class="grp"><label for="q">Chercher</label><input type="text" id="q" placeholder="Lycée, ville, école…"></div>
   </div>
+  <fieldset class="legend" id="legend"><legend class="sr-only">Catégories de chances affichées</legend><div id="legend-cases"></div></fieldset>
   <div class="note compare-bar" id="compare-bar" hidden></div>
   <div class="list" id="list" role="list" aria-label="Formations" tabindex="-1"></div>
   <dialog id="fiche" aria-labelledby="fiche-titre">

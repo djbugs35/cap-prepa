@@ -3,6 +3,19 @@
 
 // Filières proposées. Public visé : terminale générale maths + physique-chimie (+ maths expertes).
 export const FILS=[["MPSI","MPSI"],["MP2I","MP2I"],["PCSI","PCSI"],["PTSI","PTSI"],["BCPST","BCPST"],["ING","Écoles post-bac"]];
+// Sens des sigles, affiché en infobulle sur les boutons de filière.
+export const DEFINITIONS_FILIERES={
+  MPSI:"Mathématiques, physique et sciences de l'ingénieur",
+  MP2I:"Mathématiques, physique, ingénierie et informatique",
+  PCSI:"Physique, chimie et sciences de l'ingénieur",
+  PTSI:"Physique, technologie et sciences de l'ingénieur",
+  BCPST:"Biologie, chimie, physique et sciences de la Terre",
+  ING:"Écoles d'ingénieurs qui recrutent après le bac : 5 ans d'études, dont 2 de prépa intégrée",
+};
+// Toutes les catégories de chances, Non estimable compris : filtre de la légende, toutes cochées au départ.
+export const TOUTES_CATEGORIES=[1,2,3,4,5,0];
+// Rend les formations dont la catégorie de chances est cochée dans la légende.
+export const filtrerCategories=(rows,cats)=>rows.filter(r=>cats.includes(r.ch.cat.k));
 // Pondérations indicatives : maths, physique-chimie, maths expertes, spé abandonnée en 1re, anglais, français, autres matières
 export const W={
   MPSI:{m:4,pc:3,mx:2,s3:.5,an:1,fr:1,au:1},

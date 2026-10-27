@@ -1,7 +1,7 @@
 /* Cap Prépa — aide aux vœux Parcoursup (CPGE scientifiques et écoles d'ingénieurs post-bac).
    Données : data/formations.json, produit par scripts/update_data.py à partir de l'open data Parcoursup.
    Paramètres d'adresse : ?ville=Rennes&rayon=150&filieres=MPSI,PCSI  (ou ?lat=48.11&lon=-1.68) */
-import {FILS,W,CH,NON_ESTIMABLE,dist,norm,score,estimation,basculerComparaison,encoderPartage,decoderPartage,lyceesFromData,chercherLycees,libelleFourchette,reglagesDepuis,avertissementMathsExpertes,filterRows,sortRows,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
+import {FILS,W,CH,NON_ESTIMABLE,DEFINITIONS_FILIERES,TOUTES_CATEGORIES,filtrerCategories,dist,norm,score,estimation,basculerComparaison,encoderPartage,decoderPartage,lyceesFromData,chercherLycees,libelleFourchette,reglagesDepuis,avertissementMathsExpertes,filterRows,sortRows,rowsFromData,internatInconnu,tauxRef} from "./calc.js";
 import {geocode,suggestions} from "./geo.js";
 import {renderSvgMap} from "./carte.js";
 import {chargerLeaflet,creerCarteOsm} from "./carte-osm.js";
@@ -35,7 +35,7 @@ const fmt=x=>(Math.round(x*10)/10).toFixed(1).replace(".",",");
 
 // ---------- état ----------
 const DEF={home:null,radius:CFG.rayonParDefaut,fils:CFG.filieresParDefaut.filter(f=>W[f]),pub:false,intern:false,
-  n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F",sort:"chance",q:"",basket:[],compare:[],internats:{},lycee:null,academie:null};
+  n:{m:15,pc:14,mx:14,s3:14,an:14,fr:13,au:13},mxon:true,s3type:"SVT",avis:"F",sort:"chance",q:"",basket:[],compare:[],internats:{},lycee:null,academie:null,cats:TOUTES_CATEGORIES};
 let st=JSON.parse(JSON.stringify(DEF));
 try{const s=localStorage.getItem("capprepa");if(s){const o=JSON.parse(s);st=Object.assign(st,o);st.n=Object.assign({},DEF.n,o.n||{});}}catch(e){}
 st.fils=st.fils.filter(f=>W[f]); // filières retirées depuis la dernière visite
@@ -159,8 +159,15 @@ function infobulleClassements(r){
     <small>Rang parmi les ${r.fil==="ING"?"écoles post-bac":"CPGE"} de France : 20 = la meilleure, 0 = la moins bien placée.</small></span>`;
 }
 
-function filtered(){
-  return filterRows(rows,st).map(r=>avecClassements(Object.assign(r,{ch:chanceOf(r)})));
+// Formations du rayon et des filtres ; avecCategories : seulement les catégories cochées dans la légende.
+function filtered(avecCategories=true){
+  const tous=filterRows(rows,st).map(r=>avecClassements(Object.assign(r,{ch:chanceOf(r)})));
+  return avecCategories?filtrerCategories(tous,st.cats):tous;
+}
+// Légende à cases : une par catégorie de chances, avec le nombre de formations du rayon dans chacune.
+function renderLegende(tous){
+  const n=k=>tous.filter(r=>r.ch.cat.k===k).length;
+  $("legend-cases").innerHTML=[...CH,NON_ESTIMABLE].map(c=>`<label><input type="checkbox" data-cat="${c.k}"${st.cats.includes(c.k)?" checked":""}><i class="dot" style="background:var(--c${c.k})"></i>${c.l} <small>${n(c.k)}</small></label>`).join("");
 }
 
 // ---------- rendu ----------
@@ -205,7 +212,7 @@ function tauxCell(r,prevY){
 function renderList(all){
   const shown=all.slice(0,limit),prevY=(META.sessionsHist||[]).slice(-1)[0]||META.previousSession||"";
   let h=`<div class="item head" aria-hidden="true"><span>Chances</span><span>Formation</span><span title="Note de synthèse /20 des classements où figure la formation">Classements</span><span title="Écoles intégrées après la prépa, d'après vos saisies (onglet « Données »)">Débouchés</span><span title="Part des candidats de terminale générale qui ont reçu une proposition d'admission (estimation de Cap Prépa). En dessous : le taux officiel, tous candidats confondus.">Taux d'accès</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
-  if(!all.length) h+=`<div class="empty" role="listitem">${st.home?"Aucune formation ne correspond. Élargissez le rayon ou ajoutez une filière.":"Indiquez une ville de résidence pour commencer."}</div>`;
+  if(!all.length) h+=`<div class="empty" role="listitem">${st.home?"Aucune formation ne correspond. Élargissez le rayon, ajoutez une filière ou cochez une catégorie de chances.":"Indiquez une ville de résidence pour commencer."}</div>`;
   shown.forEach(r=>{
     const inB=st.basket.includes(r.id),inC=st.compare.includes(r.id);
     const intern=r.filles?" · internat filles":r.intern?" · internat":internatInconnu(r)?" · internat non renseigné":"";
@@ -304,8 +311,9 @@ function garderFocus(rendre){
 function upd(keepLimit){
   if(!keepLimit){limit=60;flashId=null;}
   save();writeParams();renderScores();renderCoverage();
-  const all=sortRows(filtered(),st.sort);
-  $("count").textContent=all.length+" formation"+(all.length>1?"s":"");
+  const tous=filtered(false),all=sortRows(filtrerCategories(tous,st.cats),st.sort);
+  renderLegende(tous);
+  $("count").textContent=all.length+" formation"+(all.length>1?"s":"")+(all.length<tous.length?` sur ${tous.length}`:"");
   affichees=all;dessinerCarte();
   renderList(all);renderBasket();renderCompareBar();
 }
@@ -321,7 +329,7 @@ function initControls(){
   $("city").onchange=e=>{const v=e.target.value.trim();if(v&&(!st.home||norm(v)!==norm(st.home.name)))setCity(v);};
   const r=$("radius");r.value=st.radius;r.oninput=()=>{st.radius=+r.value;upd();};
   $("share").onclick=async()=>{const u=shareUrl();try{await navigator.clipboard.writeText(u);$("city-msg").textContent="Lien copié.";}catch(e){$("city-msg").textContent=u;}};
-  $("fils").innerHTML=FILS.map(([k,l])=>`<button type="button" class="chip" data-f="${k}" aria-pressed="${st.fils.includes(k)}">${l}</button>`).join("");
+  $("fils").innerHTML=FILS.map(([k,l])=>`<span class="chip-w"><button type="button" class="chip" data-f="${k}" aria-pressed="${st.fils.includes(k)}" aria-describedby="def-${k}">${l}</button><span class="tip" role="tooltip" id="def-${k}">${esc(DEFINITIONS_FILIERES[k])}</span></span>`).join("");
   $("fils").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const f=b.dataset.f;st.fils=st.fils.includes(f)?st.fils.filter(x=>x!==f):[...st.fils,f];b.setAttribute("aria-pressed",st.fils.includes(f));upd();};
   $("pub").checked=st.pub;$("pub").onchange=e=>{st.pub=e.target.checked;upd();};
   $("intern").checked=st.intern;$("intern").onchange=e=>{st.intern=e.target.checked;upd();};
@@ -332,7 +340,8 @@ function initControls(){
   $("avis").value=st.avis;$("avis").onchange=e=>{st.avis=e.target.value;upd();};
   $("sort").value=st.sort;$("sort").onchange=e=>{st.sort=e.target.value;upd();};
   $("q").value=st.q;$("q").oninput=e=>{st.q=e.target.value;upd();};
-  $("legend").innerHTML=[...CH,NON_ESTIMABLE].map(c=>`<span><i class="dot" style="background:var(--c${c.k})"></i>${c.l}</span>`).join("");
+  $("legend").addEventListener("change",e=>{const k=+e.target.dataset.cat;
+    st.cats=e.target.checked?[...new Set([...st.cats,k])]:st.cats.filter(x=>x!==k);upd();});
   $("map").addEventListener("click",e=>{const c=e.target.closest("circle[data-id]");if(c)selectionner(+c.dataset.id);});
   // Échap referme l'infobulle des classements (ouverte au clavier) sans quitter la ligne.
   $("list").addEventListener("keydown",e=>{if(e.key==="Escape"&&e.target.classList.contains("tip-btn"))e.target.blur();});
