@@ -224,3 +224,12 @@ test("filtrerCategories : seules les catégories cochées dans la légende reste
   assert.equal(filtrerCategories([r(1),r(5)],TOUTES_CATEGORIES).length,2);
   assert.ok(FILS.every(([k])=>DEFINITIONS_FILIERES[k])); // chaque bouton de filière a sa définition
 });
+
+test("rowsFromData lit l'effectif réel et la classe étoilée",async()=>{
+  const {rowsFromData,sortRows}=await import("../src/calc.js");
+  const [r]=rowsFromData({meta:{fields:["id","filiere","effectif","pFcpge","etoilee"]},rows:[[1,"MPSI",141,25,1]]});
+  assert.equal(r.effectif,141);assert.equal(r.pFcpge,25);assert.equal(r.etoilee,true);
+  // tri « promo » : grandes promos d'abord, prépas sans effectif en dernier
+  const a=[{d:1,effectif:48},{d:2,effectif:null},{d:3,effectif:106}];
+  assert.deepEqual(sortRows(a,"promo").map(x=>x.d),[3,1,2]);
+});
