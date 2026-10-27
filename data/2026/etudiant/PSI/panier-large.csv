@@ -1,0 +1,174 @@
+﻿id;etablissement;ville;filiere;L'Étudiant 2026 - PSI panier large
+10072;Lycée Sainte Geneviève;Versailles;MPSI;1
+10073;Lycée Sainte Geneviève;Versailles;PCSI;1
+13188;Lycée Sainte Geneviève;Versailles;PTSI;1
+10043;Lycée Hoche;Versailles;MPSI;2
+10044;Lycée Hoche;Versailles;PCSI;2
+4036;Lycée Pierre De Fermat;Toulouse;MPSI;4
+4037;Lycée Pierre De Fermat;Toulouse;PCSI;4
+11022;Lycée Michelet;Vanves;MPSI;5
+11023;Lycée Michelet;Vanves;PCSI;5
+11012;Lycée Lakanal;Sceaux;MPSI;6
+11013;Lycée Lakanal;Sceaux;PCSI;6
+9467;Lycée Stanislas;Paris 6e Arrondissement;MPSI;7
+9468;Lycée Stanislas;Paris 6e Arrondissement;PCSI;7
+8291;Lycée Aux Lazaristes;Lyon 5e Arrondissement;MPSI;8
+8292;Lycée Aux Lazaristes;Lyon 5e Arrondissement;PCSI;8
+42999;Lycée Aux Lazaristes;Lyon 5e Arrondissement;PTSI;8
+8182;Lycée du Parc;Lyon 6e Arrondissement;MPSI;9
+8183;Lycée du Parc;Lyon 6e Arrondissement;PCSI;9
+8974;Lycée Louis Le Grand;Paris 5e Arrondissement;MPSI;10
+8975;Lycée Louis Le Grand;Paris 5e Arrondissement;PCSI;10
+4920;Lycée Champollion;Grenoble;MPSI;11
+4921;Lycée Champollion;Grenoble;PCSI;11
+8982;Lycée Saint-Louis (6ème);Paris 6e Arrondissement;MPSI;12
+8983;Lycée Saint-Louis (6ème);Paris 6e Arrondissement;PCSI;12
+4042;Lycée BELLEVUE;Toulouse;MPSI;13
+4043;Lycée BELLEVUE;Toulouse;PCSI;13
+8844;Lycée Berthollet;Annecy;MPSI;14
+8845;Lycée Berthollet;Annecy;PCSI;14
+10859;Lycée Blaise Pascal;Orsay;MPSI;15
+10860;Lycée Blaise Pascal;Orsay;PCSI;15
+4671;Lycée Francois René De Chateaubriand;Rennes;MPSI;16
+11672;Lycée Francois René De Chateaubriand;Rennes;PCSI;16
+9474;Lycée Fénelon Sainte-Marie;Paris 8e Arrondissement;MPSI;17
+11391;Lycée Marcelin Berthelot;Saint-Maur-des-Fossés;MPSI;18
+11392;Lycée Marcelin Berthelot;Saint-Maur-des-Fossés;PCSI;18
+5421;Lycée général Clemenceau;Nantes;MPSI;19
+5422;Lycée général Clemenceau;Nantes;PCSI;19
+8998;Lycée Condorcet;Paris 9e Arrondissement;MPSI;20
+8999;Lycée Condorcet;Paris 9e Arrondissement;PCSI;20
+8550;Lycée La Martiniere Monplaisir;Lyon 8e Arrondissement;MPSI;21
+8551;Lycée La Martiniere Monplaisir;Lyon 8e Arrondissement;PCSI;21
+8552;Lycée La Martiniere Monplaisir;Lyon 8e Arrondissement;PTSI;21
+9130;Lycée Janson De Sailly;Paris 16e Arrondissement;MPSI;22
+9131;Lycée Janson De Sailly;Paris 16e Arrondissement;PCSI;22
+11048;Lycée Sainte Marie;Antony;MPSI;23
+11049;Lycée Sainte Marie;Antony;PCSI;23
+8991;Lycée Chaptal;Paris 8e Arrondissement;MPSI;24
+8992;Lycée Chaptal;Paris 8e Arrondissement;PCSI;24
+8993;Lycée Chaptal;Paris 8e Arrondissement;PTSI;24
+4823;Lycée Descartes;Tours;MPSI;25
+4824;Lycée Descartes;Tours;PCSI;25
+3177;Lycée Carnot;Dijon;MPSI;26
+3178;Lycée Carnot;Dijon;PCSI;26
+2546;Lycée Thiers;Marseille 1er Arrondissement;MPSI;27
+2547;Lycée Thiers;Marseille 1er Arrondissement;PCSI;27
+4271;Lycée Montaigne;Bordeaux;MPSI;28
+4272;Lycée Montaigne;Bordeaux;PCSI;28
+5492;LGT Saint-Stanislas;Nantes;MPSI;29
+5493;LGT Saint-Stanislas;Nantes;PCSI;29
+9586;Lycée Pierre Corneille;Rouen;MPSI;30
+9587;Lycée Pierre Corneille;Rouen;PCSI;30
+6841;Lycée Henri Wallon;Valenciennes;MPSI;30
+6842;Lycée Henri Wallon;Valenciennes;PCSI;30
+10021;Lycée Jeanne D'Albret;Saint-Germain-en-Laye;MPSI;32
+10022;Lycée Jeanne D'Albret;Saint-Germain-en-Laye;PCSI;32
+6780;Lycée Faidherbe;Lille;MPSI;33
+6781;Lycée Faidherbe;Lille;PCSI;33
+3621;Lycée CAMILLE VERNET;Valence;MPSI;34
+3622;Lycée CAMILLE VERNET;Valence;PCSI;34
+11004;Lycée Louis Pasteur;Neuilly-sur-Seine;MPSI;35
+11005;Lycée Louis Pasteur;Neuilly-sur-Seine;PCSI;35
+9570;Lycée François 1er;Le Havre;MPSI;36
+9571;Lycée François 1er;Le Havre;PCSI;36
+10660;Lycée Gay-Lussac;Limoges;MPSI;37
+10661;Lycée Gay-Lussac;Limoges;PCSI;37
+4481;Lycée Joffre;Montpellier;MPSI;38
+4482;Lycée Joffre;Montpellier;PCSI;38
+4052;Lycée Déodat de Séverac;Toulouse;PCSI;39
+4053;Lycée Déodat de Séverac;Toulouse;PTSI;39
+2594;Lycée Jean Perrin;Marseille 10e Arrondissement;PCSI;39
+2595;Lycée Jean Perrin;Marseille 10e Arrondissement;PTSI;39
+9137;Lycée Jean-Baptiste Say;Paris 16e Arrondissement;PCSI;40
+9138;Lycée Jean-Baptiste Say;Paris 16e Arrondissement;PTSI;40
+7916;Lycée Kléber;Strasbourg;MPSI;41
+7917;Lycée Kléber;Strasbourg;PCSI;41
+7545;Lycée Blaise Pascal;Clermont-Ferrand;MPSI;42
+7546;Lycée Blaise Pascal;Clermont-Ferrand;PCSI;42
+2237;Lycée Stanislas;Cannes;MPSI;44
+2238;Lycée Stanislas;Cannes;PCSI;44
+9001;Lycée Jacques Decour;Paris 9e Arrondissement;MPSI;46
+9002;Lycée Jacques Decour;Paris 9e Arrondissement;PCSI;46
+2527;Lycée Paul Cezanne;Aix-en-Provence;MPSI;47
+2528;Lycée Paul Cezanne;Aix-en-Provence;PCSI;47
+9070;Lycée Pierre-Gilles de Gennes - ENCPB;Paris 13e Arrondissement;MPSI;47
+9071;Lycée Pierre-Gilles de Gennes - ENCPB;Paris 13e Arrondissement;PCSI;47
+6262;Lycée Henri Loritz;Nancy;PCSI;49
+6263;Lycée Henri Loritz;Nancy;PTSI;49
+2000;Lycée Lalande;Bourg-en-Bresse;MPSI;50
+2001;Lycée Lalande;Bourg-en-Bresse;PCSI;50
+4287;Lycée Gustave Eiffel;Bordeaux;PCSI;52
+4288;Lycée Gustave Eiffel;Bordeaux;PTSI;52
+6734;Lycée Albert Chatelet;Douai;MPSI;53
+6735;Lycée Albert Chatelet;Douai;PCSI;53
+5953;Lycée général et technologique Henri Bergson;Angers;MPSI;54
+5954;Lycée général et technologique Henri Bergson;Angers;PCSI;54
+8235;Lycée Jean Perrin;Lyon 9e Arrondissement;MPSI;54
+8236;Lycée Jean Perrin;Lyon 9e Arrondissement;PCSI;54
+9114;Lycée Buffon;Paris 15e Arrondissement;MPSI;57
+9115;Lycée Buffon;Paris 15e Arrondissement;PCSI;57
+2206;Lycée Masséna;Nice;MPSI;58
+2207;Lycée Masséna;Nice;PCSI;58
+3450;Lycée Victor Hugo;Besançon;MPSI;59
+3451;Lycée Victor Hugo;Besançon;PCSI;59
+9799;Lycée Henri Moissan;Meaux;PCSI;60
+4227;Lycée Saliège;Balma;PCSI;61
+3926;Lycée Alphonse DAUDET;Nîmes;MPSI;62
+3927;Lycée Alphonse DAUDET;Nîmes;PCSI;62
+9128;Lycée Claude Bernard;Paris 16e Arrondissement;PCSI;63
+6525;Lycée Fabert;Metz;MPSI;63
+6526;Lycée Fabert;Metz;PCSI;63
+10342;Lycée Dumont d'Urville;Toulon;MPSI;65
+10343;Lycée Dumont d'Urville;Toulon;PCSI;65
+10931;Lycée de l'Essouriau;Les Ulis;PCSI;67
+7562;Lycée La Fayette;Clermont-Ferrand;MPSI;68
+7563;Lycée La Fayette;Clermont-Ferrand;PCSI;68
+6746;Lycée Jean Bart;Dunkerque;MPSI;69
+6747;Lycée Jean Bart;Dunkerque;PCSI;69
+8780;Lycée Vaugelas;Chambéry;MPSI;69
+8781;Lycée Vaugelas;Chambéry;PCSI;69
+3764;Lycée Vauban;Brest;PTSI;71
+6245;Lycée Henri Poincaré;Nancy;MPSI;72
+6246;Lycée Henri Poincaré;Nancy;PCSI;72
+8690;Lycée Montesquieu;Le Mans;MPSI;72
+8691;Lycée Montesquieu;Le Mans;PCSI;72
+2918;Lycée Victor Hugo;Caen;PCSI;75
+7326;Lycée Robespierre;Arras;MPSI;76
+7327;Lycée Robespierre;Arras;PCSI;76
+10050;Lycée Jules Ferry;Versailles;PTSI;78
+9102;Lycée Raspail;Paris 14e Arrondissement;PCSI;79
+9103;Lycée Raspail;Paris 14e Arrondissement;PTSI;79
+7844;Lycée François Arago;Perpignan;MPSI;81
+7845;Lycée François Arago;Perpignan;PCSI;81
+10926;Lycée du Parc des Loges;Evry-Courcouronnes;MPSI;84
+10927;Lycée du Parc des Loges;Evry-Courcouronnes;PCSI;84
+2314;Lycée International de Valbonne;Valbonne;MPSI;85
+2315;Lycée International de Valbonne;Valbonne;PCSI;85
+6419;Lycée Dupuy De Lôme;Lorient;MPSI;86
+6420;Lycée Dupuy De Lôme;Lorient;PCSI;86
+3205;Lycée Gustave Eiffel;Dijon;PTSI;86
+11200;Lycée Albert Schweitzer;Le Raincy;MPSI;88
+11201;Lycée Albert Schweitzer;Le Raincy;PCSI;88
+5649;Lycée Pothier;Orléans;MPSI;89
+5650;Lycée Pothier;Orléans;PCSI;89
+7704;Lycée Louis Barthou;Pau;MPSI;90
+7705;Lycée Louis Barthou;Pau;PCSI;90
+8732;Lycée Militaire Prytanee National;La Flèche;MPSI;91
+8733;Lycée Militaire Prytanee National;La Flèche;PCSI;91
+10150;Lycée Louis Thuillier;Amiens;MPSI;92
+10151;Lycée Louis Thuillier;Amiens;PCSI;92
+10584;Lycée Camille Guérin;Poitiers;MPSI;93
+10585;Lycée Camille Guérin;Poitiers;PCSI;93
+7933;Lycée Louis Couffignal;Strasbourg;PCSI;94
+7934;Lycée Louis Couffignal;Strasbourg;PTSI;94
+2405;Lycée Chrestien de Troyes;Troyes;MPSI;97
+2406;Lycée Chrestien de Troyes;Troyes;PCSI;97
+3849;Lycée Sainte Anne;Brest;MPSI;97
+3850;Lycée Sainte Anne;Brest;PCSI;97
+3794;Lycée Auguste Brizeux;Quimper;PCSI;106
+3315;Lycée Francois Rabelais;Saint-Brieuc;MPSI;109
+3316;Lycée Francois Rabelais;Saint-Brieuc;PCSI;109
+3025;Lycée Jean Dautet;La Rochelle;MPSI;110
+3026;Lycée Jean Dautet;La Rochelle;PCSI;110
+3682;Lycée Aristide Briand;Evreux;PCSI;115
