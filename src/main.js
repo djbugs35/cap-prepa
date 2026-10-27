@@ -8,7 +8,7 @@ import {chargerLeaflet,creerCarteOsm} from "./carte-osm.js";
 import {htmlFiche,htmlComparaison,htmlPropositionDebouches} from "./fiche.js";
 import {htmlListe,htmlImpression} from "./liste.js";
 import {creerOngletDonnees} from "./donnees.js";
-import {CLASSEMENTS_INTEGRES,classementPerso,calculerCentiles,noteSynthese,detailClassements} from "./classements.js";
+import {CLASSEMENTS_INTEGRES,classementPerso,calculerCentiles,noteSynthese,detailClassements,classerSynthese,ordinal} from "./classements.js";
 import {resumeDebouches,classementDebouches} from "./debouches.js";
 
 const CFG=Object.assign({
@@ -122,13 +122,13 @@ const CLE_CLASSEMENTS="capprepa-classements";
 const CLE_DEBOUCHES="capprepa-debouches";
 // Source de chaque saisie faite depuis la fiche : {id prépa: {url, annee}}.
 const CLE_SOURCES_DEBOUCHES="capprepa-debouches-sources";
-let persos=[],debouches={},sourcesDebouches={},centiles=new Map();
+let persos=[],debouches={},sourcesDebouches={},centiles=new Map(),rangsSynthese=new Map();
 try{sourcesDebouches=JSON.parse(localStorage.getItem(CLE_SOURCES_DEBOUCHES)||"{}");}catch(e){sourcesDebouches={};}
 try{persos=JSON.parse(localStorage.getItem(CLE_CLASSEMENTS)||"[]");}catch(e){persos=[];}
 try{debouches=JSON.parse(localStorage.getItem(CLE_DEBOUCHES)||"{}");}catch(e){debouches={};}
 const tousClassements=()=>[...CLASSEMENTS_INTEGRES,classementDebouches(debouches),...persos.map(classementPerso)];
-// Rangs centiles calculés sur toute la France : la note d'une formation ne dépend pas du rayon choisi.
-function recalculerClassements(){centiles=calculerCentiles(rows,tousClassements());}
+// Rangs centiles et classement calculés sur toute la France : ils ne dépendent pas du rayon choisi.
+function recalculerClassements(){centiles=calculerCentiles(rows,tousClassements());rangsSynthese=classerSynthese(rows,centiles,CFG.poidsClassements);}
 function enregistrerDebouches(d){
   debouches=d;try{localStorage.setItem(CLE_DEBOUCHES,JSON.stringify(debouches));}catch(e){}
   recalculerClassements();upd(true);
@@ -137,7 +137,7 @@ function enregistrerPersos(liste){
   persos=liste;try{localStorage.setItem(CLE_CLASSEMENTS,JSON.stringify(persos));}catch(e){}
   recalculerClassements();upd(true);
 }
-const avecClassements=r=>{const cl=centiles.get(r.id)||{};return Object.assign(r,{cl,synth:noteSynthese(cl,CFG.poidsClassements),clDetail:detailClassements(cl,tousClassements(),CFG.poidsClassements),
+const avecClassements=r=>{const cl=centiles.get(r.id)||{};return Object.assign(r,{cl,synth:noteSynthese(cl,CFG.poidsClassements),synthRang:rangsSynthese.get(r.id)||null,clDetail:detailClassements(cl,tousClassements(),CFG.poidsClassements),
   deb:r.fil==="ING"?null:resumeDebouches(debouches[r.id]),debSource:sourcesDebouches[r.id]||null});};
 // Infobulle des débouchés : les 10 écoles qui ont accueilli le plus d'élèves de la prépa, d'après la saisie.
 function infobulleDebouches(r){
@@ -155,8 +155,8 @@ function celluleDebouches(r){
 function infobulleClassements(r){
   const lignes=r.clDetail.map(c=>`<span class="tip-l"><span>${esc(c.nom)}</span><b>${c.note==null?"—":fmt(c.note)+"/20"}</b></span>
     <small>${esc(c.texte)}${c.note==null?" · pas de rang (trop peu de formations)":c.poids===0?" · ignoré dans la note":c.poids!==1?` · poids ${fmt(c.poids).replace(",0","")}`:""}</small>`).join("");
-  return `<span class="tip" role="tooltip" id="tip-${r.id}">${lignes}<span class="tip-l tip-total"><span>Note de synthèse (moyenne pondérée)</span><b>${fmt(r.synth.note)}/20</b></span>
-    <small>Rang parmi les ${r.fil==="ING"?"écoles post-bac":"CPGE"} de France : 20 = la meilleure, 0 = la moins bien placée.</small></span>`;
+  return `<span class="tip" role="tooltip" id="tip-${r.id}">${lignes}<span class="tip-l tip-total"><span>Classement (moyenne pondérée)</span><b>${ordinal(r.synthRang.rang)} / ${r.synthRang.total}</b></span>
+    <small>Parmi les ${r.fil==="ING"?"écoles post-bac":"CPGE"} de France, sur les classements ci-dessus. Note de synthèse : ${fmt(r.synth.note)}/20 (20 = la meilleure, 0 = la moins bien placée).</small></span>`;
 }
 
 // Formations du rayon et des filtres ; avecCategories : seulement les catégories cochées dans la légende.
@@ -211,7 +211,7 @@ function tauxCell(r,prevY){
 }
 function renderList(all){
   const shown=all.slice(0,limit),prevY=(META.sessionsHist||[]).slice(-1)[0]||META.previousSession||"";
-  let h=`<div class="item head" aria-hidden="true"><span>Chances</span><span>Formation</span><span title="Note de synthèse /20 des classements où figure la formation">Classements</span><span title="Écoles intégrées après la prépa, d'après vos saisies (onglet « Données »)">Débouchés</span><span title="Part des candidats de terminale générale qui ont reçu une proposition d'admission (estimation de Cap Prépa). En dessous : le taux officiel, tous candidats confondus.">Taux d'accès</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
+  let h=`<div class="item head" aria-hidden="true"><span>Chances</span><span>Formation</span><span title="Classement calculé parmi les formations de même famille (CPGE ou écoles), à partir des classements ci-dessous ; note de synthèse /20 en détail">Classements</span><span title="Écoles intégrées après la prépa, d'après vos saisies (onglet « Données »)">Débouchés</span><span title="Part des candidats de terminale générale qui ont reçu une proposition d'admission (estimation de Cap Prépa). En dessous : le taux officiel, tous candidats confondus.">Taux d'accès</span><span>Profil des admis (mention au bac)</span><span>Académie · places</span><span></span></div>`;
   if(!all.length) h+=`<div class="empty" role="listitem">${st.home?"Aucune formation ne correspond. Élargissez le rayon, ajoutez une filière ou cochez une catégorie de chances.":"Indiquez une ville de résidence pour commencer."}</div>`;
   shown.forEach(r=>{
     const inB=st.basket.includes(r.id),inC=st.compare.includes(r.id);
@@ -220,7 +220,7 @@ function renderList(all){
       <span class="c-ch"><span class="pill k${r.ch.cat.k}">${r.ch.cat.l}</span>${r.ch.bas.k!==r.ch.haut.k?`<small title="Selon que les notes finales sont de ${fmt(R.ecartFourchette)} point plus basses ou plus hautes">${libelleFourchette(r.ch)}</small>`:""}</span>
       <span class="c-n name"><span class="badge${r.pub?"":" priv"}">${r.fil==="ING"?"École":r.fil}</span>${esc(r.etab)}<small>${esc(r.ville)} · ${Math.round(r.d)} km${r.det?" · "+esc(r.det):""}${r.pub?"":" · privé"}${intern}</small>
         <details class="why"><summary>Pourquoi ?</summary><ul>${r.ch.raisons.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></details></span>
-      <span class="c-s num" data-l="Classements">${r.synth?`<button type="button" class="tip-btn" aria-describedby="tip-${r.id}"><b class="synth">${fmt(r.synth.note)}/20</b><small>sur ${r.synth.n} classement${r.synth.n>1?"s":""} ⓘ</small></button>${infobulleClassements(r)}`:`<small>non classée</small>`}</span>
+      <span class="c-s num" data-l="Classements">${r.synth?`<button type="button" class="tip-btn" aria-describedby="tip-${r.id}"><b class="synth">${ordinal(r.synthRang.rang)}</b><small>sur ${r.synthRang.total} ${r.fil==="ING"?"écoles":"CPGE"} · ${fmt(r.synth.note)}/20 ⓘ</small></button>${infobulleClassements(r)}`:`<small>non classée</small>`}</span>
       <span class="c-b num" data-l="Débouchés">${celluleDebouches(r)}</span>
       <span class="c-t num" data-l="Taux d'accès">${tauxCell(r,prevY)}</span>
       <span class="c-m" data-l="Profil des admis">${mbar(r)}</span>

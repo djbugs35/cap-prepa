@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {CLASSEMENTS_INTEGRES,classementPerso,calculerCentiles,noteSynthese,libelleRang,lireCsvClassements,csvModele,detailClassements} from "../src/classements.js";
+import {CLASSEMENTS_INTEGRES,classementPerso,calculerCentiles,noteSynthese,libelleRang,lireCsvClassements,csvModele,detailClassements,classerSynthese,ordinal} from "../src/classements.js";
 import {sortRows,rowsFromData} from "../src/calc.js";
 
 const f=(id,o)=>({id,fil:"MPSI",etab:"Lycée "+id,ville:"Rennes",taux:50,capa:40,voeux:800,mp:[10,30,40,15,5],...o});
@@ -64,4 +64,16 @@ test("detailClassements : note /20 de chaque classement et poids appliqué",()=>
   const d=detailClassements(scores,[...CLASSEMENTS_INTEGRES,c],{attractivite:.5});
   assert.deepEqual(d.map(x=>[x.id,x.note,x.poids]),[["niveau",19,1],["attractivite",16.4,.5],["perso:Presse",null,1]]);
   assert.match(d[0].texte,/89 % TB · mieux que 95 %/);
+});
+
+test("ordinal : 1er, puis e",()=>{
+  assert.equal(ordinal(1),"1er");assert.equal(ordinal(2),"2e");assert.equal(ordinal(23),"23e");
+});
+test("classerSynthese : rang 1 à la meilleure note, familles séparées, formations sans note absentes",()=>{
+  const rows=[f(1,{taux:20}),f(2,{taux:50}),f(3,{taux:80}),f(4,{fil:"ING",taux:30}),f(5,{fil:"ING",taux:70}),f(6,{taux:null,tauxGen:null})];
+  const centiles=calculerCentiles(rows,[selectivite]);
+  const r=classerSynthese(rows,centiles,{selectivite:1});
+  assert.deepEqual(r.get(1),{rang:1,total:3});assert.deepEqual(r.get(2),{rang:2,total:3});assert.deepEqual(r.get(3),{rang:3,total:3});
+  assert.deepEqual(r.get(4),{rang:1,total:2});assert.deepEqual(r.get(5),{rang:2,total:2}); // écoles comptées à part des prépas
+  assert.equal(r.get(6),undefined); // ni taux ni tauxGen : aucune valeur pour la sélectivité, donc pas de rang
 });
