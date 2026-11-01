@@ -9,6 +9,12 @@ effectifs en CPGE, annuaire de l'éducation) et tourne en local, dans le navigat
 Hors périmètre pour l'instant : bacs technologiques (TSI, TB, TPC), prépas économiques et littéraires, autres
 doublettes de spécialités.
 
+<p>
+  <img src="docs/images/liste.png" alt="Liste des formations et carte autour d'une ville" width="32%">
+  <img src="docs/images/fiche.png" alt="Fiche détaillée d'une formation : chances, classements, taux d'accès" width="32%">
+  <img src="docs/images/donnees.png" alt="Onglet Données : sources, classements personnels, débouchés" width="32%">
+</p>
+
 ## Ce qu'il permet
 
 - partir de **sa ville de résidence ou de son lycée d'origine** (qui donne aussi l'académie de l'élève) et choisir
