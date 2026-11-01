@@ -15,6 +15,10 @@ if ! "$PY" -c 'import sys; sys.exit(sys.version_info < (3, 11))'; then
   exit 1
 fi
 chmod +x lancer.command
+# macOS bloque par double-clic tout script tout juste téléchargé (Gatekeeper, attribut com.apple.quarantine) ;
+# ça n'était déjà plus un problème pour ce fichier-ci puisque vous l'exécutez. Retirer l'attribut sur lancer.command
+# évite de devoir aussi faire « clic droit → Ouvrir » dessus la première fois.
+command -v xattr >/dev/null 2>&1 && xattr -d com.apple.quarantine lancer.command 2>/dev/null || true
 
 echo "Téléchargement des données Parcoursup (moins d'une minute)…"
 if "$PY" scripts/update_data.py; then
