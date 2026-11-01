@@ -1,0 +1,5 @@
+# Les .bat ont besoin de fins de ligne CRLF pour cmd.exe ; les .sh/.command de LF, sinon l'interpreteur shell
+# echoue sur le \r final. Fige l'un et l'autre quel que soit core.autocrlf de la machine qui clone.
+*.bat text eol=crlf
+*.sh text eol=lf
+*.command text eol=lf
