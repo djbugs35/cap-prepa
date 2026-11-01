@@ -1,4 +1,4 @@
-{"meta":{"source":"https://data.education.gouv.fr/explore/dataset/fr-en-annuaire-education/","licence":"Licence Ouverte / Open Licence (Etalab)","version":"2026-10-26T06:01:18.433000+00:00","fields":["uai","nom","commune","dep","academie","lat","lon","public"]},"rows":[["0530081A","Agricampus de Laval","Laval","053","Nantes",48.0494,-0.7962,1],
+{"meta":{"source":"https://data.education.gouv.fr/explore/dataset/fr-en-annuaire-education/","licence":"Licence Ouverte / Open Licence (Etalab)","version":"2026-11-01T06:01:19.857000+00:00","fields":["uai","nom","commune","dep","academie","lat","lon","public"]},"rows":[["0530081A","Agricampus de Laval","Laval","053","Nantes",48.0494,-0.7962,1],
 ["0690543R","Annexe du lycée Saint-Thomas d'Aquin Veritas","Mornant","069","Lyon",45.7106,4.8096,0],
 ["0771436T","Campus Bougainville","Brie-Comte-Robert","077","Créteil",48.6854,2.6273,1],
 ["0831109E","Campus Provence Verte","Saint-Maximin-la-Sainte-Baume","083","Nice",43.4574,5.861,0],
