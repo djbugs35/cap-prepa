@@ -34,17 +34,33 @@ page (rubrique « Méthode, sources et limites »).
 
 ## Installer et lancer l'outil
 
+**macOS / Linux** :
+
 ```bash
 ./installer.sh   # une seule fois : vérifie Python 3.11+, télécharge les données
 ./lancer.command # ensuite : lance le serveur local et ouvre le navigateur
 ```
 
-`lancer.command` peut aussi s'ouvrir d'un double-clic dans le Finder. Il démarre `scripts/serveur.py`
-(bibliothèque standard, n'écoute que sur `127.0.0.1`) sur `http://127.0.0.1:8765`, qui sert le site **et**
-l'onglet « Données » : mise à jour des sources, import des classements personnels, extraction des débouchés,
-recherche des liens vers les résultats des lycées. Sans ce serveur, en servant les fichiers autrement
-(`python3 -m http.server`, GitHub Pages…), l'outil fonctionne pour chercher des formations mais l'onglet
-« Données » explique qu'il manque le serveur local pour ses propres fonctions.
+`lancer.command` peut aussi s'ouvrir d'un double-clic dans le Finder.
+
+**Windows** : double-clic sur `installer.bat` (une seule fois), puis sur `lancer.bat`. Pour l'extraction
+automatique des débouchés au format PDF, installer en plus `pdftotext` (paquet poppler) ; sans lui, la saisie
+manuelle reste disponible.
+
+Les deux lancent `scripts/serveur.py` (bibliothèque standard, n'écoute que sur `127.0.0.1`) sur
+`http://127.0.0.1:8765`, qui sert le site **et** l'onglet « Données » : mise à jour des sources, import des
+classements personnels, extraction des débouchés, recherche des liens vers les résultats des lycées. Sans ce
+serveur, en servant les fichiers autrement (`python3 -m http.server`, GitHub Pages…), l'outil fonctionne pour
+chercher des formations mais l'onglet « Données » explique qu'il manque le serveur local pour ses propres
+fonctions.
+
+**Premier lancement bloqué par le système** : macOS (Gatekeeper) et Windows (Defender) marquent les fichiers
+téléchargés et bloquent leur premier lancement direct. C'est normal, pas un virus.
+- macOS : message « Apple n'a pas pu confirmer... » sur `installer.sh` → clic droit → Ouvrir, une seule fois
+  (ou lancer depuis le Terminal, qui n'est pas concerné). `installer.sh` retire ensuite ce même blocage sur
+  `lancer.command`, qui n'a donc pas besoin d'un second déblocage.
+- Windows : SmartScreen ou Defender peuvent signaler l'archive téléchargée depuis GitHub → « Informations
+  complémentaires » puis « Exécuter quand même ».
 
 ## Choisir la ville ou le lycée de résidence
 
@@ -122,7 +138,8 @@ cartographie des formations (internat), propositions par doublette de spécialit
 | `scripts/serveur.py` | Serveur local (`./lancer.command`) : sert le site et l'API de l'onglet « Données » |
 | `scripts/debouches.py` | Extraction des écoles intégrées depuis une page de résultats |
 | `scripts/liens.py` | Recherche des pages de résultats des lycées, sans moteur de recherche |
-| `installer.sh`, `lancer.command` | Installation et lancement en local |
+| `installer.sh`, `lancer.command` | Installation et lancement en local (macOS/Linux) |
+| `installer.bat`, `lancer.bat` | Installation et lancement en local (Windows) |
 
 ### Ajuster les réglages
 
